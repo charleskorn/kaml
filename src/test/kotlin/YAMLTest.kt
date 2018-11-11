@@ -4,6 +4,7 @@ import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.creating.Assert
 import ch.tutteli.atrium.verbs.assert
+import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.CharSerializer
 import kotlinx.serialization.internal.EnumSerializer
@@ -391,7 +392,7 @@ object YAMLTest : Spek({
             }
         }
 
-        given("some input representing an object") {
+        given("some input representing an object with an optional value specified") {
             val input = """
                 string: Alex
                 byte: 12
@@ -427,6 +428,41 @@ object YAMLTest : Spek({
             }
         }
 
+        given("some input representing an object with an optional value not specified") {
+            val input = """
+                string: Alex
+                byte: 12
+                short: 1234
+                int: 123456
+                long: 1234567
+                float: 1.2
+                double: 2.4
+                enum: Value1
+                boolean: true
+                char: A
+            """.trimIndent()
+
+            on("parsing that input") {
+                val result = YAML.parse(TestStructure.serializer(), input)
+
+                it("deserializes it to a Kotlin object") {
+                    assert(result).toBe(TestStructure(
+                        "Alex",
+                        12,
+                        1234,
+                        123456,
+                        1234567,
+                        1.2f,
+                        2.4,
+                        TestEnum.Value1,
+                        true,
+                        'A',
+                        null
+                    ))
+                }
+            }
+        }
+
         // Nested lists
         // Comments
         // Multiline strings
@@ -453,7 +489,7 @@ data class TestStructure(
     val enum: TestEnum,
     val boolean: Boolean,
     val char: Char,
-    val nullable: String? = null
+    @Optional val nullable: String? = null
 )
 
 enum class TestEnum {
