@@ -8,7 +8,7 @@ import io.dahgan.yaml
 object YAML : AbstractSerialFormat(), StringFormat {
     override fun <T> parse(serializer: DeserializationStrategy<T>, string: String): T {
         val tokens = yaml().tokenize("some-name-that-should-probably-be-the-filename", string.toByteArray(), true /* TODO: what's the correct value for this? */)
-        val input = YAMLInput(tokens)
+        val input = YamlInput(tokens)
         val result = input.decode(serializer)
         // TODO: check parser reached end of file
         return result
