@@ -508,6 +508,47 @@ object YamlNodeTest : Spek({
             }
         }
 
+        given("a key-value pair with extra indentation") {
+            val input = """
+                    thing:
+                      key1: value1
+                       key2: value2
+                """.trimIndent()
+            on("parsing that input") {
+                it("throws an appropriate exception") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNode.fromParser(parser)
+                    }).toThrow<YamlException> {
+                        message { toBe("Invalid YAML. The level of indentation at this point or nearby may be incorrect.") }
+                        line { toBe(3) }
+                        column { toBe(8) }
+                    }
+                }
+            }
+        }
+
+        given("a key-value pair with not enough indentation") {
+            val input = """
+                    thing:
+                      key1: value1
+                     key2: value2
+                """.trimIndent()
+
+            on("parsing that input") {
+                it("throws an appropriate exception") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNode.fromParser(parser)
+                    }).toThrow<YamlException> {
+                        message { toBe("Invalid YAML. The level of indentation at this point or nearby may be incorrect.") }
+                        line { toBe(3) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+        }
+
         given("an empty map in flow style") {
             val input = "{}"
 

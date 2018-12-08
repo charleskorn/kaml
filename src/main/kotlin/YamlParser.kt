@@ -28,6 +28,10 @@ class YamlParser(tokens: Sequence<Token>) {
 
     init {
         tokens.forEach { it ->
+            if (it.code == Code.Unparsed || (it.code == Code.Error && it.text.toString() == "Expected start of line")) {
+                throw YamlException("Invalid YAML. The level of indentation at this point or nearby may be incorrect.", it)
+            }
+
             if (it.code == Code.Error) {
                 throw YamlException(it.text.toString(), it)
             }
