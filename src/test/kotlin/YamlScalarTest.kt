@@ -280,5 +280,57 @@ object YamlScalarTest : Spek({
                 }
             }
         }
+
+        describe("testing equivalence") {
+            val scalar = YamlScalar("some content", Location(2, 3))
+
+            on("comparing it to the same instance") {
+                it("indicates that they are equivalent") {
+                    assert(scalar.equivalentContentTo(scalar)).toBe(true)
+                }
+            }
+
+            on("comparing it to another scalar with the same content and location") {
+                it("indicates that they are equivalent") {
+                    assert(scalar.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(true)
+                }
+            }
+
+            on("comparing it to another scalar with the same content but a different location") {
+                it("indicates that they are equivalent") {
+                    assert(scalar.equivalentContentTo(YamlScalar("some content", Location(2, 4)))).toBe(true)
+                }
+            }
+
+            on("comparing it to another scalar with the same location but different content") {
+                it("indicates that they are not equivalent") {
+                    assert(scalar.equivalentContentTo(YamlScalar("some other content", Location(2, 3)))).toBe(false)
+                }
+            }
+
+            on("comparing it to a null value") {
+                it("indicates that they are not equivalent") {
+                    assert(scalar.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
+                }
+            }
+
+            on("comparing it to a list") {
+                it("indicates that they are not equivalent") {
+                    assert(scalar.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
+                }
+            }
+
+            on("comparing it to a map") {
+                it("indicates that they are not equivalent") {
+                    assert(scalar.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
+                }
+            }
+        }
+
+        describe("converting the content to a human-readable string") {
+            it("returns the content surrounded by single quotes") {
+                assert(YamlScalar("thing", Location(1, 1)).contentToString()).toBe("'thing'")
+            }
+        }
     }
 })

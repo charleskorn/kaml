@@ -3,6 +3,9 @@ import io.dahgan.parser.Escapable
 import io.dahgan.parser.Token
 
 sealed class YamlNode(open val location: Location) {
+    abstract fun equivalentContentTo(other: YamlNode): Boolean
+    abstract fun contentToString(): String
+
     companion object {
         fun fromParser(parser: YamlParser): YamlNode {
             return parser.readWrapped(Code.BeginNode, Code.EndNode) {
@@ -247,6 +250,9 @@ sealed class YamlNode(open val location: Location) {
 }
 
 data class YamlScalar(val content: String, override val location: Location) : YamlNode(location) {
+    override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlScalar && this.content == other.content
+    override fun contentToString(): String = "'$content'"
+
     fun toByte() = convertToIntegerLikeValue(String::toByte, "byte")
     fun toShort() = convertToIntegerLikeValue(String::toShort, "short")
     fun toInt() = convertToIntegerLikeValue(String::toInt, "integer")
@@ -307,10 +313,62 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
         content.singleOrNull() ?: throw YamlException("Value '$content' is not a valid character value.", location)
 }
 
-data class YamlNull(override val location: Location) : YamlNode(location)
+data class YamlNull(override val location: Location) : YamlNode(location) {
+    override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlNull
+    override fun contentToString(): String = "null"
+}
 
-data class YamlList(val entries: List<YamlNode>, override val location: Location) : YamlNode(location)
+data class YamlList(val items: List<YamlNode>, override val location: Location) : YamlNode(location) {
+    override fun equivalentContentTo(other: YamlNode): Boolean {
+        if (other !is YamlList) {
+            return false
+        }
 
-// TODO: must check that keys are unique (even if represented differently, eg. with single quotes and double quotes)
-data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: Location) : YamlNode(location)
+        if (this.items.size != other.items.size) {
+            return false
+        }
+
+        return this.items.zip(other.items).all { (mine, theirs) -> mine.equivalentContentTo(theirs) }
+    }
+
+    override fun contentToString(): String = "[" + items.joinToString(", ") { it.contentToString() } + "]"
+}
+
+data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: Location) : YamlNode(location) {
+    init {
+        val keys = entries.keys.sortedWith(Comparator { a, b ->
+            val lineComparison = a.location.line.compareTo(b.location.line)
+
+            if (lineComparison != 0) {
+                lineComparison
+            } else {
+                a.location.column.compareTo(b.location.column)
+            }
+        })
+
+        keys.forEachIndexed { index, key ->
+            val duplicate = keys.subList(0, index).firstOrNull { it.equivalentContentTo(key) }
+
+            if (duplicate != null) {
+                throw YamlException("Duplicate key ${key.contentToString()}. It was previously given at line ${duplicate.location.line}, column ${duplicate.location.column}.", key.location)
+            }
+        }
+    }
+
+    override fun equivalentContentTo(other: YamlNode): Boolean {
+        if (other !is YamlMap) {
+            return false
+        }
+
+        if (this.entries.size != other.entries.size) {
+            return false
+        }
+
+        return this.entries.all { (thisKey, thisValue) ->
+            other.entries.any { it.key.equivalentContentTo(thisKey) && it.value.equivalentContentTo(thisValue) }
+        }
+    }
+
+    override fun contentToString(): String = "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
+}
 
