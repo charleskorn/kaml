@@ -62,7 +62,14 @@ sealed class YamlNode(open val location: Location) {
             val builder = StringBuilder()
 
             while (true) {
-                val nextToken = parser.peekToken(Code.Text, Code.LineFold, Code.LineFeed, Code.BeginEscape, Code.Indicator, Code.EndScalar)
+                val nextToken = parser.peekToken(
+                    Code.Text,
+                    Code.LineFold,
+                    Code.LineFeed,
+                    Code.BeginEscape,
+                    Code.Indicator,
+                    Code.EndScalar
+                )
 
                 when (nextToken.code) {
                     Code.Text -> builder.append(parser.consumeToken(Code.Text).decodeText())
