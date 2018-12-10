@@ -7,12 +7,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.0")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.11")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.3.0"
+    kotlin("jvm") version "1.3.11"
 }
 
 apply(plugin = "kotlinx-serialization")
@@ -32,7 +32,7 @@ dependencies {
     // but if we don't reference it here, the version that Spek refers to is used.
     compile(kotlin("reflect"))
     compile(group = "com.github.mhshams", name = "core", version = "0.5.0")
-    compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.9.0")
+    compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.9.1")
 
     val spekVersion = "1.2.1"
 
