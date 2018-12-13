@@ -64,3 +64,5 @@ tasks.withType<Test> {
         exceptionFormat = TestExceptionFormat.FULL
     }
 }
+
+apply(from = "gradle/wrapper.gradle.kts")
