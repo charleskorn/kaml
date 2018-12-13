@@ -188,7 +188,5 @@ object YamlMapTest : Spek({
 })
 
 // FIXME: This is a hack, pending further discussion at https://kotlinlang.slack.com/archives/C887ZKGCQ/p1544305394000500
-fun ThrowableThrown.Builder.toNotThrow() {
-    AssertImpl.throwable.thrownBuilder(Untranslatable("to not throw"), {}, reporter)
-}
+fun ThrowableThrown.Builder.toNotThrow() = act()
 
