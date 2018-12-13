@@ -51,7 +51,15 @@ sealed class YamlNode(open val location: Location) {
                             else -> throw YamlException("Unexpected '${firstToken.decodeText()}'", firstToken)
                         }
                     }
-                    Code.Text -> YamlScalar(readText(parser), location)
+                    Code.Text -> {
+                        val text = readText(parser)
+
+                        if (text == "null") {
+                            YamlNull(location)
+                        } else {
+                            YamlScalar(text, location)
+                        }
+                    }
                     Code.EndScalar -> YamlNull(location)
                     else -> throw IllegalStateException()
                 }
@@ -357,7 +365,10 @@ data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: 
             val duplicate = keys.subList(0, index).firstOrNull { it.equivalentContentTo(key) }
 
             if (duplicate != null) {
-                throw YamlException("Duplicate key ${key.contentToString()}. It was previously given at line ${duplicate.location.line}, column ${duplicate.location.column}.", key.location)
+                throw YamlException(
+                    "Duplicate key ${key.contentToString()}. It was previously given at line ${duplicate.location.line}, column ${duplicate.location.column}.",
+                    key.location
+                )
             }
         }
     }
@@ -376,6 +387,7 @@ data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: 
         }
     }
 
-    override fun contentToString(): String = "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
+    override fun contentToString(): String =
+        "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
 }
 

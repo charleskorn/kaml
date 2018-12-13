@@ -24,7 +24,9 @@ object YamlNodeTest : Spek({
             // Sample from http://yaml.org/spec/1.2/spec.html#escaping/in%20double-quoted%20scalars/
             """"Fun with \\ \" \a \b \e \f \n \r \t \v \0 \  \_ \N \L \P \x41 \u0041 \U00000041"""" to "Fun with \u005C \u0022 \u0007 \u0008 \u001B \u000C \u000A \u000D \u0009 \u000B \u0000 \u0020 \u00A0 \u0085 \u2028 \u2029 A A A",
             "''" to "",
-            """""""" to ""
+            """""""" to "",
+            "'null'" to "null",
+            """"null"""" to "null"
         ).forEach { input, expectedResult ->
             given("the string '$input'") {
                 on("parsing that input") {
@@ -366,6 +368,19 @@ object YamlNodeTest : Spek({
                             )
                         )
                     }
+                }
+            }
+        }
+
+        given("the string 'null'") {
+            val input = "null"
+
+            on("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNode.fromParser(parser)
+
+                it("returns a single null entry") {
+                    assert(result).toBe(YamlNull(Location(1, 1)))
                 }
             }
         }

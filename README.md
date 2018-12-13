@@ -6,7 +6,10 @@ This library adds YAML support to [kotlinx.serialization](https://github.com/Kot
 
 YAML version 1.2 is supported.
 
-Currently, only parsing YAML is supported. Emitting YAML will be added in a future version.
+This is a very rough initial version:
+
+* Currently, only parsing YAML is supported. Emitting YAML will be added in a future version.
+* Many operations are not yet optimised for performance.
 
 ## Reference links
 
