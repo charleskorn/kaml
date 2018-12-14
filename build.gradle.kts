@@ -40,7 +40,7 @@ dependencies {
     testImplementation(group = "ch.tutteli.atrium", name = "atrium-cc-en_GB-robstoll", version = "0.7.0")
 
     testRuntimeOnly(group = "org.jetbrains.spek", name = "spek-junit-platform-engine", version = spekVersion)
-    testRuntimeOnly(group = "org.junit.platform", name = "junit-platform-engine", version = "1.3.1")
+    testRuntimeOnly(group = "org.junit.platform", name = "junit-platform-engine", version = "1.3.2")
 }
 
 tasks.withType<KotlinCompile> {
