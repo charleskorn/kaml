@@ -146,4 +146,5 @@ spotless {
     }
 }
 
+apply(from = "gradle/jacoco.gradle.kts")
 apply(from = "gradle/wrapper.gradle.kts")
