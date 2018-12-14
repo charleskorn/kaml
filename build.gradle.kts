@@ -28,16 +28,14 @@ repositories {
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-    // Override the version of kotlin-reflect used by Spek.
-    // We don't have to specify a version ourselves (the Kotlin plugin will do that for us),
-    // but if we don't reference it here, the version that Spek refers to is used.
-    compile(kotlin("reflect"))
+    compile(kotlin("stdlib-jdk8", "1.3.11"))
     compile(group = "com.github.mhshams", name = "core", version = "0.5.0")
     compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.9.1")
 
     val spekVersion = "1.2.1"
 
+    // Override the version of kotlin-reflect used by Spek.
+    testImplementation(kotlin("reflect", "1.3.11"))
     testImplementation(group = "org.jetbrains.spek", name = "spek-api", version = spekVersion)
     testImplementation(group = "ch.tutteli.atrium", name = "atrium-cc-en_GB-robstoll", version = "0.7.0")
 
