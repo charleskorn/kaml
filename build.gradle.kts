@@ -32,8 +32,8 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.3.11"
 
-    apply { id("com.github.ben-manes.versions") version "0.20.0" }
     apply { id("com.diffplug.gradle.spotless") version "3.16.0" }
+    apply { id("com.github.ben-manes.versions") version "0.20.0" }
     apply { id("org.ajoberstar.reckon") version "0.9.0" }
 }
 
