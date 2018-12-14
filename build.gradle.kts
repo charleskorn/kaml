@@ -34,11 +34,17 @@ plugins {
 
     apply { id("com.github.ben-manes.versions") version "0.20.0" }
     apply { id("com.diffplug.gradle.spotless") version "3.16.0" }
+    apply { id("org.ajoberstar.reckon") version "0.9.0" }
 }
 
 apply(plugin = "kotlinx-serialization")
 
 group = "com.charleskorn"
+
+reckon {
+    scopeFromProp()
+    stageFromProp("dev", "final")
+}
 
 repositories {
     jcenter()
