@@ -1,3 +1,5 @@
+package com.charleskorn.kaml
+
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.verbs.assert
 import org.jetbrains.spek.api.Spek

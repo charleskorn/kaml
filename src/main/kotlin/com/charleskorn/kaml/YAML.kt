@@ -1,3 +1,5 @@
+package com.charleskorn.kaml
+
 import kotlinx.serialization.AbstractSerialFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy

@@ -1,3 +1,5 @@
+package com.charleskorn.kaml
+
 import kotlinx.serialization.CompositeDecoder
 import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME

@@ -1,3 +1,5 @@
+package com.charleskorn.kaml
+
 import io.dahgan.parser.Token
 
 data class YamlException(override val message: String, val line: Int, val column: Int) : RuntimeException(message) {

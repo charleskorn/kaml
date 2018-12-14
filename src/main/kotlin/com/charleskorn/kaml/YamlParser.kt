@@ -1,3 +1,5 @@
+package com.charleskorn.kaml
+
 import io.dahgan.parser.Code
 import io.dahgan.parser.Token
 import io.dahgan.yaml
