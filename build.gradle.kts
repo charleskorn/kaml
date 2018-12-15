@@ -17,9 +17,11 @@
 */
 
 import com.charleskorn.kaml.build.configureJacoco
+import com.charleskorn.kaml.build.configureSpotless
+import com.charleskorn.kaml.build.configureTesting
+import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 buildscript {
     repositories {
@@ -34,19 +36,12 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.3.11"
 
-    apply { id("com.diffplug.gradle.spotless") version "3.16.0" }
     apply { id("com.github.ben-manes.versions") version "0.20.0" }
-    apply { id("org.ajoberstar.reckon") version "0.9.0" }
 }
 
 apply(plugin = "kotlinx-serialization")
 
 group = "com.charleskorn"
-
-reckon {
-    scopeFromProp()
-    stageFromProp("dev", "final")
-}
 
 repositories {
     jcenter()
@@ -74,86 +69,8 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform {
-        includeEngines("spek")
-    }
-
-    testLogging {
-        events("failed")
-        events("skipped")
-        events("standard_out")
-        events("standard_error")
-
-        showExceptions = true
-        showStackTraces = true
-        showCauses = true
-        exceptionFormat = TestExceptionFormat.FULL
-    }
-}
-
-// HACK: I cannot find a way to configure Spotless in a separate file (like we do for wrapper.gradle.kts), so we have to do it here.
-
-val licenseText = """
-   Copyright 2018 Charles Korn.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-"""
-
-val kotlinLicenseHeader = """/*
-$licenseText
-*/
-
-"""
-
-spotless {
-    format("misc") {
-        target(
-            fileTree(
-                mapOf(
-                    "dir" to ".",
-                    "include" to listOf("**/*.md", "**/.gitignore", "**/*.yaml", "**/*.yml", "**/*.sh", "**/Dockerfile"),
-                    "exclude" to listOf(".gradle/**", ".gradle-cache/**")
-                )
-            )
-        )
-
-        trimTrailingWhitespace()
-        indentWithSpaces()
-        endWithNewline()
-    }
-
-    kotlinGradle {
-        target("*.gradle.kts", "gradle/*.gradle.kts", "buildSrc/*.gradle.kts")
-        ktlint("0.29.0")
-
-        licenseHeader(kotlinLicenseHeader, "import|tasks|apply|plugins")
-
-        trimTrailingWhitespace()
-        indentWithSpaces()
-        endWithNewline()
-    }
-
-    kotlin {
-        ktlint("0.29.0")
-
-        this.licenseHeader(kotlinLicenseHeader)
-
-        trimTrailingWhitespace()
-        indentWithSpaces()
-        endWithNewline()
-    }
-}
-
 configureJacoco()
+configureSpotless()
+configureTesting()
+configureVersioning()
 configureWrapper()

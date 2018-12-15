@@ -27,3 +27,8 @@ repositories {
 kotlinDslPluginOptions {
     experimentalWarning.set(false)
 }
+
+dependencies {
+    compile(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "3.16.0")
+    compile(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "0.9.0")
+}
