@@ -1,5 +1,9 @@
 # kaml
 
+[![Build Status](https://travis-ci.org/charleskorn/kaml.svg?branch=master)](https://travis-ci.org/charleskorn/kaml)
+[![codecov](https://codecov.io/gh/charleskorn/kaml/branch/master/graph/badge.svg)](https://codecov.io/gh/charleskorn/kaml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 ## What is this?
 
 This library adds YAML support to [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/).
