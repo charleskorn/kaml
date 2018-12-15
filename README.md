@@ -10,6 +10,29 @@ This is a very rough initial version:
 
 * Currently, only parsing YAML is supported. Emitting YAML will be added in a future version.
 * Many operations are not yet optimised for performance.
+* Only the JVM is supported, Kotlin/Native support will be added in a future version.
+
+## Usage sample
+
+```kotlin
+@Serializable
+data class Team(
+    val leader: String,
+    val members: List<String>
+)
+
+val input = """
+        leader: Amy
+        members:
+          - Bob
+          - Cindy
+          - Dan
+    """.trimIndent()
+
+val result = YAML.parse(Team.serializer(), input)
+
+println(result)
+```
 
 ## Contributing to kaml
 
