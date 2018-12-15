@@ -41,7 +41,7 @@ plugins {
 
 apply(plugin = "kotlinx-serialization")
 
-group = "com.charleskorn"
+group = "com.charleskorn.kaml"
 
 repositories {
     jcenter()
