@@ -16,6 +16,8 @@
 
 */
 
+import com.charleskorn.kaml.build.configureJacoco
+import com.charleskorn.kaml.build.configureWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
@@ -132,10 +134,10 @@ spotless {
     }
 
     kotlinGradle {
-        target("*.gradle.kts", "gradle/*.gradle.kts")
+        target("*.gradle.kts", "gradle/*.gradle.kts", "buildSrc/*.gradle.kts")
         ktlint("0.29.0")
 
-        licenseHeader(kotlinLicenseHeader, "import|tasks|apply")
+        licenseHeader(kotlinLicenseHeader, "import|tasks|apply|plugins")
 
         trimTrailingWhitespace()
         indentWithSpaces()
@@ -153,5 +155,5 @@ spotless {
     }
 }
 
-apply(from = "gradle/jacoco.gradle.kts")
-apply(from = "gradle/wrapper.gradle.kts")
+configureJacoco()
+configureWrapper()

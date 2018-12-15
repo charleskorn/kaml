@@ -16,8 +16,14 @@
 
 */
 
-tasks {
-    named<Wrapper>("wrapper") {
-        distributionType = Wrapper.DistributionType.ALL
-    }
+plugins {
+    `kotlin-dsl`
+}
+
+repositories {
+    jcenter()
+}
+
+kotlinDslPluginOptions {
+    experimentalWarning.set(false)
 }

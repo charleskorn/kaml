@@ -2,7 +2,9 @@
 ### Gradle template
 .gradle
 .gradle-cache
-/build/
+
+build/
+!buildSrc/src/main/kotlin/com/charleskorn/kaml/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
