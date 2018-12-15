@@ -59,3 +59,21 @@ tasks:
     run:
       container: build-env
       command: ./gradlew jacocoTestReport
+
+  publishSnapshot:
+    description: Publish a snapshot version of the library to Sonatype's Open Source Software Repository Hosting (OSSRH).
+    run:
+      container: build-env
+      command: ./gradlew publishMavenJavaPublicationToMavenSnapshotsRepository
+      environment:
+        OSSRH_USERNAME: $OSSRH_USERNAME
+        OSSRH_PASSWORD: $OSSRH_PASSWORD
+
+  publishRelease:
+    description: Publish a release version of the library to Sonatype's Open Source Software Repository Hosting (OSSRH), which will be synced to Maven Central.
+    run:
+      container: build-env
+      command: ./gradlew publishMavenJavaPublicationToMavenReleasesRepository
+      environment:
+        OSSRH_USERNAME: $OSSRH_USERNAME
+        OSSRH_PASSWORD: $OSSRH_PASSWORD

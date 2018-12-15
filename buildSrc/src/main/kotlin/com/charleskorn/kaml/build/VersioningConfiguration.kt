@@ -12,6 +12,6 @@ fun Project.configureVersioning() {
 
     configure<ReckonExtension> {
         scopeFromProp()
-        stageFromProp("dev", "final")
+        snapshotFromProp()
     }
 }
