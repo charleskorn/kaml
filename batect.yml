@@ -1,0 +1,55 @@
+project_name: kaml
+
+containers:
+  build-env:
+    image: openjdk:8u181-jdk
+    volumes:
+      - local: .
+        container: /code
+        options: cached
+      - local: .gradle-cache
+        container: /home/container-user/.gradle
+        options: cached
+    working_directory: /code
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+    run_as_current_user:
+      enabled: true
+      home_directory: /home/container-user
+
+tasks:
+  build:
+    description: Build the library.
+    run:
+      container: build-env
+      command: ./gradlew assemble
+
+  check:
+    description: Run the unit tests and static analysis tools.
+    run:
+      container: build-env
+      command: ./gradlew check
+
+  continuousCheck:
+    description: Run 'check' and then re-run when any code changes are detected.
+    run:
+      container: build-env
+      command: ./gradlew --continuous check
+
+  spotlessApply:
+    description: Fix code formatting issues identified by Spotless.
+    run:
+      container: build-env
+      command: ./gradlew spotlessApply
+
+  shell:
+    description: Start a shell in the development environment.
+    run:
+      container: build-env
+      command: bash
+
+  outdated:
+    description: Check for outdated dependencies.
+    run:
+      container: build-env
+      command: ./gradlew dependencyUpdates -Drevision=release

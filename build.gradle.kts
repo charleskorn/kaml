@@ -120,7 +120,8 @@ spotless {
             fileTree(
                 mapOf(
                     "dir" to ".",
-                    "include" to listOf("**/*.md", "**/.gitignore", "**/*.yaml", "**/*.yml", "**/*.sh", "**/Dockerfile")
+                    "include" to listOf("**/*.md", "**/.gitignore", "**/*.yaml", "**/*.yml", "**/*.sh", "**/Dockerfile"),
+                    "exclude" to listOf(".gradle/**", ".gradle-cache/**")
                 )
             )
         )
@@ -131,10 +132,10 @@ spotless {
     }
 
     kotlinGradle {
-        target("**/*.gradle.kts")
+        target("*.gradle.kts", "gradle/*.gradle.kts")
         ktlint("0.29.0")
 
-        licenseHeader(kotlinLicenseHeader, "import|tasks")
+        licenseHeader(kotlinLicenseHeader, "import|tasks|apply")
 
         trimTrailingWhitespace()
         indentWithSpaces()
