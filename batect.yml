@@ -53,3 +53,9 @@ tasks:
     run:
       container: build-env
       command: ./gradlew dependencyUpdates -Drevision=release
+
+  generateCodeCoverageReport:
+    description: Generate a code coverage report based on a previous test run.
+    run:
+      container: build-env
+      command: ./gradlew jacocoTestReport

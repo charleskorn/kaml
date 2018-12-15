@@ -1,0 +1,25 @@
+services:
+  - docker
+
+before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y install docker-ce
+  - docker --version
+
+script: ./travis/build.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+before_cache:
+  - rm -f  .gradle-cache/caches/modules-2/modules-2.lock
+  - rm -fr .gradle-cache/caches/*/plugin-resolution/
+  - rm -f  .gradle-cache/caches/*/fileHashes/fileHashes.bin
+  - rm -f  .gradle-cache/caches/*/fileHashes/fileHashes.lock
+
+cache:
+  directories:
+    - .gradle-cache/caches/
+    - .gradle-cache/wrapper/
