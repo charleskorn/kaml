@@ -17,6 +17,7 @@
 */
 
 import com.charleskorn.kaml.build.configureJacoco
+import com.charleskorn.kaml.build.configurePublishing
 import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
 import com.charleskorn.kaml.build.configureVersioning
@@ -70,6 +71,7 @@ tasks.withType<KotlinCompile> {
 }
 
 configureJacoco()
+configurePublishing()
 configureSpotless()
 configureTesting()
 configureVersioning()
