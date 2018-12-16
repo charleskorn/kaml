@@ -30,5 +30,6 @@ kotlinDslPluginOptions {
 
 dependencies {
     compile(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "3.16.0")
+    compile(group = "io.codearte.gradle.nexus", name = "gradle-nexus-staging-plugin", version = "0.12.0")
     compile(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "0.9.0")
 }

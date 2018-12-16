@@ -1,10 +1,14 @@
 package com.charleskorn.kaml.build
 
+import io.codearte.gradle.nexus.NexusStagingExtension
+import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
@@ -23,9 +27,27 @@ fun Project.configurePublishing() {
     apply<MavenPublishPlugin>()
     apply<SigningPlugin>()
 
+    val usernameEnvironmentVariableName = "OSSRH_USERNAME"
+    val passwordEnvironmentVariableName = "OSSRH_PASSWORD"
+    val repoUsername = System.getenv(usernameEnvironmentVariableName)
+    val repoPassword = System.getenv(passwordEnvironmentVariableName)
+
+    val validateCredentialsTask = tasks.register("validateMavenRepositoryCredentials") {
+        doFirst {
+            if (repoUsername.isNullOrBlank()) {
+                throw RuntimeException("Environment variable '$usernameEnvironmentVariableName' not set.")
+            }
+
+            if (repoPassword.isNullOrBlank()) {
+                throw RuntimeException("Environment variable '$passwordEnvironmentVariableName' not set.")
+            }
+        }
+    }
+
     createJarTasks()
-    createPublishingTasks()
+    createPublishingTasks(repoUsername, repoPassword, validateCredentialsTask)
     createSigningTasks()
+    createReleaseTasks(repoUsername, repoPassword, validateCredentialsTask)
 }
 
 private fun Project.createJarTasks() {
@@ -45,13 +67,9 @@ private fun Project.createJarTasks() {
     }
 }
 
-private fun Project.createPublishingTasks() {
+private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
     val snapshotsRepositoryName = "mavenSnapshots"
     val releasesRepositoryName = "mavenReleases"
-    val usernameEnvironmentVariableName = "OSSRH_USERNAME"
-    val passwordEnvironmentVariableName = "OSSRH_PASSWORD"
-    val repoUsername = System.getenv(usernameEnvironmentVariableName)
-    val repoPassword = System.getenv(passwordEnvironmentVariableName)
 
     configure<PublishingExtension> {
         publications {
@@ -120,17 +138,7 @@ private fun Project.createPublishingTasks() {
         }
     }
 
-    val validateCredentialsTask = tasks.register("validateMavenRepositoryCredentials") {
-        doFirst {
-            if (repoUsername.isNullOrBlank()) {
-                throw RuntimeException("Environment variable '$usernameEnvironmentVariableName' not set.")
-            }
 
-            if (repoPassword.isNullOrBlank()) {
-                throw RuntimeException("Environment variable '$passwordEnvironmentVariableName' not set.")
-            }
-        }
-    }
 
     tasks.named("publishMavenJavaPublicationTo${snapshotsRepositoryName.capitalize()}Repository").configure {
         dependsOn(validateCredentialsTask)
@@ -161,6 +169,25 @@ private fun Project.createSigningTasks() {
             project.extra["signing.keyId"] = keyId
             project.extra["signing.secretKeyRingFile"] = keyRingFilePath.toString()
             project.extra["signing.password"] = keyPassphrase
+        }
+    }
+}
+
+private fun Project.createReleaseTasks(
+    repoUsername: String?,
+    repoPassword: String?,
+    validateCredentialsTask: TaskProvider<Task>
+) {
+    apply<NexusStagingPlugin>()
+
+    configure<NexusStagingExtension> {
+        username = repoUsername
+        password = repoPassword
+    }
+
+    setOf("closeRepository", "releaseRepository", "getStagingProfile").forEach { taskName ->
+        tasks.named(taskName).configure {
+            dependsOn(validateCredentialsTask)
         }
     }
 }
