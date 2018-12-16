@@ -28,11 +28,11 @@ import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UpdateMode
 import kotlinx.serialization.internal.EnumDescriptor
 
-sealed class YamlInput : ElementValueDecoder() {
+sealed class YamlInput(val node: YamlNode) : ElementValueDecoder() {
     companion object {
         fun createFor(node: YamlNode): YamlInput = when (node) {
             is YamlScalar -> YamlScalarInput(node)
-            is YamlNull -> YamlNullInput
+            is YamlNull -> YamlNullInput(node)
             is YamlList -> YamlListInput(node)
             is YamlMap -> YamlMapInput(node)
         }
@@ -41,7 +41,7 @@ sealed class YamlInput : ElementValueDecoder() {
     override val updateMode: UpdateMode = UpdateMode.BANNED
 }
 
-private class YamlScalarInput(val scalar: YamlScalar) : YamlInput() {
+private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
     override fun decodeString(): String = scalar.content
     override fun decodeInt(): Int = scalar.toInt()
     override fun decodeLong(): Long = scalar.toLong()
@@ -71,11 +71,11 @@ private class YamlScalarInput(val scalar: YamlScalar) : YamlInput() {
     }
 }
 
-private object YamlNullInput : YamlInput() {
+private class YamlNullInput(val nullValue: YamlNode) : YamlInput(nullValue) {
     override fun decodeNotNullMark(): Boolean = false
 }
 
-private class YamlListInput(val list: YamlList) : YamlInput() {
+private class YamlListInput(val list: YamlList) : YamlInput(list) {
     private var nextElementIndex = 0
     private lateinit var currentElementDecoder: YamlInput
 
@@ -115,7 +115,7 @@ private class YamlListInput(val list: YamlList) : YamlInput() {
     }
 }
 
-private class YamlMapInput(val map: YamlMap) : YamlInput() {
+private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentValueDecoder: YamlInput
