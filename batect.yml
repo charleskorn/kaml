@@ -68,6 +68,9 @@ tasks:
       environment:
         OSSRH_USERNAME: $OSSRH_USERNAME
         OSSRH_PASSWORD: $OSSRH_PASSWORD
+        GPG_KEY_ID: $GPG_KEY_ID # Run `gpg -K` to get this, take last eight characters
+        GPG_KEY_RING: $GPG_KEY_RING # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
+        GPG_KEY_PASSPHRASE: $GPG_KEY_PASSPHRASE
 
   publishRelease:
     description: Publish a release version of the library to Sonatype's Open Source Software Repository Hosting (OSSRH), which will be synced to Maven Central.
@@ -77,3 +80,6 @@ tasks:
       environment:
         OSSRH_USERNAME: $OSSRH_USERNAME
         OSSRH_PASSWORD: $OSSRH_PASSWORD
+        GPG_KEY_ID: $GPG_KEY_ID # Run `gpg -K` to get this, take last eight characters
+        GPG_KEY_RING: $GPG_KEY_RING # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
+        GPG_KEY_PASSPHRASE: $GPG_KEY_PASSPHRASE
