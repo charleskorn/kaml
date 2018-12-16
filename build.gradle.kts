@@ -16,6 +16,7 @@
 
 */
 
+import com.charleskorn.kaml.build.configureAssemble
 import com.charleskorn.kaml.build.configureJacoco
 import com.charleskorn.kaml.build.configurePublishing
 import com.charleskorn.kaml.build.configureSpotless
@@ -70,6 +71,7 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+configureAssemble()
 configureJacoco()
 configurePublishing()
 configureSpotless()
