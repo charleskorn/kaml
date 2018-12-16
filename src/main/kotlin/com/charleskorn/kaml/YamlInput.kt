@@ -118,8 +118,10 @@ private class YamlListInput(val list: YamlList) : YamlInput(list) {
 private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
+    private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
     private lateinit var currentValueDecoder: YamlInput
     private lateinit var readMode: MapReadMode
+    private var currentlyReadingValue: Boolean = false
 
     override fun decodeElementIndex(desc: SerialDescriptor): Int = when (readMode) {
         MapReadMode.Object -> decodeElementIndexForObject(desc)
@@ -131,7 +133,7 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
             return READ_DONE
         }
 
-        val currentEntry = entriesList[nextIndex]
+        currentEntry = entriesList[nextIndex]
         val key = currentEntry.key
         val name = getPropertyName(key)
         val fieldDescriptorIndex = desc.getElementIndex(name)
@@ -141,6 +143,7 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
         }
 
         currentValueDecoder = createFor(entriesList[nextIndex].value)
+        currentlyReadingValue = true
         nextIndex++
 
         return fieldDescriptorIndex
@@ -152,10 +155,12 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
         }
 
         val entryIndex = nextIndex / 2
+        currentEntry = entriesList[entryIndex]
+        currentlyReadingValue = nextIndex % 2 != 0
 
-        currentValueDecoder = when {
-            nextIndex % 2 == 0 -> createFor(entriesList[entryIndex].key)
-            else -> createFor(entriesList[entryIndex].value)
+        currentValueDecoder = when (currentlyReadingValue) {
+            true -> createFor(currentEntry.value)
+            false -> createFor(currentEntry.key)
         }
 
         return nextIndex++
@@ -178,17 +183,29 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
         throw YamlException("Unknown property '$name'. Known properties are: $knownPropertyNames", location)
     }
 
-    override fun decodeNotNullMark(): Boolean = currentValueDecoder.decodeNotNullMark()
-    override fun decodeString(): String = currentValueDecoder.decodeString()
-    override fun decodeInt(): Int = currentValueDecoder.decodeInt()
-    override fun decodeLong(): Long = currentValueDecoder.decodeLong()
-    override fun decodeShort(): Short = currentValueDecoder.decodeShort()
-    override fun decodeByte(): Byte = currentValueDecoder.decodeByte()
-    override fun decodeDouble(): Double = currentValueDecoder.decodeDouble()
-    override fun decodeFloat(): Float = currentValueDecoder.decodeFloat()
-    override fun decodeBoolean(): Boolean = currentValueDecoder.decodeBoolean()
-    override fun decodeChar(): Char = currentValueDecoder.decodeChar()
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = currentValueDecoder.decodeEnum(enumDescription)
+    override fun decodeNotNullMark(): Boolean = fromCurrentValue { decodeNotNullMark() }
+    override fun decodeString(): String = fromCurrentValue { decodeString() }
+    override fun decodeInt(): Int = fromCurrentValue { decodeInt() }
+    override fun decodeLong(): Long = fromCurrentValue { decodeLong() }
+    override fun decodeShort(): Short = fromCurrentValue { decodeShort() }
+    override fun decodeByte(): Byte = fromCurrentValue { decodeByte() }
+    override fun decodeDouble(): Double = fromCurrentValue { decodeDouble() }
+    override fun decodeFloat(): Float = fromCurrentValue { decodeFloat() }
+    override fun decodeBoolean(): Boolean = fromCurrentValue { decodeBoolean() }
+    override fun decodeChar(): Char = fromCurrentValue { decodeChar() }
+    override fun decodeEnum(enumDescription: EnumDescriptor): Int = fromCurrentValue { decodeEnum(enumDescription) }
+
+    private inline fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
+        try {
+            return action(currentValueDecoder)
+        } catch (e: YamlException) {
+            if (currentlyReadingValue) {
+                throw YamlException("Value for ${currentEntry.key.contentToString()} is invalid: ${e.message}", e.line, e.column, e)
+            } else {
+                throw e
+            }
+        }
+    }
 
     private val haveStartedReadingEntries: Boolean
         get() = nextIndex > 0

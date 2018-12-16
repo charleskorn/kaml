@@ -20,7 +20,7 @@ package com.charleskorn.kaml
 
 import io.dahgan.parser.Token
 
-data class YamlException(override val message: String, val line: Int, val column: Int) : RuntimeException(message) {
+data class YamlException(override val message: String, val line: Int, val column: Int, override val cause: Throwable? = null) : RuntimeException(message, cause) {
     constructor(message: String, token: Token) : this(message, token.line, token.lineChar + 1)
     constructor(message: String, location: Location) : this(message, location.line, location.column)
 }

@@ -706,6 +706,34 @@ object YAMLTest : Spek({
                 }
             }
 
+            given("some input representing an object with an invalid value for a field") {
+                mapOf(
+                    "byte" to "Value 'xxx' is not a valid byte value.",
+                    "short" to "Value 'xxx' is not a valid short value.",
+                    "int" to "Value 'xxx' is not a valid integer value.",
+                    "long" to "Value 'xxx' is not a valid long value.",
+                    "float" to "Value 'xxx' is not a valid floating point value.",
+                    "double" to "Value 'xxx' is not a valid floating point value.",
+                    "enum" to "Value 'xxx' is not a valid option, permitted choices are: Value1, Value2",
+                    "boolean" to "Value 'xxx' is not a valid boolean, permitted choices are: true or false",
+                    "char" to "Value 'xxx' is not a valid character value."
+                ).forEach { fieldName, errorMessage ->
+                    given("the invalid field represents a $fieldName") {
+                        val input = "$fieldName: xxx"
+
+                        on("parsing that input") {
+                            it("throws an appropriate exception") {
+                                assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<YamlException> {
+                                    message { toBe("Value for '$fieldName' is invalid: $errorMessage") }
+                                    line { toBe(1) }
+                                    column { toBe(fieldName.length + 3) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             given("some input representing a generic map") {
                 val input = """
                     SOME_ENV_VAR: somevalue
