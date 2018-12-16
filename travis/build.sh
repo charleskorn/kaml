@@ -13,3 +13,7 @@ echo
 echo "Generating code coverage report..."
 ./batect generateCodeCoverageReport
 echo
+
+echo "Assembling release..."
+./batect assembleRelease
+echo
