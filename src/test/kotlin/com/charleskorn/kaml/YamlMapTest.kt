@@ -73,10 +73,13 @@ object YamlMapTest : Spek({
                             ),
                             Location(1, 1)
                         )
-                    }).toThrow<YamlException> {
+                    }).toThrow<DuplicateKeyException> {
                         message { toBe("Duplicate key 'key1'. It was previously given at line 1, column 1.") }
                         line { toBe(3) }
                         column { toBe(1) }
+                        originalLocation { toBe(Location(1, 1)) }
+                        duplicateLocation { toBe(Location(3, 1)) }
+                        key { toBe("'key1'") }
                     }
                 }
             }

@@ -20,7 +20,35 @@ package com.charleskorn.kaml
 
 import io.dahgan.parser.Token
 
-data class YamlException(override val message: String, val line: Int, val column: Int, override val cause: Throwable? = null) : RuntimeException(message, cause) {
-    constructor(message: String, token: Token) : this(message, token.line, token.lineChar + 1)
-    constructor(message: String, location: Location) : this(message, location.line, location.column)
+open class YamlException(
+    override val message: String,
+    val line: Int,
+    val column: Int,
+    override val cause: Throwable? = null
+) : RuntimeException(message, cause) {
+    constructor(message: String, token: Token, cause: Throwable? = null) : this(message, token.location, cause)
+    constructor(message: String, location: Location, cause: Throwable? = null) : this(message, location.line, location.column, cause)
+
+    val location: Location = Location(line, column)
 }
+
+class DuplicateKeyException(val originalLocation: Location, val duplicateLocation: Location, val key: String) :
+    YamlException("Duplicate key $key. It was previously given at line ${originalLocation.line}, column ${originalLocation.column}.", duplicateLocation)
+
+class EmptyYamlDocumentException(message: String, location: Location) : YamlException(message, location)
+
+class InvalidPropertyValueException(val propertyName: String, val reason: String, location: Location, cause: Throwable?) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
+
+class MalformedYamlException(message: String, location: Location) : YamlException(message, location) {
+    constructor(message: String, token: Token) : this(message, token.location)
+}
+
+class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
+    YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)
+
+class UnsupportedYamlFeatureException(val featureName: String, token: Token) : YamlException("Unsupported YAML feature: $featureName", token)
+
+class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
+
+private val Token.location: Location
+    get() = Location(this.line, this.lineChar + 1)

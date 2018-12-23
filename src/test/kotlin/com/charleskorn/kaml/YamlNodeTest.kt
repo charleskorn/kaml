@@ -217,7 +217,7 @@ object YamlNodeTest : Spek({
                         assert({
                             val parser = YamlParser(input)
                             YamlNode.fromParser(parser)
-                        }).toThrow<YamlException> {
+                        }).toThrow<MalformedYamlException> {
                             message { toBe("Unexpected end of input") }
                             line { toBe(1) }
                             column { toBe(7) }
@@ -554,7 +554,7 @@ object YamlNodeTest : Spek({
                     assert({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
-                    }).toThrow<YamlException> {
+                    }).toThrow<MalformedYamlException> {
                         message { toBe("Invalid YAML. The level of indentation at this point or nearby may be incorrect.") }
                         line { toBe(3) }
                         column { toBe(8) }
@@ -575,7 +575,7 @@ object YamlNodeTest : Spek({
                     assert({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
-                    }).toThrow<YamlException> {
+                    }).toThrow<MalformedYamlException> {
                         message { toBe("Invalid YAML. The level of indentation at this point or nearby may be incorrect.") }
                         line { toBe(3) }
                         column { toBe(1) }
@@ -607,7 +607,7 @@ object YamlNodeTest : Spek({
                     assert({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
-                    }).toThrow<YamlException> {
+                    }).toThrow<MalformedYamlException> {
                         message { toBe("Unexpected end of input") }
                         line { toBe(1) }
                         column { toBe(2) }
@@ -643,7 +643,7 @@ object YamlNodeTest : Spek({
                     assert({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
-                    }).toThrow<YamlException> {
+                    }).toThrow<MalformedYamlException> {
                         message { toBe("Unexpected end of input") }
                         line { toBe(1) }
                         column { toBe(12) }
@@ -761,10 +761,11 @@ object YamlNodeTest : Spek({
                         assert({
                             val parser = YamlParser(input)
                             YamlNode.fromParser(parser)
-                        }).toThrow<YamlException> {
+                        }).toThrow<UnsupportedYamlFeatureException> {
                             message { toBe("Unsupported YAML feature: $featureName") }
                             line { toBe(1) }
                             column { toBe(1) }
+                            featureName { toBe(featureName) }
                         }
                     }
                 }
@@ -779,7 +780,7 @@ object YamlNodeTest : Spek({
                     assert({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
-                    }).toThrow<YamlException> {
+                    }).toThrow<EmptyYamlDocumentException> {
                         message { toBe("The YAML document is empty.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -796,7 +797,7 @@ object YamlNodeTest : Spek({
                     assert({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
-                    }).toThrow<YamlException> {
+                    }).toThrow<EmptyYamlDocumentException> {
                         message { toBe("The YAML document is empty.") }
                         line { toBe(1) }
                         column { toBe(1) }

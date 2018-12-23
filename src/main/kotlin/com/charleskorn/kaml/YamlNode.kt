@@ -303,7 +303,7 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
                 else -> converter(content, 10)
             }
         } catch (e: NumberFormatException) {
-            throw YamlException("Value '$content' is not a valid $description value.", location)
+            throw YamlScalarFormatException("Value '$content' is not a valid $description value.", location, content)
         }
     }
 
@@ -315,7 +315,7 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
             else -> try {
                 content.toFloat()
             } catch (e: NumberFormatException) {
-                throw YamlException("Value '$content' is not a valid floating point value.", location)
+                throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
             }
         }
     }
@@ -328,7 +328,7 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
             else -> try {
                 content.toDouble()
             } catch (e: NumberFormatException) {
-                throw YamlException("Value '$content' is not a valid floating point value.", location)
+                throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
             }
         }
     }
@@ -337,15 +337,12 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
         return when (content) {
             "true", "True", "TRUE" -> true
             "false", "False", "FALSE" -> false
-            else -> throw YamlException(
-                "Value '$content' is not a valid boolean, permitted choices are: true or false",
-                location
-            )
+            else -> throw YamlScalarFormatException("Value '$content' is not a valid boolean, permitted choices are: true or false", location, content)
         }
     }
 
     fun toChar(): Char =
-        content.singleOrNull() ?: throw YamlException("Value '$content' is not a valid character value.", location)
+        content.singleOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", location, content)
 }
 
 data class YamlNull(override val location: Location) : YamlNode(location) {
@@ -385,10 +382,7 @@ data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: 
             val duplicate = keys.subList(0, index).firstOrNull { it.equivalentContentTo(key) }
 
             if (duplicate != null) {
-                throw YamlException(
-                    "Duplicate key ${key.contentToString()}. It was previously given at line ${duplicate.location.line}, column ${duplicate.location.column}.",
-                    key.location
-                )
+                throw DuplicateKeyException(duplicate.location, key.location, key.contentToString())
             }
         }
     }

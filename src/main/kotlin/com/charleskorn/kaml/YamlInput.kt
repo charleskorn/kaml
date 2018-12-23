@@ -64,10 +64,7 @@ private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
             .sorted()
             .joinToString(", ")
 
-        throw YamlException(
-            "Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices",
-            scalar.location
-        )
+        throw YamlScalarFormatException("Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices", scalar.location, scalar.content)
     }
 }
 
@@ -168,19 +165,15 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
 
     private fun getPropertyName(key: YamlNode): String = when (key) {
         is YamlScalar -> key.content
-        is YamlNull, is YamlMap, is YamlList -> throw YamlException(
-            "Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)",
-            key.location
-        )
+        is YamlNull, is YamlMap, is YamlList -> throw MalformedYamlException("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)", key.location)
     }
 
     private fun throwUnknownProperty(name: String, location: Location, desc: SerialDescriptor): Nothing {
         val knownPropertyNames = (0 until desc.elementsCount)
             .map { desc.getElementName(it) }
-            .sorted()
-            .joinToString(", ")
+            .toSet()
 
-        throw YamlException("Unknown property '$name'. Known properties are: $knownPropertyNames", location)
+        throw UnknownPropertyException(name, knownPropertyNames, location)
     }
 
     override fun decodeNotNullMark(): Boolean = fromCurrentValue { decodeNotNullMark() }
@@ -200,7 +193,7 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
             return action(currentValueDecoder)
         } catch (e: YamlException) {
             if (currentlyReadingValue) {
-                throw YamlException("Value for ${currentEntry.key.contentToString()} is invalid: ${e.message}", e.line, e.column, e)
+                throw InvalidPropertyValueException(getPropertyName(currentEntry.key), e.message, e.location, e)
             } else {
                 throw e
             }

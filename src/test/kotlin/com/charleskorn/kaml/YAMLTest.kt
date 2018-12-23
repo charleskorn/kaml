@@ -20,10 +20,8 @@ package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.cc.en_GB.message
 import ch.tutteli.atrium.api.cc.en_GB.notToBeNullBut
-import ch.tutteli.atrium.api.cc.en_GB.property
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
-import ch.tutteli.atrium.creating.Assert
 import ch.tutteli.atrium.verbs.assert
 import kotlinx.serialization.Optional
 import kotlinx.serialization.Serializable
@@ -227,7 +225,7 @@ object YAMLTest : Spek({
 
             on("parsing an invalid enumeration value") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlException> {
+                    assert({ YAML.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlScalarFormatException> {
                         message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -681,10 +679,12 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<YamlException> {
+                        assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
                             message { toBe("Unknown property 'abc123'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string") }
                             line { toBe(1) }
                             column { toBe(1) }
+                            propertyName { toBe("abc123") }
+                            validPropertyNames { toBe(setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")) }
                         }
                     }
                 }
@@ -697,7 +697,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<YamlException> {
+                        assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
                             message { toBe("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -723,10 +723,12 @@ object YAMLTest : Spek({
 
                         on("parsing that input") {
                             it("throws an appropriate exception") {
-                                assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<YamlException> {
+                                assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                     message { toBe("Value for '$fieldName' is invalid: $errorMessage") }
                                     line { toBe(1) }
                                     column { toBe(fieldName.length + 3) }
+                                    propertyName { toBe(fieldName) }
+                                    reason { toBe(errorMessage) }
                                 }
                             }
                         }
@@ -789,12 +791,4 @@ data class NestedObjects(
 enum class TestEnum {
     Value1,
     Value2
-}
-
-fun Assert<YamlException>.line(assertionCreator: Assert<Int>.() -> Unit) {
-    property(subject::line).addAssertionsCreatedBy(assertionCreator)
-}
-
-fun Assert<YamlException>.column(assertionCreator: Assert<Int>.() -> Unit) {
-    property(subject::column).addAssertionsCreatedBy(assertionCreator)
 }

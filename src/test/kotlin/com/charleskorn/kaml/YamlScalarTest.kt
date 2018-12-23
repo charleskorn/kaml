@@ -92,40 +92,44 @@ object YamlScalarTest : Spek({
 
                 on("retrieving the value as an integer") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toInt() }).toThrow<YamlException> {
+                        assert({ scalar.toInt() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid integer value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }
 
                 on("retrieving the value as a long") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toLong() }).toThrow<YamlException> {
+                        assert({ scalar.toLong() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid long value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }
 
                 on("retrieving the value as a short") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toShort() }).toThrow<YamlException> {
+                        assert({ scalar.toShort() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid short value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }
 
                 on("retrieving the value as a byte") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toByte() }).toThrow<YamlException> {
+                        assert({ scalar.toByte() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid byte value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }
@@ -215,20 +219,22 @@ object YamlScalarTest : Spek({
 
                 on("retrieving the value as a float") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toFloat() }).toThrow<YamlException> {
+                        assert({ scalar.toFloat() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid floating point value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }
 
                 on("retrieving the value as a double") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toDouble() }).toThrow<YamlException> {
+                        assert({ scalar.toDouble() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid floating point value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }
@@ -261,10 +267,11 @@ object YamlScalarTest : Spek({
 
             on("retrieving the value as a boolean") {
                 it("throws an appropriate exception") {
-                    assert({ scalar.toBoolean() }).toThrow<YamlException> {
+                    assert({ scalar.toBoolean() }).toThrow<YamlScalarFormatException> {
                         message { toBe("Value 'nonsense' is not a valid boolean, permitted choices are: true or false") }
                         line { toBe(2) }
                         column { toBe(4) }
+                        originalValue { toBe("nonsense") }
                     }
                 }
             }
@@ -291,10 +298,11 @@ object YamlScalarTest : Spek({
 
                 on("retrieving the value as a character value") {
                     it("throws an appropriate exception") {
-                        assert({ scalar.toChar() }).toThrow<YamlException> {
+                        assert({ scalar.toChar() }).toThrow<YamlScalarFormatException> {
                             message { toBe("Value '$content' is not a valid character value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            originalValue { toBe(content) }
                         }
                     }
                 }

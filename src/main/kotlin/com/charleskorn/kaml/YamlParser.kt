@@ -49,20 +49,20 @@ class YamlParser(tokens: Sequence<Token>) {
     init {
         tokens.forEach { it ->
             if (it.code == Code.Unparsed || (it.code == Code.Error && it.text.toString() == "Expected start of line")) {
-                throw YamlException("Invalid YAML. The level of indentation at this point or nearby may be incorrect.", it)
+                throw MalformedYamlException("Invalid YAML. The level of indentation at this point or nearby may be incorrect.", it)
             }
 
             if (it.code == Code.Error) {
-                throw YamlException(it.text.toString(), it)
+                throw MalformedYamlException(it.text.toString(), it)
             }
 
             if (it.code in unsupportedFeatures.keys) {
-                throw YamlException("Unsupported YAML feature: ${unsupportedFeatures[it.code]}", it)
+                throw UnsupportedYamlFeatureException(unsupportedFeatures.getValue(it.code), it)
             }
         }
 
         if (isEOF) {
-            throw YamlException("The YAML document is empty.", Location(1, 1))
+            throw EmptyYamlDocumentException("The YAML document is empty.", Location(1, 1))
         }
 
         consumeToken(Code.BeginDocument)
