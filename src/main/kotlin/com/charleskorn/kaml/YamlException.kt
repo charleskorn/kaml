@@ -43,6 +43,8 @@ class MalformedYamlException(message: String, location: Location) : YamlExceptio
     constructor(message: String, token: Token) : this(message, token.location)
 }
 
+class UnexpectedNullValueException(location: Location) : YamlException("Unexpected null or empty value for non-null field.", location)
+
 class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)
 

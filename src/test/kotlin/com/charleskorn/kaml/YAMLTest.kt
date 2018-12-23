@@ -251,7 +251,7 @@ object YAMLTest : Spek({
         describe("parsing null values") {
             val input = "null"
 
-            on("parsing a null value as a string") {
+            on("parsing a null value as a nullable string") {
                 val result = YAML.parse(makeNullable(StringSerializer), input)
 
                 it("returns a null value") {
@@ -259,7 +259,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a integer") {
+            on("parsing a null value as a non-nullable string") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(StringSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable integer") {
                 val result = YAML.parse(makeNullable(IntSerializer), input)
 
                 it("returns a null value") {
@@ -267,7 +277,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a long") {
+            on("parsing a null value as a non-nullable integer") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(IntSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable long") {
                 val result = YAML.parse(makeNullable(LongSerializer), input)
 
                 it("returns a null value") {
@@ -275,7 +295,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a short") {
+            on("parsing a null value as a non-nullable long") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(LongSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable short") {
                 val result = YAML.parse(makeNullable(ShortSerializer), input)
 
                 it("returns a null value") {
@@ -283,7 +313,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a byte") {
+            on("parsing a null value as a non-nullable short") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(ShortSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable byte") {
                 val result = YAML.parse(makeNullable(ByteSerializer), input)
 
                 it("returns a null value") {
@@ -291,7 +331,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a double") {
+            on("parsing a null value as a non-nullable byte") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(ByteSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable double") {
                 val result = YAML.parse(makeNullable(DoubleSerializer), input)
 
                 it("returns a null value") {
@@ -299,7 +349,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a float") {
+            on("parsing a null value as a non-nullable double") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(DoubleSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable float") {
                 val result = YAML.parse(makeNullable(FloatSerializer), input)
 
                 it("returns a null value") {
@@ -307,7 +367,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a boolean") {
+            on("parsing a null value as a non-nullable float") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(FloatSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable boolean") {
                 val result = YAML.parse(makeNullable(BooleanSerializer), input)
 
                 it("returns a null value") {
@@ -315,7 +385,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a character") {
+            on("parsing a null value as a non-nullable boolean") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(BooleanSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable character") {
                 val result = YAML.parse(makeNullable(CharSerializer), input)
 
                 it("returns a null value") {
@@ -323,7 +403,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a enum") {
+            on("parsing a null value as a non-nullable character") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(CharSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable enum") {
                 val result = YAML.parse(makeNullable(EnumSerializer(TestEnum::class)), input)
 
                 it("returns a null value") {
@@ -331,7 +421,17 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a list") {
+            on("parsing a null value as a non-nullable enum") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(EnumSerializer(TestEnum::class), input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable list") {
                 val result = YAML.parse(makeNullable(StringSerializer.list), input)
 
                 it("returns a null value") {
@@ -339,11 +439,31 @@ object YAMLTest : Spek({
                 }
             }
 
-            on("parsing a null value as a object") {
+            on("parsing a null value as a non-nullable list") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(StringSerializer.list, input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+
+            on("parsing a null value as a nullable object") {
                 val result = YAML.parse(makeNullable(ComplexStructure.serializer()), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
+                }
+            }
+
+            on("parsing a null value as a non-nullable object") {
+                it("throws an appropriate exception") {
+                    assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                        message { toBe("Unexpected null or empty value for non-null field.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
                 }
             }
 

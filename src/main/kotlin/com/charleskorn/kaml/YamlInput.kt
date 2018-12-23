@@ -75,6 +75,9 @@ private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
 private class YamlNullInput(val nullValue: YamlNode) : YamlInput(nullValue) {
     override fun decodeNotNullMark(): Boolean = false
 
+    override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.location)
+    override fun decodeCollectionSize(desc: SerialDescriptor): Int = throw UnexpectedNullValueException(nullValue.location)
+
     override fun getCurrentLocation(): Location = nullValue.location
 }
 
