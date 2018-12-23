@@ -886,6 +886,84 @@ object YAMLTest : Spek({
                 }
             }
 
+            given("some input representing an object with a null value for a non-nullable scalar field") {
+                val input = "name: null"
+
+                on("parsing that input") {
+                    it("throws an appropriate exception") {
+                        assert({ YAML.parse(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            message { toBe("Value for 'name' is invalid: Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(7) }
+                            propertyName { toBe("name") }
+                            reason { toBe("Unexpected null or empty value for non-null field.") }
+                        }
+                    }
+                }
+            }
+
+            given("some input representing an object with a null value for a non-nullable nested object field") {
+                val input = "firstPerson: null"
+
+                on("parsing that input") {
+                    it("throws an appropriate exception") {
+                        assert({ YAML.parse(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            message { toBe("Value for 'firstPerson' is invalid: Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(14) }
+                            propertyName { toBe("firstPerson") }
+                            reason { toBe("Unexpected null or empty value for non-null field.") }
+                        }
+                    }
+                }
+            }
+
+            given("some input representing an object with a null value for a nullable nested object field") {
+                @Serializable
+                data class NullableNestedObject(val firstPerson: SimpleStructure?)
+
+                val input = "firstPerson: null"
+
+                on("parsing that input") {
+                    val result = YAML.parse(NullableNestedObject.serializer(), input)
+
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(NullableNestedObject(null))
+                    }
+                }
+            }
+
+            given("some input representing an object with a null value for a non-nullable nested list field") {
+                val input = "members: null"
+
+                on("parsing that input") {
+                    it("throws an appropriate exception") {
+                        assert({ YAML.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            message { toBe("Value for 'members' is invalid: Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(10) }
+                            propertyName { toBe("members") }
+                            reason { toBe("Unexpected null or empty value for non-null field.") }
+                        }
+                    }
+                }
+            }
+
+            given("some input representing an object with a null value for a nullable nested list field") {
+                @Serializable
+                data class NullableNestedList(val members: List<String>?)
+
+                val input = "members: null"
+
+                on("parsing that input") {
+                    val result = YAML.parse(NullableNestedList.serializer(), input)
+
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(NullableNestedList(null))
+                    }
+                }
+            }
+
             given("some input representing an object with a custom serializer for one of its values") {
                 val input = "value: something"
 

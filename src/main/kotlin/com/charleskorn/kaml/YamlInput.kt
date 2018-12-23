@@ -77,6 +77,7 @@ private class YamlNullInput(val nullValue: YamlNode) : YamlInput(nullValue) {
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.location)
     override fun decodeCollectionSize(desc: SerialDescriptor): Int = throw UnexpectedNullValueException(nullValue.location)
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder = throw UnexpectedNullValueException(nullValue.location)
 
     override fun getCurrentLocation(): Location = nullValue.location
 }
@@ -216,7 +217,7 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
 
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         if (haveStartedReadingEntries) {
-            return currentValueDecoder.beginStructure(desc, *typeParams)
+            return fromCurrentValue { beginStructure(desc, *typeParams) }
         }
 
         readMode = when (desc.kind) {
