@@ -23,8 +23,13 @@ import ch.tutteli.atrium.api.cc.en_GB.notToBeNullBut
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Optional
+import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.internal.BooleanSerializer
 import kotlinx.serialization.internal.ByteSerializer
 import kotlinx.serialization.internal.CharSerializer
@@ -34,6 +39,7 @@ import kotlinx.serialization.internal.FloatSerializer
 import kotlinx.serialization.internal.IntSerializer
 import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.internal.ShortSerializer
+import kotlinx.serialization.internal.StringDescriptor
 import kotlinx.serialization.internal.StringSerializer
 import kotlinx.serialization.internal.makeNullable
 import kotlinx.serialization.list
@@ -64,6 +70,14 @@ object YAMLTest : Spek({
 
                     it("deserializes it to the expected string value") {
                         assert(result).notToBeNullBut("hello")
+                    }
+                }
+
+                on("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ YAML.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 1") }
+                        }
                     }
                 }
             }
@@ -332,6 +346,14 @@ object YAMLTest : Spek({
                     assert(result).toBe(null)
                 }
             }
+
+            on("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
+                it("throws an exception with the correct location information") {
+                    assert({ YAML.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                        message { toBe("Serializer called with location: 1, 1") }
+                    }
+                }
+            }
         }
 
         describe("parsing lists") {
@@ -347,6 +369,14 @@ object YAMLTest : Spek({
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf("thing1", "thing2", "thing3"))
+                    }
+                }
+
+                on("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ YAML.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 3") }
+                        }
                     }
                 }
             }
@@ -736,6 +766,18 @@ object YAMLTest : Spek({
                 }
             }
 
+            given("some input representing an object with a custom serializer for one of its values") {
+                val input = "value: something"
+
+                on("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ YAML.parse(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 8") }
+                        }
+                    }
+                }
+            }
+
             given("some input representing a generic map") {
                 val input = """
                     SOME_ENV_VAR: somevalue
@@ -746,10 +788,28 @@ object YAMLTest : Spek({
                     val result = YAML.parse((StringSerializer to StringSerializer).map, input)
 
                     it("deserializes it to a Kotlin map") {
-                        assert(result).toBe(mapOf(
-                            "SOME_ENV_VAR" to "somevalue",
-                            "SOME_OTHER_ENV_VAR" to "someothervalue"
-                        ))
+                        assert(result).toBe(
+                            mapOf(
+                                "SOME_ENV_VAR" to "somevalue",
+                                "SOME_OTHER_ENV_VAR" to "someothervalue"
+                            )
+                        )
+                    }
+                }
+
+                on("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ YAML.parse((LocationThrowingSerializer to StringSerializer).map, input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 1") }
+                        }
+                    }
+                }
+
+                on("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ YAML.parse((StringSerializer to LocationThrowingSerializer).map, input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 15") }
+                        }
                     }
                 }
             }
@@ -788,7 +848,30 @@ data class NestedObjects(
     val secondPerson: SimpleStructure
 )
 
+@Serializable
+data class StructureWithLocationThrowingSerializer(
+    @Serializable(with = LocationThrowingSerializer::class) val value: CustomSerializedValue
+)
+
+data class CustomSerializedValue(val thing: String)
+
 enum class TestEnum {
     Value1,
     Value2
 }
+
+@Serializer(forClass = CustomSerializedValue::class)
+object LocationThrowingSerializer : KSerializer<CustomSerializedValue> {
+    override val descriptor: SerialDescriptor
+        get() = StringDescriptor
+
+    override fun deserialize(input: Decoder): CustomSerializedValue {
+        val location = (input as YamlInput).getCurrentLocation()
+
+        throw LocationInformationException("Serializer called with location: ${location.line}, ${location.column}")
+    }
+
+    override fun serialize(output: Encoder, obj: CustomSerializedValue) = throw UnsupportedOperationException()
+}
+
+class LocationInformationException(message: String) : RuntimeException(message)

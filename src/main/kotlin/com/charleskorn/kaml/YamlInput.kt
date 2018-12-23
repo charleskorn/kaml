@@ -39,6 +39,8 @@ sealed class YamlInput(val node: YamlNode) : ElementValueDecoder() {
     }
 
     override val updateMode: UpdateMode = UpdateMode.BANNED
+
+    abstract fun getCurrentLocation(): Location
 }
 
 private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
@@ -66,10 +68,14 @@ private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
 
         throw YamlScalarFormatException("Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices", scalar.location, scalar.content)
     }
+
+    override fun getCurrentLocation(): Location = scalar.location
 }
 
 private class YamlNullInput(val nullValue: YamlNode) : YamlInput(nullValue) {
     override fun decodeNotNullMark(): Boolean = false
+
+    override fun getCurrentLocation(): Location = nullValue.location
 }
 
 private class YamlListInput(val list: YamlList) : YamlInput(list) {
@@ -110,6 +116,8 @@ private class YamlListInput(val list: YamlList) : YamlInput(list) {
 
         return super.beginStructure(desc, *typeParams)
     }
+
+    override fun getCurrentLocation(): Location = currentElementDecoder.node.location
 }
 
 private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
@@ -221,4 +229,6 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
         Object,
         Map
     }
+
+    override fun getCurrentLocation(): Location = currentValueDecoder.node.location
 }
