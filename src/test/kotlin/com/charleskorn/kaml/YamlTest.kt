@@ -51,14 +51,14 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 
-object YAMLTest : Spek({
+object YamlTest : Spek({
     describe("a YAML parser") {
         describe("parsing scalars") {
             given("the input 'hello'") {
                 val input = "hello"
 
                 on("parsing that input as a string") {
-                    val result = YAML.parse(StringSerializer, input)
+                    val result = Yaml.parse(StringSerializer, input)
 
                     it("deserializes it to the expected string value") {
                         assert(result).toBe("hello")
@@ -66,7 +66,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable string") {
-                    val result = YAML.parse(makeNullable(StringSerializer), input)
+                    val result = Yaml.parse(makeNullable(StringSerializer), input)
 
                     it("deserializes it to the expected string value") {
                         assert(result).notToBeNullBut("hello")
@@ -75,7 +75,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        assert({ YAML.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                        assert({ Yaml.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -86,7 +86,7 @@ object YAMLTest : Spek({
                 val input = "123"
 
                 on("parsing that input as an integer") {
-                    val result = YAML.parse(Int.serializer(), input)
+                    val result = Yaml.parse(Int.serializer(), input)
 
                     it("deserializes it to the expected integer") {
                         assert(result).toBe(123)
@@ -94,7 +94,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a long") {
-                    val result = YAML.parse(Long.serializer(), input)
+                    val result = Yaml.parse(Long.serializer(), input)
 
                     it("deserializes it to the expected long") {
                         assert(result).toBe(123)
@@ -102,7 +102,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a short") {
-                    val result = YAML.parse(Short.serializer(), input)
+                    val result = Yaml.parse(Short.serializer(), input)
 
                     it("deserializes it to the expected short") {
                         assert(result).toBe(123)
@@ -110,7 +110,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a byte") {
-                    val result = YAML.parse(Byte.serializer(), input)
+                    val result = Yaml.parse(Byte.serializer(), input)
 
                     it("deserializes it to the expected byte") {
                         assert(result).toBe(123)
@@ -118,7 +118,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a double") {
-                    val result = YAML.parse(Double.serializer(), input)
+                    val result = Yaml.parse(Double.serializer(), input)
 
                     it("deserializes it to the expected double") {
                         assert(result).toBe(123.0)
@@ -126,7 +126,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a float") {
-                    val result = YAML.parse(FloatSerializer, input)
+                    val result = Yaml.parse(FloatSerializer, input)
 
                     it("deserializes it to the expected float") {
                         assert(result).toBe(123.0f)
@@ -134,7 +134,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable integer") {
-                    val result = YAML.parse(makeNullable(Int.serializer()), input)
+                    val result = Yaml.parse(makeNullable(Int.serializer()), input)
 
                     it("deserializes it to the expected integer") {
                         assert(result).notToBeNullBut(123)
@@ -142,7 +142,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable long") {
-                    val result = YAML.parse(makeNullable(Long.serializer()), input)
+                    val result = Yaml.parse(makeNullable(Long.serializer()), input)
 
                     it("deserializes it to the expected long") {
                         assert(result).notToBeNullBut(123)
@@ -150,7 +150,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable short") {
-                    val result = YAML.parse(makeNullable(Short.serializer()), input)
+                    val result = Yaml.parse(makeNullable(Short.serializer()), input)
 
                     it("deserializes it to the expected short") {
                         assert(result).notToBeNullBut(123)
@@ -158,7 +158,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable byte") {
-                    val result = YAML.parse(makeNullable(Byte.serializer()), input)
+                    val result = Yaml.parse(makeNullable(Byte.serializer()), input)
 
                     it("deserializes it to the expected byte") {
                         assert(result).notToBeNullBut(123)
@@ -166,7 +166,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable double") {
-                    val result = YAML.parse(makeNullable(Double.serializer()), input)
+                    val result = Yaml.parse(makeNullable(Double.serializer()), input)
 
                     it("deserializes it to the expected double") {
                         assert(result).notToBeNullBut(123.0)
@@ -174,7 +174,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable float") {
-                    val result = YAML.parse(makeNullable(FloatSerializer), input)
+                    val result = Yaml.parse(makeNullable(FloatSerializer), input)
 
                     it("deserializes it to the expected float") {
                         assert(result).notToBeNullBut(123.0f)
@@ -186,7 +186,7 @@ object YAMLTest : Spek({
                 val input = "true"
 
                 on("parsing that input as a boolean") {
-                    val result = YAML.parse(BooleanSerializer, input)
+                    val result = Yaml.parse(BooleanSerializer, input)
 
                     it("deserializes it to the expected boolean value") {
                         assert(result).toBe(true)
@@ -194,7 +194,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable boolean") {
-                    val result = YAML.parse(makeNullable(BooleanSerializer), input)
+                    val result = Yaml.parse(makeNullable(BooleanSerializer), input)
 
                     it("deserializes it to the expected boolean value") {
                         assert(result).notToBeNullBut(true)
@@ -206,7 +206,7 @@ object YAMLTest : Spek({
                 val input = "c"
 
                 on("parsing that input as a character") {
-                    val result = YAML.parse(CharSerializer, input)
+                    val result = Yaml.parse(CharSerializer, input)
 
                     it("deserializes it to the expected character value") {
                         assert(result).toBe('c')
@@ -214,7 +214,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a nullable character") {
-                    val result = YAML.parse(makeNullable(CharSerializer), input)
+                    val result = Yaml.parse(makeNullable(CharSerializer), input)
 
                     it("deserializes it to the expected character value") {
                         assert(result).notToBeNullBut('c')
@@ -228,7 +228,7 @@ object YAMLTest : Spek({
             ).forEach { input, expectedValue ->
                 given("the input '$input'") {
                     on("parsing that input as an enumeration value") {
-                        val result = YAML.parse(EnumSerializer(TestEnum::class), input)
+                        val result = Yaml.parse(EnumSerializer(TestEnum::class), input)
 
                         it("deserializes it to the expected enumeration value") {
                             assert(result).toBe(expectedValue)
@@ -239,7 +239,7 @@ object YAMLTest : Spek({
 
             on("parsing an invalid enumeration value") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlScalarFormatException> {
+                    assert({ Yaml.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlScalarFormatException> {
                         message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -252,7 +252,7 @@ object YAMLTest : Spek({
             val input = "null"
 
             on("parsing a null value as a nullable string") {
-                val result = YAML.parse(makeNullable(StringSerializer), input)
+                val result = Yaml.parse(makeNullable(StringSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -261,7 +261,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable string") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(StringSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(StringSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -270,7 +270,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable integer") {
-                val result = YAML.parse(makeNullable(IntSerializer), input)
+                val result = Yaml.parse(makeNullable(IntSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -279,7 +279,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable integer") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(IntSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(IntSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -288,7 +288,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable long") {
-                val result = YAML.parse(makeNullable(LongSerializer), input)
+                val result = Yaml.parse(makeNullable(LongSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -297,7 +297,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable long") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(LongSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(LongSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -306,7 +306,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable short") {
-                val result = YAML.parse(makeNullable(ShortSerializer), input)
+                val result = Yaml.parse(makeNullable(ShortSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -315,7 +315,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable short") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(ShortSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(ShortSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -324,7 +324,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable byte") {
-                val result = YAML.parse(makeNullable(ByteSerializer), input)
+                val result = Yaml.parse(makeNullable(ByteSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -333,7 +333,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable byte") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(ByteSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(ByteSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -342,7 +342,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable double") {
-                val result = YAML.parse(makeNullable(DoubleSerializer), input)
+                val result = Yaml.parse(makeNullable(DoubleSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -351,7 +351,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable double") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(DoubleSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(DoubleSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -360,7 +360,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable float") {
-                val result = YAML.parse(makeNullable(FloatSerializer), input)
+                val result = Yaml.parse(makeNullable(FloatSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -369,7 +369,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable float") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(FloatSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(FloatSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -378,7 +378,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable boolean") {
-                val result = YAML.parse(makeNullable(BooleanSerializer), input)
+                val result = Yaml.parse(makeNullable(BooleanSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -387,7 +387,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable boolean") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(BooleanSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(BooleanSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -396,7 +396,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable character") {
-                val result = YAML.parse(makeNullable(CharSerializer), input)
+                val result = Yaml.parse(makeNullable(CharSerializer), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -405,7 +405,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable character") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(CharSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(CharSerializer, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -414,7 +414,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable enum") {
-                val result = YAML.parse(makeNullable(EnumSerializer(TestEnum::class)), input)
+                val result = Yaml.parse(makeNullable(EnumSerializer(TestEnum::class)), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -423,7 +423,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable enum") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(EnumSerializer(TestEnum::class), input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(EnumSerializer(TestEnum::class), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -432,7 +432,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable list") {
-                val result = YAML.parse(makeNullable(StringSerializer.list), input)
+                val result = Yaml.parse(makeNullable(StringSerializer.list), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -441,7 +441,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable list") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(StringSerializer.list, input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(StringSerializer.list, input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -450,7 +450,7 @@ object YAMLTest : Spek({
             }
 
             on("parsing a null value as a nullable object") {
-                val result = YAML.parse(makeNullable(ComplexStructure.serializer()), input)
+                val result = Yaml.parse(makeNullable(ComplexStructure.serializer()), input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -459,7 +459,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value as a non-nullable object") {
                 it("throws an appropriate exception") {
-                    assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.parse(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -469,7 +469,7 @@ object YAMLTest : Spek({
 
             on("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
                 it("throws an exception with the correct location information") {
-                    assert({ YAML.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                    assert({ Yaml.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                         message { toBe("Serializer called with location: 1, 1") }
                     }
                 }
@@ -485,7 +485,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(String.serializer().list, input)
+                    val result = Yaml.parse(String.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf("thing1", "thing2", "thing3"))
@@ -494,7 +494,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        assert({ YAML.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
+                        assert({ Yaml.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 3") }
                         }
                     }
@@ -509,7 +509,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list of integers") {
-                    val result = YAML.parse(Int.serializer().list, input)
+                    val result = Yaml.parse(Int.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(123, 45, 6))
@@ -517,7 +517,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a list of longs") {
-                    val result = YAML.parse(Long.serializer().list, input)
+                    val result = Yaml.parse(Long.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(123L, 45, 6))
@@ -525,7 +525,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a list of shorts") {
-                    val result = YAML.parse(Short.serializer().list, input)
+                    val result = Yaml.parse(Short.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(123.toShort(), 45, 6))
@@ -533,7 +533,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a list of bytes") {
-                    val result = YAML.parse(Byte.serializer().list, input)
+                    val result = Yaml.parse(Byte.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(123.toByte(), 45, 6))
@@ -541,7 +541,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a list of doubles") {
-                    val result = YAML.parse(Double.serializer().list, input)
+                    val result = Yaml.parse(Double.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(123.0, 45.0, 6.0))
@@ -549,7 +549,7 @@ object YAMLTest : Spek({
                 }
 
                 on("parsing that input as a list of floats") {
-                    val result = YAML.parse(FloatSerializer.list, input)
+                    val result = Yaml.parse(FloatSerializer.list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(123.0f, 45.0f, 6.0f))
@@ -564,7 +564,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(Boolean.serializer().list, input)
+                    val result = Yaml.parse(Boolean.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(true, false))
@@ -579,7 +579,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(EnumSerializer(TestEnum::class).list, input)
+                    val result = Yaml.parse(EnumSerializer(TestEnum::class).list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(TestEnum.Value1, TestEnum.Value2))
@@ -594,7 +594,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(CharSerializer.list, input)
+                    val result = Yaml.parse(CharSerializer.list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf('a', 'b'))
@@ -609,7 +609,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(makeNullable(String.serializer()).list, input)
+                    val result = Yaml.parse(makeNullable(String.serializer()).list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf("thing1", null))
@@ -624,7 +624,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(String.serializer().list.list, input)
+                    val result = Yaml.parse(String.serializer().list.list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(
@@ -644,7 +644,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input as a list") {
-                    val result = YAML.parse(SimpleStructure.serializer().list, input)
+                    val result = Yaml.parse(SimpleStructure.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(
@@ -675,7 +675,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse(ComplexStructure.serializer(), input)
+                    val result = Yaml.parse(ComplexStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
@@ -713,7 +713,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse(ComplexStructure.serializer(), input)
+                    val result = Yaml.parse(ComplexStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
@@ -750,7 +750,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse(ComplexStructure.serializer(), input)
+                    val result = Yaml.parse(ComplexStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
@@ -780,7 +780,7 @@ object YAMLTest : Spek({
                     """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse(Team.serializer(), input)
+                    val result = Yaml.parse(Team.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(Team(listOf("Alex", "Jamie")))
@@ -797,7 +797,7 @@ object YAMLTest : Spek({
                     """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse(NestedObjects.serializer(), input)
+                    val result = Yaml.parse(NestedObjects.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
@@ -814,7 +814,7 @@ object YAMLTest : Spek({
                     """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse(NestedObjects.serializer(), input)
+                    val result = Yaml.parse(NestedObjects.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
@@ -829,7 +829,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
+                        assert({ Yaml.parse(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
                             message { toBe("Unknown property 'abc123'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -847,7 +847,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                        assert({ Yaml.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
                             message { toBe("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -873,7 +873,7 @@ object YAMLTest : Spek({
 
                         on("parsing that input") {
                             it("throws an appropriate exception") {
-                                assert({ YAML.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                assert({ Yaml.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                     message { toBe("Value for '$fieldName' is invalid: $errorMessage") }
                                     line { toBe(1) }
                                     column { toBe(fieldName.length + 3) }
@@ -891,7 +891,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        assert({ Yaml.parse(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'name' is invalid: Unexpected null or empty value for non-null field.") }
                             line { toBe(1) }
                             column { toBe(7) }
@@ -907,7 +907,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        assert({ Yaml.parse(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'firstPerson' is invalid: Unexpected null or empty value for non-null field.") }
                             line { toBe(1) }
                             column { toBe(14) }
@@ -925,7 +925,7 @@ object YAMLTest : Spek({
                 val input = "firstPerson: null"
 
                 on("parsing that input") {
-                    val result = YAML.parse(NullableNestedObject.serializer(), input)
+                    val result = Yaml.parse(NullableNestedObject.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(NullableNestedObject(null))
@@ -938,7 +938,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({ YAML.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        assert({ Yaml.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'members' is invalid: Unexpected null or empty value for non-null field.") }
                             line { toBe(1) }
                             column { toBe(10) }
@@ -956,7 +956,7 @@ object YAMLTest : Spek({
                 val input = "members: null"
 
                 on("parsing that input") {
-                    val result = YAML.parse(NullableNestedList.serializer(), input)
+                    val result = Yaml.parse(NullableNestedList.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(NullableNestedList(null))
@@ -969,7 +969,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        assert({ YAML.parse(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
+                        assert({ Yaml.parse(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 8") }
                         }
                     }
@@ -983,7 +983,7 @@ object YAMLTest : Spek({
                 """.trimIndent()
 
                 on("parsing that input") {
-                    val result = YAML.parse((StringSerializer to StringSerializer).map, input)
+                    val result = Yaml.parse((StringSerializer to StringSerializer).map, input)
 
                     it("deserializes it to a Kotlin map") {
                         assert(result).toBe(
@@ -997,7 +997,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        assert({ YAML.parse((LocationThrowingSerializer to StringSerializer).map, input) }).toThrow<LocationInformationException> {
+                        assert({ Yaml.parse((LocationThrowingSerializer to StringSerializer).map, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -1005,7 +1005,7 @@ object YAMLTest : Spek({
 
                 on("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        assert({ YAML.parse((StringSerializer to LocationThrowingSerializer).map, input) }).toThrow<LocationInformationException> {
+                        assert({ Yaml.parse((StringSerializer to LocationThrowingSerializer).map, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 15") }
                         }
                     }

@@ -24,7 +24,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.decode
 
-object YAML : AbstractSerialFormat(), StringFormat {
+object Yaml : AbstractSerialFormat(), StringFormat {
     override fun <T> parse(serializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val rootNode = YamlNode.fromParser(parser)
