@@ -16,22 +16,23 @@
 
 */
 
-plugins {
-    `kotlin-dsl`
-}
+package com.charleskorn.kaml.build
 
-repositories {
-    maven("https://plugins.gradle.org/m2/")
-    jcenter()
-}
+import me.champeau.gradle.JMHPlugin
+import me.champeau.gradle.JMHPluginExtension
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
 
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
-}
+fun Project.configureBenchmarking() {
+    apply<JMHPlugin>()
 
-dependencies {
-    compile(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "3.16.0")
-    compile(group = "io.codearte.gradle.nexus", name = "gradle-nexus-staging-plugin", version = "0.12.0")
-    compile(group = "me.champeau.gradle", name = "jmh-gradle-plugin", version = "0.4.7")
-    compile(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "0.9.0")
+    configure<JMHPluginExtension> {
+        benchmarkMode = listOf("avgt")
+        timeUnit = "ms"
+        iterations = 5
+        timeOnIteration = "2s"
+        warmupIterations = 0
+        fork = 1
+    }
 }

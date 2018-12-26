@@ -17,6 +17,7 @@
 */
 
 import com.charleskorn.kaml.build.configureAssemble
+import com.charleskorn.kaml.build.configureBenchmarking
 import com.charleskorn.kaml.build.configureJacoco
 import com.charleskorn.kaml.build.configurePublishing
 import com.charleskorn.kaml.build.configureSpotless
@@ -78,3 +79,5 @@ configureSpotless()
 configureTesting()
 configureVersioning()
 configureWrapper()
+
+configureBenchmarking()
