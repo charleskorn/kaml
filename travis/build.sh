@@ -15,7 +15,7 @@ echo "Generating code coverage report..."
 echo
 
 echo "Running benchmarks..."
-./batect jmh
+./batect benchmark
 echo
 
 if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
