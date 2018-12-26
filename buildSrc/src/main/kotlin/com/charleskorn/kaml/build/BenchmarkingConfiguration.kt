@@ -29,7 +29,7 @@ fun Project.configureBenchmarking() {
 
     configure<JMHPluginExtension> {
         benchmarkMode = listOf("avgt")
-        timeUnit = "ms"
+        timeUnit = "us"
         iterations = 5
         timeOnIteration = "2s"
         warmupIterations = 0
