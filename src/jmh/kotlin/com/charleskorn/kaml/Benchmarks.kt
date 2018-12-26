@@ -18,6 +18,9 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.internal.StringSerializer
+import kotlinx.serialization.list
+import kotlinx.serialization.map
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.Scope
 import org.openjdk.jmh.annotations.State
@@ -38,6 +41,9 @@ open class Benchmarks {
     private val fiftyItemMap = generateMap(50)
     private val hundredItemMap = generateMap(100)
 
+    private val listSerializer = StringSerializer.list
+    private val mapSerializer = (StringSerializer to StringSerializer).map
+
     @Benchmark
     fun parseSingleItemList(): YamlNode = parse(singleItemList)
 
@@ -57,6 +63,24 @@ open class Benchmarks {
     fun parseHundredItemList(): YamlNode = parse(hundredItemList)
 
     @Benchmark
+    fun loadSingleItemList(): List<String> = Yaml.parse(listSerializer, singleItemList)
+
+    @Benchmark
+    fun loadTwoItemList(): List<String> = Yaml.parse(listSerializer, twoItemList)
+
+    @Benchmark
+    fun loadTenItemList(): List<String> = Yaml.parse(listSerializer, tenItemList)
+
+    @Benchmark
+    fun loadTwentyItemList(): List<String> = Yaml.parse(listSerializer, twentyItemList)
+
+    @Benchmark
+    fun loadFiftyItemList(): List<String> = Yaml.parse(listSerializer, fiftyItemList)
+
+    @Benchmark
+    fun loadHundredItemList(): List<String> = Yaml.parse(listSerializer, hundredItemList)
+
+    @Benchmark
     fun parseSingleItemMap(): YamlNode = parse(singleItemMap)
 
     @Benchmark
@@ -73,6 +97,24 @@ open class Benchmarks {
 
     @Benchmark
     fun parseHundredItemMap(): YamlNode = parse(hundredItemMap)
+
+    @Benchmark
+    fun loadSingleItemMap(): Map<String, String> = Yaml.parse(mapSerializer, singleItemMap)
+
+    @Benchmark
+    fun loadTwoItemMap(): Map<String, String> = Yaml.parse(mapSerializer, twoItemMap)
+
+    @Benchmark
+    fun loadTenItemMap(): Map<String, String> = Yaml.parse(mapSerializer, tenItemMap)
+
+    @Benchmark
+    fun loadTwentyItemMap(): Map<String, String> = Yaml.parse(mapSerializer, twentyItemMap)
+
+    @Benchmark
+    fun loadFiftyItemMap(): Map<String, String> = Yaml.parse(mapSerializer, fiftyItemMap)
+
+    @Benchmark
+    fun loadHundredItemMap(): Map<String, String> = Yaml.parse(mapSerializer, hundredItemMap)
 
     private fun generateList(n: Int) = (1..n).joinToString("\n") { i -> "- thing$i" }
     private fun generateMap(n: Int) = (1..n).joinToString("\n") { i -> "thing$i: value$i" }
