@@ -18,98 +18,102 @@
 
 package com.charleskorn.kaml
 
-import io.dahgan.parser.Code
-import io.dahgan.parser.Token
-import io.dahgan.yaml
+import org.snakeyaml.engine.v1.api.LoadSettingsBuilder
+import org.snakeyaml.engine.v1.events.Event
+import org.snakeyaml.engine.v1.events.NodeEvent
+import org.snakeyaml.engine.v1.events.ScalarEvent
+import org.snakeyaml.engine.v1.exceptions.MarkedYamlEngineException
+import org.snakeyaml.engine.v1.parser.ParserImpl
+import org.snakeyaml.engine.v1.scanner.StreamReader
+import java.io.StringReader
 
-class YamlParser(tokens: Sequence<Token>) {
-    constructor(yamlSource: String) : this(
-        yaml().tokenize(
-            "some-name-that-should-probably-be-the-filename",
-            yamlSource.toByteArray(),
-            false
-        )
-    )
-
-    // TODO: this isn't very efficient (we read the entire structure into memory rather than streaming it)
-    // but it makes things quite a bit easier
-    private val tokens = tokens
-        .filterNot { it.code in setOf(Code.White, Code.Break, Code.Indent) }
-        .toList()
-
-    private var nextTokenIndex = 0
-
-    private val unsupportedFeatures = mapOf(
-        Code.BeginDirective to "directives",
-        Code.BeginAlias to "aliases",
-        Code.BeginAnchor to "anchors",
-        Code.BeginTag to "tags"
-    )
+class YamlParser(yamlSource: String) {
+    private val dummyFileName = "DUMMY_FILE_NAME"
+    private val loadSettings = LoadSettingsBuilder().setLabel(dummyFileName).build()
+    private val streamReader = StreamReader(StringReader(yamlSource), loadSettings)
+    private val events = ParserImpl(streamReader, loadSettings)
 
     init {
-        tokens.forEach { it ->
-            if (it.code == Code.Unparsed || (it.code == Code.Error && it.text.toString() == "Expected start of line")) {
-                throw MalformedYamlException("Invalid YAML. The level of indentation at this point or nearby may be incorrect.", it)
-            }
+        consumeEventOfType(Event.ID.StreamStart)
 
-            if (it.code == Code.Error) {
-                throw MalformedYamlException(it.text.toString(), it)
-            }
-
-            if (it.code in unsupportedFeatures.keys) {
-                throw UnsupportedYamlFeatureException(unsupportedFeatures.getValue(it.code), it)
-            }
-        }
-
-        if (isEOF) {
+        if (peekEvent().isEvent(Event.ID.StreamEnd)) {
             throw EmptyYamlDocumentException("The YAML document is empty.", Location(1, 1))
         }
 
-        consumeToken(Code.BeginDocument)
+        consumeEventOfType(Event.ID.DocumentStart)
     }
 
-    private val isEOF: Boolean
-        get() {
-            skipAnyComments()
+    fun ensureEndOfStreamReached() {
+        consumeEventOfType(Event.ID.DocumentEnd)
+        consumeEventOfType(Event.ID.StreamEnd)
+    }
 
-            return nextTokenIndex == tokens.size
-        }
+    fun consumeEvent(): Event = checkEvent { events.next() }
+    fun peekEvent(): Event = checkEvent { events.peekEvent() }
 
-    private fun skipAnyComments() {
-        while (nextTokenIndex < tokens.size && tokens[nextTokenIndex].code == Code.BeginComment) {
-            do {
-                nextTokenIndex++
-            } while (tokens[nextTokenIndex - 1].code != Code.EndComment)
+    fun consumeEventOfType(type: Event.ID) {
+        val event = consumeEvent()
+
+        if (!event.isEvent(type)) {
+            throw MalformedYamlException("Unexpected ${event.eventId}, expected $type", Location(event.startMark.get().line, event.startMark.get().column))
         }
     }
 
-    fun peekAnyToken(): Token {
-        skipAnyComments()
+    private fun checkEvent(retrieve: () -> Event): Event {
+        try {
+            val event = retrieve()
+            checkForUnsupportedFeatures(event)
 
-        return tokens[nextTokenIndex]
+            return event
+        } catch (e: MarkedYamlEngineException) {
+            throw translateYamlEngineException(e)
+        }
     }
 
-    fun peekToken(vararg expectedTypes: Code): Token {
-        if (expectedTypes.isEmpty()) {
-            throw IllegalStateException("Called peekToken() with no expected token types")
+    private fun checkForUnsupportedFeatures(event: Event) {
+        if (event.isEvent(Event.ID.Alias)) {
+            throw UnsupportedYamlFeatureException("aliases", event)
         }
 
-        val nextToken = peekAnyToken()
-
-        if (nextToken.code !in expectedTypes) {
-            val explanation = if (expectedTypes.size == 1) {
-                "expected ${expectedTypes.single().name}"
-            } else {
-                val types = expectedTypes.map { it.name }.joinToString(", ")
-                "expected one of $types"
+        if (event is NodeEvent) {
+            if (event.anchor.isPresent) {
+                throw UnsupportedYamlFeatureException("anchors", event)
             }
-
-            throw YamlException("Unexpected ${nextToken.code.name}, $explanation", nextToken)
         }
 
-        return nextToken
+        if (event is ScalarEvent) {
+            if (event.tag.isPresent) {
+                throw UnsupportedYamlFeatureException("tags", event)
+            }
+        }
     }
 
-    fun consumeAnyToken(): Token = peekAnyToken().also { nextTokenIndex++ }
-    fun consumeToken(vararg expectedTypes: Code): Token = peekToken(*expectedTypes).also { nextTokenIndex++ }
+    private fun translateYamlEngineException(e: MarkedYamlEngineException): MalformedYamlException {
+        val contextMessage = if (e.context == null) {
+            ""
+        } else {
+            val contextMark = e.contextMark.get()
+
+            e.context + "\n" +
+                " at line ${contextMark.line + 1}, column ${contextMark.column + 1}:\n" +
+                contextMark.createSnippet(4, Int.MAX_VALUE) + "\n"
+        }
+
+        val problemMark = e.problemMark.get()
+
+        val message = contextMessage +
+            translateYamlEngineExceptionMessage(e.problem) + "\n" +
+            " at line ${problemMark.line + 1}, column ${problemMark.column + 1}:\n" +
+            problemMark.createSnippet(4, Int.MAX_VALUE)
+
+        return MalformedYamlException(message, Location(problemMark.line + 1, problemMark.column + 1))
+    }
+
+    private fun translateYamlEngineExceptionMessage(message: String): String = when (message) {
+        "mapping values are not allowed here",
+        "expected <block end>, but found '<block sequence start>'",
+        "expected <block end>, but found '<block mapping start>'" ->
+            "$message (is the indentation level of this line or a line nearby incorrect?)"
+        else -> message
+    }
 }

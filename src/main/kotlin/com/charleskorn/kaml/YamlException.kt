@@ -18,7 +18,7 @@
 
 package com.charleskorn.kaml
 
-import io.dahgan.parser.Token
+import org.snakeyaml.engine.v1.events.Event
 
 open class YamlException(
     override val message: String,
@@ -26,7 +26,7 @@ open class YamlException(
     val column: Int,
     override val cause: Throwable? = null
 ) : RuntimeException(message, cause) {
-    constructor(message: String, token: Token, cause: Throwable? = null) : this(message, token.location, cause)
+    constructor(message: String, event: Event, cause: Throwable? = null) : this(message, event.location, cause)
     constructor(message: String, location: Location, cause: Throwable? = null) : this(message, location.line, location.column, cause)
 
     val location: Location = Location(line, column)
@@ -40,7 +40,7 @@ class EmptyYamlDocumentException(message: String, location: Location) : YamlExce
 class InvalidPropertyValueException(val propertyName: String, val reason: String, location: Location, cause: Throwable?) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
 
 class MalformedYamlException(message: String, location: Location) : YamlException(message, location) {
-    constructor(message: String, token: Token) : this(message, token.location)
+    constructor(message: String, event: Event) : this(message, event.location)
 }
 
 class UnexpectedNullValueException(location: Location) : YamlException("Unexpected null or empty value for non-null field.", location)
@@ -48,9 +48,9 @@ class UnexpectedNullValueException(location: Location) : YamlException("Unexpect
 class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)
 
-class UnsupportedYamlFeatureException(val featureName: String, token: Token) : YamlException("Unsupported YAML feature: $featureName", token)
+class UnsupportedYamlFeatureException(val featureName: String, event: Event) : YamlException("Unsupported YAML feature: $featureName", event)
 
 class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
 
-private val Token.location: Location
-    get() = Location(this.line, this.lineChar + 1)
+val Event.location: Location
+    get() = Location(startMark.get().line + 1, startMark.get().column + 1)

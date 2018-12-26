@@ -18,9 +18,10 @@
 
 package com.charleskorn.kaml
 
-import io.dahgan.parser.Code
-import io.dahgan.parser.Escapable
-import io.dahgan.parser.Token
+import org.snakeyaml.engine.v1.events.Event
+import org.snakeyaml.engine.v1.events.MappingStartEvent
+import org.snakeyaml.engine.v1.events.ScalarEvent
+import org.snakeyaml.engine.v1.events.SequenceStartEvent
 
 sealed class YamlNode(open val location: Location) {
     abstract fun equivalentContentTo(other: YamlNode): Boolean
@@ -28,259 +29,57 @@ sealed class YamlNode(open val location: Location) {
 
     companion object {
         fun fromParser(parser: YamlParser): YamlNode {
-            return parser.readWrapped(Code.BeginNode, Code.EndNode) {
-                val nextToken = parser.peekToken(Code.BeginScalar, Code.BeginSequence, Code.BeginMapping)
-                val location = locationFrom(nextToken)
+            val event = parser.consumeEvent()
 
-                when (nextToken.code) {
-                    Code.BeginScalar -> readScalarOrNull(parser, location)
-                    Code.BeginSequence -> readSequence(parser, location)
-                    Code.BeginMapping -> readMapping(parser, location)
-                    else -> throw IllegalStateException("Unexpected ${nextToken.code.name}")
-                }
+            return when (event) {
+                is ScalarEvent -> readScalarOrNull(event)
+                is SequenceStartEvent -> readSequence(parser, event.location)
+                is MappingStartEvent -> readMapping(parser, event.location)
+                else -> throw MalformedYamlException("Unexpected ${event.eventId}", event.location)
             }
         }
 
-        private fun readScalarOrNull(parser: YamlParser, location: Location): YamlNode {
-            return parser.readWrapped(Code.BeginScalar, Code.EndScalar) {
-                val firstToken = parser.peekToken(Code.Indicator, Code.Text, Code.EndScalar)
-
-                when (firstToken.code) {
-                    Code.Indicator -> {
-                        when (firstToken.decodeText()) {
-                            "\"", "'" -> {
-                                val quoteChar = parser.consumeToken(Code.Indicator).decodeText()
-                                val text = readText(parser)
-                                val endQuoteToken = parser.consumeAnyToken()
-
-                                if (endQuoteToken.code != Code.Indicator || endQuoteToken.decodeText() != quoteChar) {
-                                    throw YamlException("Missing trailing $quoteChar", endQuoteToken)
-                                }
-
-                                YamlScalar(text, location)
-                            }
-                            ">", "|" -> {
-                                // Consume all the indicators - folded / literal, plus optional chomping style and optional indentation indicators
-                                // (the YAML tokeniser takes care of the details of all of these for us)
-                                while (parser.peekAnyToken().code == Code.Indicator) {
-                                    parser.consumeToken(Code.Indicator)
-                                }
-
-                                YamlScalar(readText(parser), location)
-                            }
-                            else -> throw YamlException("Unexpected '${firstToken.decodeText()}'", firstToken)
-                        }
-                    }
-                    Code.Text -> {
-                        val text = readText(parser)
-
-                        if (text == "null") {
-                            YamlNull(location)
-                        } else {
-                            YamlScalar(text, location)
-                        }
-                    }
-                    Code.EndScalar -> YamlNull(location)
-                    else -> throw IllegalStateException()
-                }
-            }
-        }
-
-        private fun readText(parser: YamlParser): String {
-            val builder = StringBuilder()
-
-            while (true) {
-                val nextToken = parser.peekToken(
-                    Code.Text,
-                    Code.LineFold,
-                    Code.LineFeed,
-                    Code.BeginEscape,
-                    Code.Indicator,
-                    Code.EndScalar
-                )
-
-                when (nextToken.code) {
-                    Code.Text -> builder.append(parser.consumeToken(Code.Text).decodeText())
-                    Code.LineFold -> {
-                        parser.consumeToken(Code.LineFold)
-                        builder.append(" ")
-                    }
-                    Code.LineFeed -> {
-                        parser.consumeToken(Code.LineFeed)
-                        builder.appendln()
-                    }
-                    Code.BeginEscape -> builder.append(readEscape(parser))
-                    Code.Indicator, Code.EndScalar -> return builder.toString()
-                    else -> throw IllegalStateException()
-                }
-            }
-        }
-
-        // Reference: http://yaml.org/spec/1.2/spec.html#escaping/in%20double-quoted%20scalars/
-        private val escapingMap = mapOf(
-            "0" to "\u0000",
-            "a" to "\u0007",
-            "b" to "\u0008",
-            "t" to "\t",
-            "\t" to "\t",
-            "n" to "\n",
-            "v" to "\u000B",
-            "f" to "\u000C",
-            "r" to "\r",
-            "e" to "\u001B",
-            "\u0020" to "\u0020",
-            "\"" to "\"",
-            "/" to "/",
-            "\\" to "\\",
-            "N" to "\u0085",
-            "_" to "\u00A0",
-            "L" to "\u2028",
-            "P" to "\u2029"
-        )
-
-        private fun readEscape(parser: YamlParser): String {
-            return parser.readWrapped(Code.BeginEscape, Code.EndEscape) {
-                val indicator = parser.consumeToken(Code.Indicator)
-
-                when (indicator.decodeText()) {
-                    "\\" -> {
-                        val nextToken = parser.consumeToken(Code.Meta, Code.Indicator)
-                        val nextTokenText = nextToken.decodeText()
-
-                        when (nextToken.code) {
-                            Code.Meta -> escapingMap.get(nextTokenText)!! // The tokeniser will generate an error if the escape sequence is invalid
-                            Code.Indicator -> {
-                                val hexValue = parser.consumeToken(Code.Meta).decodeText()
-                                hexValue.toInt(16).toChar().toString()
-                            }
-                            else -> throw IllegalStateException()
-                        }
-                    }
-                    "'" -> parser.consumeToken(Code.Meta).decodeText()
-                    else -> {
-                        throw YamlException("Unexpected escape character '${indicator.text}'.", indicator)
-                    }
-                }
+        private fun readScalarOrNull(event: ScalarEvent): YamlNode {
+            if ((event.value == "null" || event.value == "") && event.isPlain) {
+                return YamlNull(event.location)
+            } else {
+                return YamlScalar(event.value, event.location)
             }
         }
 
         private fun readSequence(parser: YamlParser, location: Location): YamlList {
-            return parser.readWrapped(Code.BeginSequence, Code.EndSequence) {
-                val firstToken = parser.peekToken(Code.Indicator, Code.EndSequence)
-
-                if (firstToken.code == Code.Indicator && firstToken.decodeText() == "[") {
-                    parser.consumeToken(Code.Indicator)
-
-                    readList(parser, location).also {
-                        readIndicator(parser, "]")
-                    }
-                } else {
-                    readList(parser, location)
-                }
-            }
-        }
-
-        private fun readList(parser: YamlParser, location: Location): YamlList {
             val items = mutableListOf<YamlNode>()
 
             while (true) {
-                val nextToken = parser.peekToken(Code.Indicator, Code.BeginNode, Code.EndSequence)
+                val event = parser.peekEvent()
 
-                when (nextToken.code) {
-                    Code.Indicator -> when (nextToken.decodeText()) {
-                        "]" -> return YamlList(items, location)
-                        "-", "," -> {
-                            parser.consumeToken(Code.Indicator)
-                            items.add(fromParser(parser))
-                        }
-                        else -> throw YamlException("Unexpected '${nextToken.text}'", nextToken)
+                when (event.eventId) {
+                    Event.ID.SequenceEnd -> {
+                        parser.consumeEventOfType(Event.ID.SequenceEnd)
+                        return YamlList(items, location)
                     }
-                    Code.BeginNode -> items.add(fromParser(parser))
-                    Code.EndSequence -> return YamlList(items, location)
-                    else -> throw IllegalStateException()
+
+                    else -> items += fromParser(parser)
                 }
             }
         }
 
         private fun readMapping(parser: YamlParser, location: Location): YamlMap {
-            return parser.readWrapped(Code.BeginMapping, Code.EndMapping) {
-                val firstToken = parser.peekToken(Code.Indicator, Code.BeginPair)
-
-                if (firstToken.code == Code.Indicator && firstToken.decodeText() == "{") {
-                    parser.consumeToken(Code.Indicator)
-
-                    readMap(parser, location).also {
-                        readIndicator(parser, "}")
-                    }
-                } else {
-                    readMap(parser, location)
-                }
-            }
-        }
-
-        private fun readMap(parser: YamlParser, location: Location): YamlMap {
             val items = mutableMapOf<YamlNode, YamlNode>()
 
             while (true) {
-                val nextToken = parser.peekToken(Code.BeginPair, Code.EndMapping, Code.Indicator)
+                val event = parser.peekEvent()
 
-                when (nextToken.code) {
-                    Code.BeginPair -> {
-                        val pair = readPair(parser)
-                        items.put(pair.first, pair.second)
+                when (event.eventId) {
+                    Event.ID.MappingEnd -> {
+                        parser.consumeEventOfType(Event.ID.MappingEnd)
+                        return YamlMap(items, location)
                     }
-                    Code.EndMapping -> return YamlMap(items, location)
-                    Code.Indicator -> when (nextToken.decodeText()) {
-                        "}" -> return YamlMap(items, location)
-                        "," -> {
-                            parser.consumeToken(Code.Indicator)
-                            val pair = readPair(parser)
-                            items.put(pair.first, pair.second)
-                        }
-                        else -> throw YamlException("Unexpected '${nextToken.text}'", nextToken)
-                    }
-                    else -> throw IllegalStateException()
+
+                    else -> items += (fromParser(parser) to fromParser(parser))
                 }
             }
         }
-
-        private fun readPair(parser: YamlParser): Pair<YamlNode, YamlNode> {
-            return parser.readWrapped(Code.BeginPair, Code.EndPair) {
-                val key = fromParser(parser)
-                readIndicator(parser, ":")
-                val value = fromParser(parser)
-
-                key to value
-            }
-        }
-
-        private fun readIndicator(parser: YamlParser, expected: String) {
-            val indicator = parser.consumeToken(Code.Indicator)
-            val actual = indicator.decodeText()
-
-            if (actual != expected) {
-                throw YamlException("Expected '$expected', but got '$actual'", indicator)
-            }
-        }
-
-        private fun Token.decodeText(): String = when (this.text) {
-            is Escapable.Code -> (this.text as Escapable.Code).codes.map { it.toChar() }.joinToString("")
-            is Escapable.Text -> this.text.toString()
-        }
-
-        private fun <T> YamlParser.readWrapped(
-            expectedFirstNode: Code,
-            expectedLastNode: Code,
-            reader: () -> T
-        ): T {
-            this.consumeToken(expectedFirstNode)
-
-            return reader().also {
-                this.consumeToken(expectedLastNode)
-            }
-        }
-
-        private fun locationFrom(token: Token): Location = Location(token.line, token.lineChar + 1)
     }
 }
 

@@ -54,7 +54,7 @@ repositories {
 
 dependencies {
     compile(kotlin("stdlib-jdk8", "1.3.11"))
-    compile(group = "com.github.mhshams", name = "core", version = "0.5.0")
+    compile(group = "org.snakeyaml", name = "snakeyaml-engine", version = "1.0")
     compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.9.1")
 
     val spekVersion = "1.2.1"

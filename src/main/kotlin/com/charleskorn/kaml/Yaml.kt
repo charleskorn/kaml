@@ -28,6 +28,8 @@ object Yaml : AbstractSerialFormat(), StringFormat {
     override fun <T> parse(serializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val rootNode = YamlNode.fromParser(parser)
+        parser.ensureEndOfStreamReached()
+
         val input = YamlInput.createFor(rootNode)
         return input.decode(serializer)
     }

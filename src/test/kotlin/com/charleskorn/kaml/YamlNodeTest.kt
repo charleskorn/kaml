@@ -208,8 +208,7 @@ object YamlNodeTest : Spek({
 
         mapOf(
             "a double-quoted string without a trailing double quote" to """"hello""",
-            "a single-quoted string without a trailing single quote" to "'hello",
-            "a flow-style list without a trailing closing bracket" to """[thing"""
+            "a single-quoted string without a trailing single quote" to "'hello"
         ).forEach { description, input ->
             given(description) {
                 on("parsing that input") {
@@ -218,10 +217,53 @@ object YamlNodeTest : Spek({
                             val parser = YamlParser(input)
                             YamlNode.fromParser(parser)
                         }).toThrow<MalformedYamlException> {
-                            message { toBe("Unexpected end of input") }
+                            message {
+                                toBe(
+                                    """
+                                    while scanning a quoted scalar
+                                     at line 1, column 1:
+                                        $input
+                                        ^
+                                    found unexpected end of stream
+                                     at line 1, column 7:
+                                        $input
+                                              ^
+                                    """.trimIndent()
+                                )
+                            }
                             line { toBe(1) }
                             column { toBe(7) }
                         }
+                    }
+                }
+            }
+        }
+
+        given("a flow-style list without a trailing closing bracket") {
+            val input = "[thing"
+
+            on("parsing that input") {
+                it("throws an appropriate exception") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNode.fromParser(parser)
+                    }).toThrow<MalformedYamlException> {
+                        message {
+                            toBe(
+                                """
+                                    while parsing a flow sequence
+                                     at line 1, column 1:
+                                        [thing
+                                        ^
+                                    expected ',' or ']', but got <stream end>
+                                     at line 1, column 7:
+                                        [thing
+                                              ^
+                                    """.trimIndent()
+                            )
+                        }
+                        line { toBe(1) }
+                        column { toBe(7) }
                     }
                 }
             }
@@ -361,7 +403,7 @@ object YamlNodeTest : Spek({
                                     listOf(
                                         YamlScalar("thing3", Location(3, 7)),
                                         YamlScalar("thing4", Location(4, 7))
-                                    ), Location(3, 1)
+                                    ), Location(3, 5)
                                 )
                             ), Location(1, 1)
                         )
@@ -506,7 +548,7 @@ object YamlNodeTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
-                it("returns a map with two key-value pairs") {
+                it("returns a map with all expected key-value pairs") {
                     assert(result).toBe(
                         YamlMap(
                             mapOf(
@@ -524,7 +566,7 @@ object YamlNodeTest : Spek({
                                                 )
                                             ), Location(6, 5)
                                         )
-                                    ), Location(4, 1)
+                                    ), Location(4, 3)
                                 ),
                                 YamlScalar("key4", Location(7, 1)) to YamlList(
                                     listOf(
@@ -534,7 +576,7 @@ object YamlNodeTest : Spek({
                                 YamlScalar("key5", Location(8, 1)) to YamlMap(
                                     mapOf(
                                         YamlScalar("inner", Location(9, 3)) to YamlScalar("othervalue", Location(9, 10))
-                                    ), Location(9, 1)
+                                    ), Location(9, 3)
                                 )
                             ), Location(1, 1)
                         )
@@ -555,7 +597,16 @@ object YamlNodeTest : Spek({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
                     }).toThrow<MalformedYamlException> {
-                        message { toBe("Invalid YAML. The level of indentation at this point or nearby may be incorrect.") }
+                        message {
+                            toBe(
+                                """
+                                mapping values are not allowed here (is the indentation level of this line or a line nearby incorrect?)
+                                 at line 3, column 8:
+                                       key2: value2
+                                           ^
+                                """.trimIndent()
+                            )
+                        }
                         line { toBe(3) }
                         column { toBe(8) }
                     }
@@ -576,9 +627,56 @@ object YamlNodeTest : Spek({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
                     }).toThrow<MalformedYamlException> {
-                        message { toBe("Invalid YAML. The level of indentation at this point or nearby may be incorrect.") }
+                        message {
+                            toBe(
+                                """
+                                while parsing a block mapping
+                                 at line 1, column 1:
+                                    thing:
+                                    ^
+                                expected <block end>, but found '<block mapping start>' (is the indentation level of this line or a line nearby incorrect?)
+                                 at line 3, column 2:
+                                     key2: value2
+                                     ^
+                                """.trimIndent()
+                            )
+                        }
                         line { toBe(3) }
-                        column { toBe(1) }
+                        column { toBe(2) }
+                    }
+                }
+            }
+        }
+
+        given("a list item in a map value with not enough indentation") {
+            val input = """
+                    thing:
+                      - value1
+                     - value2
+                """.trimIndent()
+
+            on("parsing that input") {
+                it("throws an appropriate exception") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNode.fromParser(parser)
+                    }).toThrow<MalformedYamlException> {
+                        message {
+                            toBe(
+                                """
+                                while parsing a block mapping
+                                 at line 1, column 1:
+                                    thing:
+                                    ^
+                                expected <block end>, but found '<block sequence start>' (is the indentation level of this line or a line nearby incorrect?)
+                                 at line 3, column 2:
+                                     - value2
+                                     ^
+                                """.trimIndent()
+                            )
+                        }
+                        line { toBe(3) }
+                        column { toBe(2) }
                     }
                 }
             }
@@ -608,7 +706,20 @@ object YamlNodeTest : Spek({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
                     }).toThrow<MalformedYamlException> {
-                        message { toBe("Unexpected end of input") }
+                        message {
+                            toBe(
+                                """
+                                while parsing a flow node
+                                 at line 1, column 2:
+                                    {
+                                     ^
+                                expected the node content, but found '<stream end>'
+                                 at line 1, column 2:
+                                    {
+                                     ^
+                                """.trimIndent()
+                            )
+                        }
                         line { toBe(1) }
                         column { toBe(2) }
                     }
@@ -644,7 +755,20 @@ object YamlNodeTest : Spek({
                         val parser = YamlParser(input)
                         YamlNode.fromParser(parser)
                     }).toThrow<MalformedYamlException> {
-                        message { toBe("Unexpected end of input") }
+                        message {
+                            toBe(
+                                """
+                                while parsing a flow mapping
+                                 at line 1, column 1:
+                                    {key: value
+                                    ^
+                                expected ',' or '}', but got <stream end>
+                                 at line 1, column 12:
+                                    {key: value
+                                               ^
+                            """.trimIndent()
+                            )
+                        }
                         line { toBe(1) }
                         column { toBe(12) }
                     }
@@ -748,10 +872,6 @@ object YamlNodeTest : Spek({
         mapOf(
             "!thing" to "tags",
             "!!str 'some string'" to "tags",
-            """
-                %TAG ! tag:test.com,2000:
-                ---
-            """.trimIndent() to "directives",
             "*thing" to "aliases",
             "&thing" to "anchors"
         ).forEach { input, featureName ->
