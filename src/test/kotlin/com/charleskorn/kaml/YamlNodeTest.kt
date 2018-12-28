@@ -22,11 +22,8 @@ import ch.tutteli.atrium.api.cc.en_GB.message
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 
 object YamlNodeTest : Spek({
     describe("a YAML node") {
@@ -48,8 +45,8 @@ object YamlNodeTest : Spek({
             "'null'" to "null",
             """"null"""" to "null"
         ).forEach { input, expectedResult ->
-            given("the string '$input'") {
-                on("parsing that input") {
+            context("given the string '$input'") {
+                describe("parsing that input") {
                     val parser = YamlParser(input)
                     val result = YamlNode.fromParser(parser)
 
@@ -188,8 +185,8 @@ object YamlNodeTest : Spek({
                 # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
             """.trimIndent() to " some\n text\nhere there\n\n"
         ).forEach { input, text ->
-            given("the block scalar '$input'") {
-                on("parsing that input") {
+            context("given the block scalar '$input'") {
+                describe("parsing that input") {
                     val parser = YamlParser(input)
                     val result = YamlNode.fromParser(parser)
 
@@ -207,11 +204,11 @@ object YamlNodeTest : Spek({
         }
 
         mapOf(
-            "a double-quoted string without a trailing double quote" to """"hello""",
-            "a single-quoted string without a trailing single quote" to "'hello"
+            "given a double-quoted string without a trailing double quote" to """"hello""",
+            "given a single-quoted string without a trailing single quote" to "'hello"
         ).forEach { description, input ->
-            given(description) {
-                on("parsing that input") {
+            context(description) {
+                describe("parsing that input") {
                     it("throws an appropriate exception") {
                         assert({
                             val parser = YamlParser(input)
@@ -239,10 +236,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a flow-style list without a trailing closing bracket") {
+        context("given a flow-style list without a trailing closing bracket") {
             val input = "[thing"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
@@ -269,7 +266,7 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("some input representing a list of strings") {
+        context("given some input representing a list of strings") {
             val input = """
                 - thing1
                 - thing2
@@ -278,7 +275,7 @@ object YamlNodeTest : Spek({
                 - "thing\"5"
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -298,10 +295,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("some input representing a list of strings in flow style") {
+        context("given some input representing a list of strings in flow style") {
             val input = """[thing1, thing2, "thing3", 'thing4', "thing\"5"]"""
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -321,10 +318,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("some input representing an empty list of strings in flow style") {
+        context("given some input representing an empty list of strings in flow style") {
             val input = "[]"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -334,10 +331,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a nested list given with both the inner and outer lists given in flow style with no elements") {
+        context("given a nested list given with both the inner and outer lists given in flow style with no elements") {
             val input = "[[], []]"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -354,13 +351,13 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a nested list given with the outer list in non-flow style and the inner lists in flow style with no elements") {
+        context("given a nested list given with the outer list in non-flow style and the inner lists in flow style with no elements") {
             val input = """
                 - []
                 - []
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -377,7 +374,7 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a nested list given with the outer list in non-flow style and the inner lists in both non-flow and flow styles with some elements") {
+        context("given a nested list given with the outer list in non-flow style and the inner lists in both non-flow and flow styles with some elements") {
             val input = """
                 - [thing1, thing2]
                 -
@@ -385,7 +382,7 @@ object YamlNodeTest : Spek({
                     - thing4
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -416,8 +413,8 @@ object YamlNodeTest : Spek({
             "-",
             "- "
         ).forEach { input ->
-            given("a list with a single null entry in the format '$input'") {
-                on("parsing that input") {
+            context("given a list with a single null entry in the format '$input'") {
+                describe("parsing that input") {
                     val parser = YamlParser(input)
                     val result = YamlNode.fromParser(parser)
 
@@ -434,10 +431,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("the string 'null'") {
+        context("given the string 'null'") {
             val input = "null"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -447,10 +444,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a single key-value pair") {
+        context("given a single key-value pair") {
             val input = "key: value"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -466,10 +463,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a single key-value pair with a null value") {
+        context("given a single key-value pair with a null value") {
             val input = "key:"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -485,13 +482,13 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a map with two key-value pairs") {
+        context("given a map with two key-value pairs") {
             val input = """
                 key1: value1
                 key2: value2
                 """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -508,13 +505,13 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a map with two key-value pairs, one of which has a null value") {
+        context("given a map with two key-value pairs, one of which has a null value") {
             val input = """
                 key1: value1
                 key2:
                 """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -531,7 +528,7 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a map with nested values") {
+        context("given a map with nested values") {
             val input = """
                 key1: value1
                 key2: value2
@@ -544,7 +541,7 @@ object YamlNodeTest : Spek({
                   inner: othervalue
                 """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -585,13 +582,13 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a key-value pair with extra indentation") {
+        context("given a key-value pair with extra indentation") {
             val input = """
                     thing:
                       key1: value1
                        key2: value2
                 """.trimIndent()
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
@@ -614,14 +611,14 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a key-value pair with not enough indentation") {
+        context("given a key-value pair with not enough indentation") {
             val input = """
                     thing:
                       key1: value1
                      key2: value2
                 """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
@@ -648,14 +645,14 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a list item in a map value with not enough indentation") {
+        context("given a list item in a map value with not enough indentation") {
             val input = """
                     thing:
                       - value1
                      - value2
                 """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
@@ -682,10 +679,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("an empty map in flow style") {
+        context("given an empty map in flow style") {
             val input = "{}"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -697,10 +694,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a single opening curly brace") {
+        context("given a single opening curly brace") {
             val input = "{"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
@@ -727,10 +724,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a single key-value pair in flow style") {
+        context("given a single key-value pair in flow style") {
             val input = "{key: value}"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -746,10 +743,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a single key-value pair in flow style with a missing closing curly brace") {
+        context("given a single key-value pair in flow style with a missing closing curly brace") {
             val input = "{key: value"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
@@ -776,10 +773,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("two key-value pairs in flow style") {
+        context("given two key-value pairs in flow style") {
             val input = "{key1: value1, key2: value2}"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -796,13 +793,13 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a scalar with a preceding comment") {
+        context("given a scalar with a preceding comment") {
             val input = """
                 # this is a comment
                 somevalue
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -814,13 +811,13 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a scalar with a following comment") {
+        context("given a scalar with a following comment") {
             val input = """
                 somevalue
                 # this is a comment
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -832,7 +829,7 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a scalar with a multiple lines of preceding and following comments") {
+        context("given a scalar with a multiple lines of preceding and following comments") {
             val input = """
                 # this is a comment
                 # also a comment
@@ -840,7 +837,7 @@ object YamlNodeTest : Spek({
                 # still a comment
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -852,12 +849,12 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a scalar with a following inline comment") {
+        context("given a scalar with a following inline comment") {
             val input = """
                 somevalue # this is a comment
             """.trimIndent()
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNode.fromParser(parser)
 
@@ -875,8 +872,8 @@ object YamlNodeTest : Spek({
             "*thing" to "aliases",
             "&thing" to "anchors"
         ).forEach { input, featureName ->
-            given("the input '$input' which contains an unsupported YAML feature") {
-                on("parsing that input") {
+            context("given the input '$input' which contains an unsupported YAML feature") {
+                describe("parsing that input") {
                     it("throws an appropriate exception stating that the YAML feature being used is not supported") {
                         assert({
                             val parser = YamlParser(input)
@@ -892,10 +889,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("an empty document") {
+        context("given an empty document") {
             val input = ""
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception stating that the document is empty") {
                     assert({
                         val parser = YamlParser(input)
@@ -909,10 +906,10 @@ object YamlNodeTest : Spek({
             }
         }
 
-        given("a document with just a comment") {
+        context("given a document with just a comment") {
             val input = "# this is a comment"
 
-            on("parsing that input") {
+            describe("parsing that input") {
                 it("throws an appropriate exception stating that the document is empty") {
                     assert({
                         val parser = YamlParser(input)

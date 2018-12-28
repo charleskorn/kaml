@@ -57,15 +57,14 @@ dependencies {
     compile(group = "org.snakeyaml", name = "snakeyaml-engine", version = "1.0")
     compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.9.1")
 
-    val spekVersion = "1.2.1"
+    val spekVersion = "2.0.0-rc.1"
 
     // Override the version of kotlin-reflect used by Spek.
     testImplementation(kotlin("reflect", "1.3.11"))
-    testImplementation(group = "org.jetbrains.spek", name = "spek-api", version = spekVersion)
+    testImplementation(group = "org.spekframework.spek2", name = "spek-dsl-jvm", version = spekVersion)
     testImplementation(group = "ch.tutteli.atrium", name = "atrium-cc-en_GB-robstoll", version = "0.7.0")
 
-    testRuntimeOnly(group = "org.jetbrains.spek", name = "spek-junit-platform-engine", version = spekVersion)
-    testRuntimeOnly(group = "org.junit.platform", name = "junit-platform-engine", version = "1.3.2")
+    testRuntimeOnly(group = "org.spekframework.spek2", name = "spek-runner-junit5", version = spekVersion)
 }
 
 tasks.withType<KotlinCompile> {
