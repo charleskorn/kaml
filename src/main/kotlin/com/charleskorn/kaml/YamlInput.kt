@@ -26,15 +26,16 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UpdateMode
+import kotlinx.serialization.context.SerialContext
 import kotlinx.serialization.internal.EnumDescriptor
 
-sealed class YamlInput(val node: YamlNode) : ElementValueDecoder() {
+sealed class YamlInput(val node: YamlNode, override var context: SerialContext) : ElementValueDecoder() {
     companion object {
-        fun createFor(node: YamlNode): YamlInput = when (node) {
-            is YamlScalar -> YamlScalarInput(node)
-            is YamlNull -> YamlNullInput(node)
-            is YamlList -> YamlListInput(node)
-            is YamlMap -> YamlMapInput(node)
+        fun createFor(node: YamlNode, context: SerialContext): YamlInput = when (node) {
+            is YamlScalar -> YamlScalarInput(node, context)
+            is YamlNull -> YamlNullInput(node, context)
+            is YamlList -> YamlListInput(node, context)
+            is YamlMap -> YamlMapInput(node, context)
         }
     }
 
@@ -43,7 +44,7 @@ sealed class YamlInput(val node: YamlNode) : ElementValueDecoder() {
     abstract fun getCurrentLocation(): Location
 }
 
-private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
+private class YamlScalarInput(val scalar: YamlScalar, context: SerialContext) : YamlInput(scalar, context) {
     override fun decodeString(): String = scalar.content
     override fun decodeInt(): Int = scalar.toInt()
     override fun decodeLong(): Long = scalar.toLong()
@@ -72,7 +73,7 @@ private class YamlScalarInput(val scalar: YamlScalar) : YamlInput(scalar) {
     override fun getCurrentLocation(): Location = scalar.location
 }
 
-private class YamlNullInput(val nullValue: YamlNode) : YamlInput(nullValue) {
+private class YamlNullInput(val nullValue: YamlNode, context: SerialContext) : YamlInput(nullValue, context) {
     override fun decodeNotNullMark(): Boolean = false
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.location)
@@ -82,7 +83,7 @@ private class YamlNullInput(val nullValue: YamlNode) : YamlInput(nullValue) {
     override fun getCurrentLocation(): Location = nullValue.location
 }
 
-private class YamlListInput(val list: YamlList) : YamlInput(list) {
+private class YamlListInput(val list: YamlList, context: SerialContext) : YamlInput(list, context) {
     private var nextElementIndex = 0
     private lateinit var currentElementDecoder: YamlInput
 
@@ -93,7 +94,7 @@ private class YamlListInput(val list: YamlList) : YamlInput(list) {
             return READ_DONE
         }
 
-        currentElementDecoder = createFor(list.items[nextElementIndex])
+        currentElementDecoder = createFor(list.items[nextElementIndex], context)
 
         return nextElementIndex++
     }
@@ -124,7 +125,7 @@ private class YamlListInput(val list: YamlList) : YamlInput(list) {
     override fun getCurrentLocation(): Location = currentElementDecoder.node.location
 }
 
-private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
+private class YamlMapInput(val map: YamlMap, context: SerialContext) : YamlInput(map, context) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
@@ -151,7 +152,7 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
             throwUnknownProperty(name, key.location, desc)
         }
 
-        currentValueDecoder = createFor(entriesList[nextIndex].value)
+        currentValueDecoder = createFor(entriesList[nextIndex].value, context)
         currentlyReadingValue = true
         nextIndex++
 
@@ -168,8 +169,8 @@ private class YamlMapInput(val map: YamlMap) : YamlInput(map) {
         currentlyReadingValue = nextIndex % 2 != 0
 
         currentValueDecoder = when (currentlyReadingValue) {
-            true -> createFor(currentEntry.value)
-            false -> createFor(currentEntry.key)
+            true -> createFor(currentEntry.value, context)
+            false -> createFor(currentEntry.key, context)
         }
 
         return nextIndex++

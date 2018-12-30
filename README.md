@@ -34,7 +34,7 @@ val input = """
           - Dan
     """.trimIndent()
 
-val result = YAML.parse(Team.serializer(), input)
+val result = Yaml.default.parse(Team.serializer(), input)
 
 println(result)
 ```
