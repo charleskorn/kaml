@@ -1,6 +1,6 @@
 /*
 
-   Copyright 2018 Charles Korn.
+   Copyright 2018-2019 Charles Korn.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 
 val licenseText = """
-   Copyright 2018 Charles Korn.
+   Copyright 2018-2019 Charles Korn.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
