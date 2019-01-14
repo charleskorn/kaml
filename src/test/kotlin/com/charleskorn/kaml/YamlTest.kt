@@ -50,28 +50,423 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
 object YamlTest : Spek({
-    describe("a YAML parser") {
-        describe("parsing scalars") {
-            context("given the input 'hello'") {
-                val input = "hello"
+    describe("a YAML parser and serializer") {
+        describe("parsing YAML") {
+            describe("parsing scalars") {
+                context("given the input 'hello'") {
+                    val input = "hello"
 
-                context("parsing that input as a string") {
-                    val result = Yaml.default.parse(StringSerializer, input)
+                    context("parsing that input as a string") {
+                        val result = Yaml.default.parse(StringSerializer, input)
 
-                    it("deserializes it to the expected string value") {
-                        assert(result).toBe("hello")
+                        it("deserializes it to the expected string value") {
+                            assert(result).toBe("hello")
+                        }
+                    }
+
+                    context("parsing that input as a nullable string") {
+                        val result = Yaml.default.parse(makeNullable(StringSerializer), input)
+
+                        it("deserializes it to the expected string value") {
+                            assert(result).notToBeNullBut("hello")
+                        }
+                    }
+
+                    context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                                message { toBe("Serializer called with location: 1, 1") }
+                            }
+                        }
                     }
                 }
 
-                context("parsing that input as a nullable string") {
+                context("given the input '123'") {
+                    val input = "123"
+
+                    context("parsing that input as an integer") {
+                        val result = Yaml.default.parse(Int.serializer(), input)
+
+                        it("deserializes it to the expected integer") {
+                            assert(result).toBe(123)
+                        }
+                    }
+
+                    context("parsing that input as a long") {
+                        val result = Yaml.default.parse(Long.serializer(), input)
+
+                        it("deserializes it to the expected long") {
+                            assert(result).toBe(123)
+                        }
+                    }
+
+                    context("parsing that input as a short") {
+                        val result = Yaml.default.parse(Short.serializer(), input)
+
+                        it("deserializes it to the expected short") {
+                            assert(result).toBe(123)
+                        }
+                    }
+
+                    context("parsing that input as a byte") {
+                        val result = Yaml.default.parse(Byte.serializer(), input)
+
+                        it("deserializes it to the expected byte") {
+                            assert(result).toBe(123)
+                        }
+                    }
+
+                    context("parsing that input as a double") {
+                        val result = Yaml.default.parse(Double.serializer(), input)
+
+                        it("deserializes it to the expected double") {
+                            assert(result).toBe(123.0)
+                        }
+                    }
+
+                    context("parsing that input as a float") {
+                        val result = Yaml.default.parse(FloatSerializer, input)
+
+                        it("deserializes it to the expected float") {
+                            assert(result).toBe(123.0f)
+                        }
+                    }
+
+                    context("parsing that input as a nullable integer") {
+                        val result = Yaml.default.parse(makeNullable(Int.serializer()), input)
+
+                        it("deserializes it to the expected integer") {
+                            assert(result).notToBeNullBut(123)
+                        }
+                    }
+
+                    context("parsing that input as a nullable long") {
+                        val result = Yaml.default.parse(makeNullable(Long.serializer()), input)
+
+                        it("deserializes it to the expected long") {
+                            assert(result).notToBeNullBut(123)
+                        }
+                    }
+
+                    context("parsing that input as a nullable short") {
+                        val result = Yaml.default.parse(makeNullable(Short.serializer()), input)
+
+                        it("deserializes it to the expected short") {
+                            assert(result).notToBeNullBut(123)
+                        }
+                    }
+
+                    context("parsing that input as a nullable byte") {
+                        val result = Yaml.default.parse(makeNullable(Byte.serializer()), input)
+
+                        it("deserializes it to the expected byte") {
+                            assert(result).notToBeNullBut(123)
+                        }
+                    }
+
+                    context("parsing that input as a nullable double") {
+                        val result = Yaml.default.parse(makeNullable(Double.serializer()), input)
+
+                        it("deserializes it to the expected double") {
+                            assert(result).notToBeNullBut(123.0)
+                        }
+                    }
+
+                    context("parsing that input as a nullable float") {
+                        val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
+
+                        it("deserializes it to the expected float") {
+                            assert(result).notToBeNullBut(123.0f)
+                        }
+                    }
+                }
+
+                context("given the input 'true'") {
+                    val input = "true"
+
+                    context("parsing that input as a boolean") {
+                        val result = Yaml.default.parse(BooleanSerializer, input)
+
+                        it("deserializes it to the expected boolean value") {
+                            assert(result).toBe(true)
+                        }
+                    }
+
+                    context("parsing that input as a nullable boolean") {
+                        val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
+
+                        it("deserializes it to the expected boolean value") {
+                            assert(result).notToBeNullBut(true)
+                        }
+                    }
+                }
+
+                context("given the input 'c'") {
+                    val input = "c"
+
+                    context("parsing that input as a character") {
+                        val result = Yaml.default.parse(CharSerializer, input)
+
+                        it("deserializes it to the expected character value") {
+                            assert(result).toBe('c')
+                        }
+                    }
+
+                    context("parsing that input as a nullable character") {
+                        val result = Yaml.default.parse(makeNullable(CharSerializer), input)
+
+                        it("deserializes it to the expected character value") {
+                            assert(result).notToBeNullBut('c')
+                        }
+                    }
+                }
+
+                mapOf(
+                    "Value1" to TestEnum.Value1,
+                    "Value2" to TestEnum.Value2
+                ).forEach { input, expectedValue ->
+                    context("given the input '$input'") {
+                        context("parsing that input as an enumeration value") {
+                            val result = Yaml.default.parse(EnumSerializer(TestEnum::class), input)
+
+                            it("deserializes it to the expected enumeration value") {
+                                assert(result).toBe(expectedValue)
+                            }
+                        }
+                    }
+                }
+
+                context("parsing an invalid enumeration value") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlScalarFormatException> {
+                            message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+            }
+
+            describe("parsing null values") {
+                val input = "null"
+
+                context("parsing a null value as a nullable string") {
                     val result = Yaml.default.parse(makeNullable(StringSerializer), input)
 
-                    it("deserializes it to the expected string value") {
-                        assert(result).notToBeNullBut("hello")
+                    it("returns a null value") {
+                        assert(result).toBe(null)
                     }
                 }
 
-                context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                context("parsing a null value as a non-nullable string") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(StringSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable integer") {
+                    val result = Yaml.default.parse(makeNullable(IntSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable integer") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(IntSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable long") {
+                    val result = Yaml.default.parse(makeNullable(LongSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable long") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(LongSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable short") {
+                    val result = Yaml.default.parse(makeNullable(ShortSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable short") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(ShortSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable byte") {
+                    val result = Yaml.default.parse(makeNullable(ByteSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable byte") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(ByteSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable double") {
+                    val result = Yaml.default.parse(makeNullable(DoubleSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable double") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(DoubleSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable float") {
+                    val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable float") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(FloatSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable boolean") {
+                    val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable boolean") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(BooleanSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable character") {
+                    val result = Yaml.default.parse(makeNullable(CharSerializer), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable character") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(CharSerializer, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable enum") {
+                    val result = Yaml.default.parse(makeNullable(EnumSerializer(TestEnum::class)), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable enum") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(EnumSerializer(TestEnum::class), input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable list") {
+                    val result = Yaml.default.parse(makeNullable(StringSerializer.list), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable list") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(StringSerializer.list, input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value as a nullable object") {
+                    val result = Yaml.default.parse(makeNullable(ComplexStructure.serializer()), input)
+
+                    it("returns a null value") {
+                        assert(result).toBe(null)
+                    }
+                }
+
+                context("parsing a null value as a non-nullable object") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                            message { toBe("Unexpected null or empty value for non-null field.") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+
+                context("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         assert({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
@@ -80,585 +475,191 @@ object YamlTest : Spek({
                 }
             }
 
-            context("given the input '123'") {
-                val input = "123"
-
-                context("parsing that input as an integer") {
-                    val result = Yaml.default.parse(Int.serializer(), input)
-
-                    it("deserializes it to the expected integer") {
-                        assert(result).toBe(123)
-                    }
-                }
-
-                context("parsing that input as a long") {
-                    val result = Yaml.default.parse(Long.serializer(), input)
-
-                    it("deserializes it to the expected long") {
-                        assert(result).toBe(123)
-                    }
-                }
-
-                context("parsing that input as a short") {
-                    val result = Yaml.default.parse(Short.serializer(), input)
-
-                    it("deserializes it to the expected short") {
-                        assert(result).toBe(123)
-                    }
-                }
-
-                context("parsing that input as a byte") {
-                    val result = Yaml.default.parse(Byte.serializer(), input)
-
-                    it("deserializes it to the expected byte") {
-                        assert(result).toBe(123)
-                    }
-                }
-
-                context("parsing that input as a double") {
-                    val result = Yaml.default.parse(Double.serializer(), input)
-
-                    it("deserializes it to the expected double") {
-                        assert(result).toBe(123.0)
-                    }
-                }
-
-                context("parsing that input as a float") {
-                    val result = Yaml.default.parse(FloatSerializer, input)
-
-                    it("deserializes it to the expected float") {
-                        assert(result).toBe(123.0f)
-                    }
-                }
-
-                context("parsing that input as a nullable integer") {
-                    val result = Yaml.default.parse(makeNullable(Int.serializer()), input)
-
-                    it("deserializes it to the expected integer") {
-                        assert(result).notToBeNullBut(123)
-                    }
-                }
-
-                context("parsing that input as a nullable long") {
-                    val result = Yaml.default.parse(makeNullable(Long.serializer()), input)
-
-                    it("deserializes it to the expected long") {
-                        assert(result).notToBeNullBut(123)
-                    }
-                }
-
-                context("parsing that input as a nullable short") {
-                    val result = Yaml.default.parse(makeNullable(Short.serializer()), input)
-
-                    it("deserializes it to the expected short") {
-                        assert(result).notToBeNullBut(123)
-                    }
-                }
-
-                context("parsing that input as a nullable byte") {
-                    val result = Yaml.default.parse(makeNullable(Byte.serializer()), input)
-
-                    it("deserializes it to the expected byte") {
-                        assert(result).notToBeNullBut(123)
-                    }
-                }
-
-                context("parsing that input as a nullable double") {
-                    val result = Yaml.default.parse(makeNullable(Double.serializer()), input)
-
-                    it("deserializes it to the expected double") {
-                        assert(result).notToBeNullBut(123.0)
-                    }
-                }
-
-                context("parsing that input as a nullable float") {
-                    val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
-
-                    it("deserializes it to the expected float") {
-                        assert(result).notToBeNullBut(123.0f)
-                    }
-                }
-            }
-
-            context("given the input 'true'") {
-                val input = "true"
-
-                context("parsing that input as a boolean") {
-                    val result = Yaml.default.parse(BooleanSerializer, input)
-
-                    it("deserializes it to the expected boolean value") {
-                        assert(result).toBe(true)
-                    }
-                }
-
-                context("parsing that input as a nullable boolean") {
-                    val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
-
-                    it("deserializes it to the expected boolean value") {
-                        assert(result).notToBeNullBut(true)
-                    }
-                }
-            }
-
-            context("given the input 'c'") {
-                val input = "c"
-
-                context("parsing that input as a character") {
-                    val result = Yaml.default.parse(CharSerializer, input)
-
-                    it("deserializes it to the expected character value") {
-                        assert(result).toBe('c')
-                    }
-                }
-
-                context("parsing that input as a nullable character") {
-                    val result = Yaml.default.parse(makeNullable(CharSerializer), input)
-
-                    it("deserializes it to the expected character value") {
-                        assert(result).notToBeNullBut('c')
-                    }
-                }
-            }
-
-            mapOf(
-                "Value1" to TestEnum.Value1,
-                "Value2" to TestEnum.Value2
-            ).forEach { input, expectedValue ->
-                context("given the input '$input'") {
-                    context("parsing that input as an enumeration value") {
-                        val result = Yaml.default.parse(EnumSerializer(TestEnum::class), input)
-
-                        it("deserializes it to the expected enumeration value") {
-                            assert(result).toBe(expectedValue)
-                        }
-                    }
-                }
-            }
-
-            context("parsing an invalid enumeration value") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlScalarFormatException> {
-                        message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-        }
-
-        describe("parsing null values") {
-            val input = "null"
-
-            context("parsing a null value as a nullable string") {
-                val result = Yaml.default.parse(makeNullable(StringSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable string") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(StringSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable integer") {
-                val result = Yaml.default.parse(makeNullable(IntSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable integer") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(IntSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable long") {
-                val result = Yaml.default.parse(makeNullable(LongSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable long") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(LongSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable short") {
-                val result = Yaml.default.parse(makeNullable(ShortSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable short") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(ShortSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable byte") {
-                val result = Yaml.default.parse(makeNullable(ByteSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable byte") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(ByteSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable double") {
-                val result = Yaml.default.parse(makeNullable(DoubleSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable double") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(DoubleSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable float") {
-                val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable float") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(FloatSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable boolean") {
-                val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable boolean") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(BooleanSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable character") {
-                val result = Yaml.default.parse(makeNullable(CharSerializer), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable character") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(CharSerializer, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable enum") {
-                val result = Yaml.default.parse(makeNullable(EnumSerializer(TestEnum::class)), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable enum") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(EnumSerializer(TestEnum::class), input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable list") {
-                val result = Yaml.default.parse(makeNullable(StringSerializer.list), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable list") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(StringSerializer.list, input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable object") {
-                val result = Yaml.default.parse(makeNullable(ComplexStructure.serializer()), input)
-
-                it("returns a null value") {
-                    assert(result).toBe(null)
-                }
-            }
-
-            context("parsing a null value as a non-nullable object") {
-                it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
-                        message { toBe("Unexpected null or empty value for non-null field.") }
-                        line { toBe(1) }
-                        column { toBe(1) }
-                    }
-                }
-            }
-
-            context("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
-                it("throws an exception with the correct location information") {
-                    assert({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
-                        message { toBe("Serializer called with location: 1, 1") }
-                    }
-                }
-            }
-        }
-
-        describe("parsing lists") {
-            context("given a list of strings") {
-                val input = """
+            describe("parsing lists") {
+                context("given a list of strings") {
+                    val input = """
                     - thing1
                     - thing2
                     - thing3
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(String.serializer().list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(String.serializer().list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf("thing1", "thing2", "thing3"))
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf("thing1", "thing2", "thing3"))
+                        }
                     }
-                }
 
-                context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
-                        assert({ Yaml.default.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 3") }
+                    context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
+                                message { toBe("Serializer called with location: 1, 3") }
+                            }
                         }
                     }
                 }
-            }
 
-            context("given a list of numbers") {
-                val input = """
+                context("given a list of numbers") {
+                    val input = """
                     - 123
                     - 45
                     - 6
                 """.trimIndent()
 
-                context("parsing that input as a list of integers") {
-                    val result = Yaml.default.parse(Int.serializer().list, input)
+                    context("parsing that input as a list of integers") {
+                        val result = Yaml.default.parse(Int.serializer().list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(123, 45, 6))
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(123, 45, 6))
+                        }
+                    }
+
+                    context("parsing that input as a list of longs") {
+                        val result = Yaml.default.parse(Long.serializer().list, input)
+
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(123L, 45, 6))
+                        }
+                    }
+
+                    context("parsing that input as a list of shorts") {
+                        val result = Yaml.default.parse(Short.serializer().list, input)
+
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(123.toShort(), 45, 6))
+                        }
+                    }
+
+                    context("parsing that input as a list of bytes") {
+                        val result = Yaml.default.parse(Byte.serializer().list, input)
+
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(123.toByte(), 45, 6))
+                        }
+                    }
+
+                    context("parsing that input as a list of doubles") {
+                        val result = Yaml.default.parse(Double.serializer().list, input)
+
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(123.0, 45.0, 6.0))
+                        }
+                    }
+
+                    context("parsing that input as a list of floats") {
+                        val result = Yaml.default.parse(FloatSerializer.list, input)
+
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(123.0f, 45.0f, 6.0f))
+                        }
                     }
                 }
 
-                context("parsing that input as a list of longs") {
-                    val result = Yaml.default.parse(Long.serializer().list, input)
-
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(123L, 45, 6))
-                    }
-                }
-
-                context("parsing that input as a list of shorts") {
-                    val result = Yaml.default.parse(Short.serializer().list, input)
-
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(123.toShort(), 45, 6))
-                    }
-                }
-
-                context("parsing that input as a list of bytes") {
-                    val result = Yaml.default.parse(Byte.serializer().list, input)
-
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(123.toByte(), 45, 6))
-                    }
-                }
-
-                context("parsing that input as a list of doubles") {
-                    val result = Yaml.default.parse(Double.serializer().list, input)
-
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(123.0, 45.0, 6.0))
-                    }
-                }
-
-                context("parsing that input as a list of floats") {
-                    val result = Yaml.default.parse(FloatSerializer.list, input)
-
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(123.0f, 45.0f, 6.0f))
-                    }
-                }
-            }
-
-            context("given a list of booleans") {
-                val input = """
+                context("given a list of booleans") {
+                    val input = """
                     - true
                     - false
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(Boolean.serializer().list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(Boolean.serializer().list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(true, false))
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(true, false))
+                        }
                     }
                 }
-            }
 
-            context("given a list of enum values") {
-                val input = """
+                context("given a list of enum values") {
+                    val input = """
                     - Value1
                     - Value2
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(EnumSerializer(TestEnum::class).list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(EnumSerializer(TestEnum::class).list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf(TestEnum.Value1, TestEnum.Value2))
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf(TestEnum.Value1, TestEnum.Value2))
+                        }
                     }
                 }
-            }
 
-            context("given a list of characters") {
-                val input = """
+                context("given a list of characters") {
+                    val input = """
                     - a
                     - b
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(CharSerializer.list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(CharSerializer.list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf('a', 'b'))
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf('a', 'b'))
+                        }
                     }
                 }
-            }
 
-            context("given a list of nullable strings") {
-                val input = """
+                context("given a list of nullable strings") {
+                    val input = """
                     - thing1
                     - null
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(makeNullable(String.serializer()).list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(makeNullable(String.serializer()).list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(listOf("thing1", null))
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(listOf("thing1", null))
+                        }
                     }
                 }
-            }
 
-            context("given a list of lists") {
-                val input = """
+                context("given a list of lists") {
+                    val input = """
                     - [thing1, thing2]
                     - [thing3]
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(String.serializer().list.list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(String.serializer().list.list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(
-                            listOf(
-                                listOf("thing1", "thing2"),
-                                listOf("thing3")
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(
+                                listOf(
+                                    listOf("thing1", "thing2"),
+                                    listOf("thing3")
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
 
-            context("given a list of objects") {
-                val input = """
+                context("given a list of objects") {
+                    val input = """
                     - name: thing1
                     - name: thing2
                 """.trimIndent()
 
-                context("parsing that input as a list") {
-                    val result = Yaml.default.parse(SimpleStructure.serializer().list, input)
+                    context("parsing that input as a list") {
+                        val result = Yaml.default.parse(SimpleStructure.serializer().list, input)
 
-                    it("deserializes it to the expected value") {
-                        assert(result).toBe(
-                            listOf(
-                                SimpleStructure("thing1"),
-                                SimpleStructure("thing2")
+                        it("deserializes it to the expected value") {
+                            assert(result).toBe(
+                                listOf(
+                                    SimpleStructure("thing1"),
+                                    SimpleStructure("thing2")
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
-        }
 
-        describe("parsing objects") {
-            context("given some input representing an object with an optional value specified") {
-                val input = """
+            describe("parsing objects") {
+                context("given some input representing an object with an optional value specified") {
+                    val input = """
                     string: Alex
                     byte: 12
                     short: 1234
@@ -672,31 +673,31 @@ object YamlTest : Spek({
                     nullable: present
                 """.trimIndent()
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(ComplexStructure.serializer(), input)
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(ComplexStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(
-                            ComplexStructure(
-                                "Alex",
-                                12,
-                                1234,
-                                123456,
-                                1234567,
-                                1.2f,
-                                2.4,
-                                TestEnum.Value1,
-                                true,
-                                'A',
-                                "present"
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(
+                                ComplexStructure(
+                                    "Alex",
+                                    12,
+                                    1234,
+                                    123456,
+                                    1234567,
+                                    1.2f,
+                                    2.4,
+                                    TestEnum.Value1,
+                                    true,
+                                    'A',
+                                    "present"
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
 
-            context("given some input representing an object with an optional value specified as null") {
-                val input = """
+                context("given some input representing an object with an optional value specified as null") {
+                    val input = """
                     string: Alex
                     byte: 12
                     short: 1234
@@ -710,31 +711,31 @@ object YamlTest : Spek({
                     nullable: null
                 """.trimIndent()
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(ComplexStructure.serializer(), input)
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(ComplexStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(
-                            ComplexStructure(
-                                "Alex",
-                                12,
-                                1234,
-                                123456,
-                                1234567,
-                                1.2f,
-                                2.4,
-                                TestEnum.Value1,
-                                true,
-                                'A',
-                                null
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(
+                                ComplexStructure(
+                                    "Alex",
+                                    12,
+                                    1234,
+                                    123456,
+                                    1234567,
+                                    1.2f,
+                                    2.4,
+                                    TestEnum.Value1,
+                                    true,
+                                    'A',
+                                    null
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
 
-            context("given some input representing an object with an optional value not specified") {
-                val input = """
+                context("given some input representing an object with an optional value not specified") {
+                    val input = """
                     string: Alex
                     byte: 12
                     short: 1234
@@ -747,297 +748,298 @@ object YamlTest : Spek({
                     char: A
                 """.trimIndent()
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(ComplexStructure.serializer(), input)
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(ComplexStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(
-                            ComplexStructure(
-                                "Alex",
-                                12,
-                                1234,
-                                123456,
-                                1234567,
-                                1.2f,
-                                2.4,
-                                TestEnum.Value1,
-                                true,
-                                'A',
-                                null
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(
+                                ComplexStructure(
+                                    "Alex",
+                                    12,
+                                    1234,
+                                    123456,
+                                    1234567,
+                                    1.2f,
+                                    2.4,
+                                    TestEnum.Value1,
+                                    true,
+                                    'A',
+                                    null
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
 
-            context("given some input representing an object with an embedded list") {
-                val input = """
+                context("given some input representing an object with an embedded list") {
+                    val input = """
                         members:
                             - Alex
                             - Jamie
                     """.trimIndent()
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(Team.serializer(), input)
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(Team.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(Team(listOf("Alex", "Jamie")))
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(Team(listOf("Alex", "Jamie")))
+                        }
                     }
                 }
-            }
 
-            context("given some input representing an object with an embedded object") {
-                val input = """
+                context("given some input representing an object with an embedded object") {
+                    val input = """
                         firstPerson:
                             name: Alex
                         secondPerson:
                             name: Jamie
                     """.trimIndent()
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(NestedObjects.serializer(), input)
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(NestedObjects.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
+                        }
                     }
                 }
-            }
 
-            context("given some input representing an object where the keys are in a different order to the object definition") {
-                val input = """
+                context("given some input representing an object where the keys are in a different order to the object definition") {
+                    val input = """
                         secondPerson:
                             name: Jamie
                         firstPerson:
                             name: Alex
                     """.trimIndent()
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(NestedObjects.serializer(), input)
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(NestedObjects.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
+                        }
                     }
                 }
-            }
 
-            context("given some input representing an object with an unknown key") {
-                val input = """
+                context("given some input representing an object with an unknown key") {
+                    val input = """
                         abc123: something
                     """.trimIndent()
 
-                context("parsing that input") {
-                    it("throws an appropriate exception") {
-                        assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
-                            message { toBe("Unknown property 'abc123'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string") }
-                            line { toBe(1) }
-                            column { toBe(1) }
-                            propertyName { toBe("abc123") }
-                            validPropertyNames { toBe(setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")) }
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
+                                message { toBe("Unknown property 'abc123'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                                propertyName { toBe("abc123") }
+                                validPropertyNames { toBe(setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")) }
+                            }
                         }
                     }
                 }
-            }
 
-            context("given some input representing an object with a list as a key") {
-                val input = """
+                context("given some input representing an object with a list as a key") {
+                    val input = """
                         []: something
                     """.trimIndent()
 
-                context("parsing that input") {
-                    it("throws an appropriate exception") {
-                        assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
-                            message { toBe("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)") }
-                            line { toBe(1) }
-                            column { toBe(1) }
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                                message { toBe("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                            }
                         }
                     }
                 }
-            }
 
-            context("given some input representing an object with an invalid value for a field") {
-                mapOf(
-                    "byte" to "Value 'xxx' is not a valid byte value.",
-                    "short" to "Value 'xxx' is not a valid short value.",
-                    "int" to "Value 'xxx' is not a valid integer value.",
-                    "long" to "Value 'xxx' is not a valid long value.",
-                    "float" to "Value 'xxx' is not a valid floating point value.",
-                    "double" to "Value 'xxx' is not a valid floating point value.",
-                    "enum" to "Value 'xxx' is not a valid option, permitted choices are: Value1, Value2",
-                    "boolean" to "Value 'xxx' is not a valid boolean, permitted choices are: true or false",
-                    "char" to "Value 'xxx' is not a valid character value."
-                ).forEach { fieldName, errorMessage ->
-                    context("given the invalid field represents a $fieldName") {
-                        val input = "$fieldName: xxx"
+                context("given some input representing an object with an invalid value for a field") {
+                    mapOf(
+                        "byte" to "Value 'xxx' is not a valid byte value.",
+                        "short" to "Value 'xxx' is not a valid short value.",
+                        "int" to "Value 'xxx' is not a valid integer value.",
+                        "long" to "Value 'xxx' is not a valid long value.",
+                        "float" to "Value 'xxx' is not a valid floating point value.",
+                        "double" to "Value 'xxx' is not a valid floating point value.",
+                        "enum" to "Value 'xxx' is not a valid option, permitted choices are: Value1, Value2",
+                        "boolean" to "Value 'xxx' is not a valid boolean, permitted choices are: true or false",
+                        "char" to "Value 'xxx' is not a valid character value."
+                    ).forEach { fieldName, errorMessage ->
+                        context("given the invalid field represents a $fieldName") {
+                            val input = "$fieldName: xxx"
 
-                        context("parsing that input") {
-                            it("throws an appropriate exception") {
-                                assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                                    message { toBe("Value for '$fieldName' is invalid: $errorMessage") }
-                                    line { toBe(1) }
-                                    column { toBe(fieldName.length + 3) }
-                                    propertyName { toBe(fieldName) }
-                                    reason { toBe(errorMessage) }
+                            context("parsing that input") {
+                                it("throws an appropriate exception") {
+                                    assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                        message { toBe("Value for '$fieldName' is invalid: $errorMessage") }
+                                        line { toBe(1) }
+                                        column { toBe(fieldName.length + 3) }
+                                        propertyName { toBe(fieldName) }
+                                        reason { toBe(errorMessage) }
+                                    }
                                 }
+                            }
+                        }
+                    }
+                }
+
+                context("given some input representing an object with a null value for a non-nullable scalar field") {
+                    val input = "name: null"
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            assert({ Yaml.default.parse(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'name' is invalid: Unexpected null or empty value for non-null field.") }
+                                line { toBe(1) }
+                                column { toBe(7) }
+                                propertyName { toBe("name") }
+                                reason { toBe("Unexpected null or empty value for non-null field.") }
+                            }
+                        }
+                    }
+                }
+
+                context("given some input representing an object with a null value for a non-nullable nested object field") {
+                    val input = "firstPerson: null"
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            assert({ Yaml.default.parse(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'firstPerson' is invalid: Unexpected null or empty value for non-null field.") }
+                                line { toBe(1) }
+                                column { toBe(14) }
+                                propertyName { toBe("firstPerson") }
+                                reason { toBe("Unexpected null or empty value for non-null field.") }
+                            }
+                        }
+                    }
+                }
+
+                context("given some input representing an object with a null value for a nullable nested object field") {
+                    @Serializable
+                    data class NullableNestedObject(val firstPerson: SimpleStructure?)
+
+                    val input = "firstPerson: null"
+
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(NullableNestedObject.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(NullableNestedObject(null))
+                        }
+                    }
+                }
+
+                context("given some input representing an object with a null value for a non-nullable nested list field") {
+                    val input = "members: null"
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            assert({ Yaml.default.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'members' is invalid: Unexpected null or empty value for non-null field.") }
+                                line { toBe(1) }
+                                column { toBe(10) }
+                                propertyName { toBe("members") }
+                                reason { toBe("Unexpected null or empty value for non-null field.") }
+                            }
+                        }
+                    }
+                }
+
+                context("given some input representing an object with a null value for a nullable nested list field") {
+                    @Serializable
+                    data class NullableNestedList(val members: List<String>?)
+
+                    val input = "members: null"
+
+                    context("parsing that input") {
+                        val result = Yaml.default.parse(NullableNestedList.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            assert(result).toBe(NullableNestedList(null))
+                        }
+                    }
+                }
+
+                context("given some input representing an object with a custom serializer for one of its values") {
+                    val input = "value: something"
+
+                    context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
+                                message { toBe("Serializer called with location: 1, 8") }
+                            }
+                        }
+                    }
+                }
+
+                context("given some input representing a generic map") {
+                    val input = """
+                    SOME_ENV_VAR: somevalue
+                    SOME_OTHER_ENV_VAR: someothervalue
+                """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = Yaml.default.parse((StringSerializer to StringSerializer).map, input)
+
+                        it("deserializes it to a Kotlin map") {
+                            assert(result).toBe(
+                                mapOf(
+                                    "SOME_ENV_VAR" to "somevalue",
+                                    "SOME_OTHER_ENV_VAR" to "someothervalue"
+                                )
+                            )
+                        }
+                    }
+
+                    context("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse((LocationThrowingSerializer to StringSerializer).map, input) }).toThrow<LocationInformationException> {
+                                message { toBe("Serializer called with location: 1, 1") }
+                            }
+                        }
+                    }
+
+                    context("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse((StringSerializer to LocationThrowingSerializer).map, input) }).toThrow<LocationInformationException> {
+                                message { toBe("Serializer called with location: 1, 15") }
                             }
                         }
                     }
                 }
             }
 
-            context("given some input representing an object with a null value for a non-nullable scalar field") {
-                val input = "name: null"
+            describe("parsing values with a dynamically installed serializer") {
+                data class Inner(val name: String)
 
-                context("parsing that input") {
-                    it("throws an appropriate exception") {
-                        assert({ Yaml.default.parse(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                            message { toBe("Value for 'name' is invalid: Unexpected null or empty value for non-null field.") }
-                            line { toBe(1) }
-                            column { toBe(7) }
-                            propertyName { toBe("name") }
-                            reason { toBe("Unexpected null or empty value for non-null field.") }
-                        }
-                    }
-                }
-            }
-
-            context("given some input representing an object with a null value for a non-nullable nested object field") {
-                val input = "firstPerson: null"
-
-                context("parsing that input") {
-                    it("throws an appropriate exception") {
-                        assert({ Yaml.default.parse(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                            message { toBe("Value for 'firstPerson' is invalid: Unexpected null or empty value for non-null field.") }
-                            line { toBe(1) }
-                            column { toBe(14) }
-                            propertyName { toBe("firstPerson") }
-                            reason { toBe("Unexpected null or empty value for non-null field.") }
-                        }
-                    }
-                }
-            }
-
-            context("given some input representing an object with a null value for a nullable nested object field") {
                 @Serializable
-                data class NullableNestedObject(val firstPerson: SimpleStructure?)
+                data class Container(val inner: Inner)
 
-                val input = "firstPerson: null"
+                val contextSerializer = object : KSerializer<Inner> {
+                    override val descriptor: SerialDescriptor
+                        get() = StringDescriptor
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(NullableNestedObject.serializer(), input)
-
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(NullableNestedObject(null))
-                    }
-                }
-            }
-
-            context("given some input representing an object with a null value for a non-nullable nested list field") {
-                val input = "members: null"
-
-                context("parsing that input") {
-                    it("throws an appropriate exception") {
-                        assert({ Yaml.default.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                            message { toBe("Value for 'members' is invalid: Unexpected null or empty value for non-null field.") }
-                            line { toBe(1) }
-                            column { toBe(10) }
-                            propertyName { toBe("members") }
-                            reason { toBe("Unexpected null or empty value for non-null field.") }
-                        }
-                    }
-                }
-            }
-
-            context("given some input representing an object with a null value for a nullable nested list field") {
-                @Serializable
-                data class NullableNestedList(val members: List<String>?)
-
-                val input = "members: null"
-
-                context("parsing that input") {
-                    val result = Yaml.default.parse(NullableNestedList.serializer(), input)
-
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(NullableNestedList(null))
-                    }
-                }
-            }
-
-            context("given some input representing an object with a custom serializer for one of its values") {
-                val input = "value: something"
-
-                context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
-                        assert({ Yaml.default.parse(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 8") }
-                        }
-                    }
-                }
-            }
-
-            context("given some input representing a generic map") {
-                val input = """
-                    SOME_ENV_VAR: somevalue
-                    SOME_OTHER_ENV_VAR: someothervalue
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = Yaml.default.parse((StringSerializer to StringSerializer).map, input)
-
-                    it("deserializes it to a Kotlin map") {
-                        assert(result).toBe(
-                            mapOf(
-                                "SOME_ENV_VAR" to "somevalue",
-                                "SOME_OTHER_ENV_VAR" to "someothervalue"
-                            )
-                        )
-                    }
+                    override fun deserialize(input: Decoder): Inner = Inner("from context serializer")
+                    override fun serialize(output: Encoder, obj: Inner) = throw UnsupportedOperationException()
                 }
 
-                context("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
-                        assert({ Yaml.default.parse((LocationThrowingSerializer to StringSerializer).map, input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 1") }
-                        }
-                    }
-                }
+                val module = SimpleModule(Inner::class, contextSerializer)
+                val parser = Yaml()
+                parser.install(module)
 
-                context("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
-                        assert({ Yaml.default.parse((StringSerializer to LocationThrowingSerializer).map, input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 15") }
-                        }
-                    }
-                }
-            }
-        }
-
-        describe("parsing values with a dynamically installed serializer") {
-            data class Inner(val name: String)
-
-            @Serializable
-            data class Container(val inner: Inner)
-
-            val contextSerializer = object : KSerializer<Inner> {
-                override val descriptor: SerialDescriptor
-                    get() = StringDescriptor
-
-                override fun deserialize(input: Decoder): Inner = Inner("from context serializer")
-                override fun serialize(output: Encoder, obj: Inner) = throw UnsupportedOperationException()
-            }
-
-            val module = SimpleModule(Inner::class, contextSerializer)
-            val parser = Yaml()
-            parser.install(module)
-
-            context("given some input that should be parsed with a dynamically installed serializer") {
-                val input = """
+                context("given some input that should be parsed with a dynamically installed serializer") {
+                    val input = """
                         inner: this is the input
                     """.trimIndent()
 
-                val result = parser.parse(Container.serializer(), input)
+                    val result = parser.parse(Container.serializer(), input)
 
-                it("deserializes it using the dynamically installed serializer") {
-                    assert(result).toBe(Container(Inner("from context serializer")))
+                    it("deserializes it using the dynamically installed serializer") {
+                        assert(result).toBe(Container(Inner("from context serializer")))
+                    }
                 }
             }
         }
