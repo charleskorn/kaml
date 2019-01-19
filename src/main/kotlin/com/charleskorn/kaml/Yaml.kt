@@ -23,6 +23,9 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.decode
+import kotlinx.serialization.encode
+import org.snakeyaml.engine.v1.api.StreamDataWriter
+import java.io.StringWriter
 
 class Yaml : AbstractSerialFormat(), StringFormat {
     override fun <T> parse(serializer: DeserializationStrategy<T>, string: String): T {
@@ -35,7 +38,14 @@ class Yaml : AbstractSerialFormat(), StringFormat {
     }
 
     override fun <T> stringify(serializer: SerializationStrategy<T>, obj: T): String {
-        TODO("not implemented")
+        val writer = object : StringWriter(), StreamDataWriter {
+            override fun flush() { }
+        }
+
+        val output = YamlOutput(writer)
+        output.encode(serializer, obj)
+
+        return writer.toString()
     }
 
     companion object {
