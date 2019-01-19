@@ -13,11 +13,12 @@ YAML version 1.2 is supported.
 
 This is a very rough initial version:
 
-* Currently, only parsing YAML is supported. Emitting YAML will be added in a future version.
 * Many operations are not yet optimised for performance.
 * Only the JVM is supported, Kotlin/Native support will be added in a future version.
 
-## Usage sample
+## Usage samples
+
+### Parsing from YAML to a Kotlin object
 
 ```kotlin
 @Serializable
@@ -35,6 +36,22 @@ val input = """
     """.trimIndent()
 
 val result = Yaml.default.parse(Team.serializer(), input)
+
+println(result)
+```
+
+### Serializing from a Kotlin object to YAML
+
+```kotlin
+@Serializable
+data class Team(
+    val leader: String,
+    val members: List<String>
+)
+
+val input = Team("Amy", listOf("Bob", "Cindy", "Dan"))
+
+val result = Yaml.default.stringify(Team.serializer(), input)
 
 println(result)
 ```
