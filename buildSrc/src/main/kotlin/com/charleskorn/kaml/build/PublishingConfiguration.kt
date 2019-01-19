@@ -71,12 +71,12 @@ fun Project.configurePublishing() {
 private fun Project.createJarTasks() {
     val sourcesJarTask = tasks.register<Jar>("sourcesJar") {
         from(sourceSets.get("main").allSource)
-        classifier = "sources"
+        archiveClassifier.set("sources")
     }
 
     val javadocJarTask = tasks.register<Jar>("javadocJar") {
         from(tasks.named("javadoc"))
-        classifier = "javadoc"
+        archiveClassifier.set("javadoc")
     }
 
     tasks.named("assemble").configure {
