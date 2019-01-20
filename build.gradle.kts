@@ -62,7 +62,7 @@ dependencies {
     // Override the version of kotlin-reflect used by Spek.
     testImplementation(kotlin("reflect", "1.3.11"))
     testImplementation(group = "org.spekframework.spek2", name = "spek-dsl-jvm", version = spekVersion)
-    testImplementation(group = "ch.tutteli.atrium", name = "atrium-cc-en_GB-robstoll", version = "0.7.0")
+    testImplementation(group = "ch.tutteli.atrium", name = "atrium-cc-en_GB-robstoll", version = "0.8.0-alpha")
 
     testRuntimeOnly(group = "org.spekframework.spek2", name = "spek-runner-junit5", version = spekVersion)
 }
