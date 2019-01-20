@@ -19,9 +19,9 @@
 package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.cc.en_GB.message
+import ch.tutteli.atrium.api.cc.en_GB.notToThrow
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
-import ch.tutteli.atrium.domain.creating.throwable.thrown.ThrowableThrown
 import ch.tutteli.atrium.verbs.assert
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -31,7 +31,7 @@ object YamlMapTest : Spek({
         describe("creating an instance") {
             context("creating an empty map") {
                 it("does not throw an exception") {
-                    assert({ YamlMap(emptyMap(), Location(1, 1)) }).toNotThrow()
+                    assert({ YamlMap(emptyMap(), Location(1, 1)) }).notToThrow()
                 }
             }
 
@@ -42,7 +42,7 @@ object YamlMapTest : Spek({
                             mapOf(YamlScalar("key", Location(1, 1)) to YamlScalar("value", Location(2, 1))),
                             Location(1, 1)
                         )
-                    }).toNotThrow()
+                    }).notToThrow()
                 }
             }
 
@@ -56,7 +56,7 @@ object YamlMapTest : Spek({
                             ),
                             Location(1, 1)
                         )
-                    }).toNotThrow()
+                    }).notToThrow()
                 }
             }
 
@@ -204,6 +204,3 @@ object YamlMapTest : Spek({
         }
     }
 })
-
-// FIXME: This is a hack, pending further discussion at https://kotlinlang.slack.com/archives/C887ZKGCQ/p1544305394000500
-fun ThrowableThrown.Builder.toNotThrow() = act()
