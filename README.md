@@ -56,6 +56,18 @@ val result = Yaml.default.stringify(Team.serializer(), input)
 println(result)
 ```
 
+## Referencing kaml
+
+Add the following to your Gradle build script:
+
+```kotlin
+implementation("com.charleskorn.kaml:kaml:<version number here>")
+```
+
+Check the [releases page](https://github.com/charleskorn/kaml/releases) for the latest release information,
+and the [Maven Central page](https://search.maven.org/artifact/com.charleskorn.kaml/kaml) for examples of how
+to reference the library in other build systems.
+
 ## Contributing to kaml
 
 Pull requests and bug reports are always welcome!
