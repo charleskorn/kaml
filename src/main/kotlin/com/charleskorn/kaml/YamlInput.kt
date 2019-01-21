@@ -29,7 +29,7 @@ import kotlinx.serialization.UpdateMode
 import kotlinx.serialization.context.SerialContext
 import kotlinx.serialization.internal.EnumDescriptor
 
-internal sealed class YamlInput(val node: YamlNode, override var context: SerialContext) : ElementValueDecoder() {
+sealed class YamlInput(val node: YamlNode, override var context: SerialContext) : ElementValueDecoder() {
     companion object {
         fun createFor(node: YamlNode, context: SerialContext): YamlInput = when (node) {
             is YamlScalar -> YamlScalarInput(node, context)
