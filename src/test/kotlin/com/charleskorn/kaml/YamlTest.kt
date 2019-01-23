@@ -23,6 +23,7 @@ import ch.tutteli.atrium.api.cc.en_GB.notToBeNullBut
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
+import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
@@ -1016,7 +1017,7 @@ object YamlTest : Spek({
                 data class Inner(val name: String)
 
                 @Serializable
-                data class Container(val inner: Inner)
+                data class Container(@ContextualSerialization val inner: Inner)
 
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor: SerialDescriptor
