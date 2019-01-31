@@ -28,13 +28,13 @@ import org.snakeyaml.engine.v1.api.StreamDataWriter
 import java.io.StringWriter
 
 class Yaml : AbstractSerialFormat(), StringFormat {
-    override fun <T> parse(serializer: DeserializationStrategy<T>, string: String): T {
+    override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val rootNode = YamlNode.fromParser(parser)
         parser.ensureEndOfStreamReached()
 
         val input = YamlInput.createFor(rootNode, context)
-        return input.decode(serializer)
+        return input.decode(deserializer)
     }
 
     override fun <T> stringify(serializer: SerializationStrategy<T>, obj: T): String {

@@ -1023,8 +1023,8 @@ object YamlTest : Spek({
                     override val descriptor: SerialDescriptor
                         get() = StringDescriptor
 
-                    override fun deserialize(input: Decoder): Inner = Inner("from context serializer")
-                    override fun serialize(output: Encoder, obj: Inner) = throw UnsupportedOperationException()
+                    override fun deserialize(decoder: Decoder): Inner = Inner("from context serializer")
+                    override fun serialize(encoder: Encoder, obj: Inner) = throw UnsupportedOperationException()
                 }
 
                 val module = SimpleModule(Inner::class, contextSerializer)
@@ -1495,13 +1495,13 @@ object LocationThrowingSerializer : KSerializer<CustomSerializedValue> {
     override val descriptor: SerialDescriptor
         get() = StringDescriptor
 
-    override fun deserialize(input: Decoder): CustomSerializedValue {
-        val location = (input as YamlInput).getCurrentLocation()
+    override fun deserialize(decoder: Decoder): CustomSerializedValue {
+        val location = (decoder as YamlInput).getCurrentLocation()
 
         throw LocationInformationException("Serializer called with location: ${location.line}, ${location.column}")
     }
 
-    override fun serialize(output: Encoder, obj: CustomSerializedValue) = throw UnsupportedOperationException()
+    override fun serialize(encoder: Encoder, obj: CustomSerializedValue) = throw UnsupportedOperationException()
 }
 
 class LocationInformationException(message: String) : RuntimeException(message)
