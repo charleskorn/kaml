@@ -57,7 +57,7 @@ dependencies {
     compile(group = "org.snakeyaml", name = "snakeyaml-engine", version = "1.0")
     compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.10.0")
 
-    val spekVersion = "2.0.0-rc.1"
+    val spekVersion = "2.0.0"
 
     // Override the version of kotlin-reflect used by Spek.
     testImplementation(kotlin("reflect", "1.3.20"))
