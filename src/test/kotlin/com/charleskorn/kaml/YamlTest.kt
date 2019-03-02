@@ -479,10 +479,10 @@ object YamlTest : Spek({
             describe("parsing lists") {
                 context("given a list of strings") {
                     val input = """
-                    - thing1
-                    - thing2
-                    - thing3
-                """.trimIndent()
+                        - thing1
+                        - thing2
+                        - thing3
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(String.serializer().list, input)
@@ -503,10 +503,10 @@ object YamlTest : Spek({
 
                 context("given a list of numbers") {
                     val input = """
-                    - 123
-                    - 45
-                    - 6
-                """.trimIndent()
+                        - 123
+                        - 45
+                        - 6
+                    """.trimIndent()
 
                     context("parsing that input as a list of integers") {
                         val result = Yaml.default.parse(Int.serializer().list, input)
@@ -559,9 +559,9 @@ object YamlTest : Spek({
 
                 context("given a list of booleans") {
                     val input = """
-                    - true
-                    - false
-                """.trimIndent()
+                        - true
+                        - false
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(Boolean.serializer().list, input)
@@ -574,9 +574,9 @@ object YamlTest : Spek({
 
                 context("given a list of enum values") {
                     val input = """
-                    - Value1
-                    - Value2
-                """.trimIndent()
+                        - Value1
+                        - Value2
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(EnumSerializer(TestEnum::class).list, input)
@@ -589,9 +589,9 @@ object YamlTest : Spek({
 
                 context("given a list of characters") {
                     val input = """
-                    - a
-                    - b
-                """.trimIndent()
+                        - a
+                        - b
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(CharSerializer.list, input)
@@ -604,9 +604,9 @@ object YamlTest : Spek({
 
                 context("given a list of nullable strings") {
                     val input = """
-                    - thing1
-                    - null
-                """.trimIndent()
+                        - thing1
+                        - null
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(makeNullable(String.serializer()).list, input)
@@ -619,9 +619,9 @@ object YamlTest : Spek({
 
                 context("given a list of lists") {
                     val input = """
-                    - [thing1, thing2]
-                    - [thing3]
-                """.trimIndent()
+                        - [thing1, thing2]
+                        - [thing3]
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(String.serializer().list.list, input)
@@ -639,9 +639,9 @@ object YamlTest : Spek({
 
                 context("given a list of objects") {
                     val input = """
-                    - name: thing1
-                    - name: thing2
-                """.trimIndent()
+                        - name: thing1
+                        - name: thing2
+                    """.trimIndent()
 
                     context("parsing that input as a list") {
                         val result = Yaml.default.parse(SimpleStructure.serializer().list, input)
@@ -661,18 +661,18 @@ object YamlTest : Spek({
             describe("parsing objects") {
                 context("given some input representing an object with an optional value specified") {
                     val input = """
-                    string: Alex
-                    byte: 12
-                    short: 1234
-                    int: 123456
-                    long: 1234567
-                    float: 1.2
-                    double: 2.4
-                    enum: Value1
-                    boolean: true
-                    char: A
-                    nullable: present
-                """.trimIndent()
+                        string: Alex
+                        byte: 12
+                        short: 1234
+                        int: 123456
+                        long: 1234567
+                        float: 1.2
+                        double: 2.4
+                        enum: Value1
+                        boolean: true
+                        char: A
+                        nullable: present
+                    """.trimIndent()
 
                     context("parsing that input") {
                         val result = Yaml.default.parse(ComplexStructure.serializer(), input)
@@ -699,18 +699,18 @@ object YamlTest : Spek({
 
                 context("given some input representing an object with an optional value specified as null") {
                     val input = """
-                    string: Alex
-                    byte: 12
-                    short: 1234
-                    int: 123456
-                    long: 1234567
-                    float: 1.2
-                    double: 2.4
-                    enum: Value1
-                    boolean: true
-                    char: A
-                    nullable: null
-                """.trimIndent()
+                        string: Alex
+                        byte: 12
+                        short: 1234
+                        int: 123456
+                        long: 1234567
+                        float: 1.2
+                        double: 2.4
+                        enum: Value1
+                        boolean: true
+                        char: A
+                        nullable: null
+                    """.trimIndent()
 
                     context("parsing that input") {
                         val result = Yaml.default.parse(ComplexStructure.serializer(), input)
@@ -737,17 +737,17 @@ object YamlTest : Spek({
 
                 context("given some input representing an object with an optional value not specified") {
                     val input = """
-                    string: Alex
-                    byte: 12
-                    short: 1234
-                    int: 123456
-                    long: 1234567
-                    float: 1.2
-                    double: 2.4
-                    enum: Value1
-                    boolean: true
-                    char: A
-                """.trimIndent()
+                        string: Alex
+                        byte: 12
+                        short: 1234
+                        int: 123456
+                        long: 1234567
+                        float: 1.2
+                        double: 2.4
+                        enum: Value1
+                        boolean: true
+                        char: A
+                    """.trimIndent()
 
                     context("parsing that input") {
                         val result = Yaml.default.parse(ComplexStructure.serializer(), input)
@@ -978,9 +978,9 @@ object YamlTest : Spek({
 
                 context("given some input representing a generic map") {
                     val input = """
-                    SOME_ENV_VAR: somevalue
-                    SOME_OTHER_ENV_VAR: someothervalue
-                """.trimIndent()
+                        SOME_ENV_VAR: somevalue
+                        SOME_OTHER_ENV_VAR: someothervalue
+                    """.trimIndent()
 
                     context("parsing that input") {
                         val result = Yaml.default.parse((StringSerializer to StringSerializer).map, input)
