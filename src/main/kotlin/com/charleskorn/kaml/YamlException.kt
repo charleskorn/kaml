@@ -39,9 +39,7 @@ class EmptyYamlDocumentException(message: String, location: Location) : YamlExce
 
 class InvalidPropertyValueException(val propertyName: String, val reason: String, location: Location, cause: Throwable?) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
 
-class MalformedYamlException(message: String, location: Location) : YamlException(message, location) {
-    constructor(message: String, event: Event) : this(message, event.location)
-}
+class MalformedYamlException(message: String, location: Location) : YamlException(message, location)
 
 class UnexpectedNullValueException(location: Location) : YamlException("Unexpected null or empty value for non-null field.", location)
 
@@ -51,6 +49,9 @@ class UnknownPropertyException(val propertyName: String, val validPropertyNames:
 class UnsupportedYamlFeatureException(val featureName: String, event: Event) : YamlException("Unsupported YAML feature: $featureName", event)
 
 class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
+
+class UnknownAnchorException(val anchorName: String, location: Location) :
+    YamlException("Unknown anchor '$anchorName'.", location)
 
 val Event.location: Location
     get() = Location(startMark.get().line + 1, startMark.get().column + 1)

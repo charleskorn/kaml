@@ -18,69 +18,9 @@
 
 package com.charleskorn.kaml
 
-import org.snakeyaml.engine.v1.events.Event
-import org.snakeyaml.engine.v1.events.MappingStartEvent
-import org.snakeyaml.engine.v1.events.ScalarEvent
-import org.snakeyaml.engine.v1.events.SequenceStartEvent
-
 sealed class YamlNode(open val location: Location) {
     abstract fun equivalentContentTo(other: YamlNode): Boolean
     abstract fun contentToString(): String
-
-    companion object {
-        fun fromParser(parser: YamlParser): YamlNode {
-            val event = parser.consumeEvent()
-
-            return when (event) {
-                is ScalarEvent -> readScalarOrNull(event)
-                is SequenceStartEvent -> readSequence(parser, event.location)
-                is MappingStartEvent -> readMapping(parser, event.location)
-                else -> throw MalformedYamlException("Unexpected ${event.eventId}", event.location)
-            }
-        }
-
-        private fun readScalarOrNull(event: ScalarEvent): YamlNode {
-            if ((event.value == "null" || event.value == "") && event.isPlain) {
-                return YamlNull(event.location)
-            } else {
-                return YamlScalar(event.value, event.location)
-            }
-        }
-
-        private fun readSequence(parser: YamlParser, location: Location): YamlList {
-            val items = mutableListOf<YamlNode>()
-
-            while (true) {
-                val event = parser.peekEvent()
-
-                when (event.eventId) {
-                    Event.ID.SequenceEnd -> {
-                        parser.consumeEventOfType(Event.ID.SequenceEnd)
-                        return YamlList(items, location)
-                    }
-
-                    else -> items += fromParser(parser)
-                }
-            }
-        }
-
-        private fun readMapping(parser: YamlParser, location: Location): YamlMap {
-            val items = mutableMapOf<YamlNode, YamlNode>()
-
-            while (true) {
-                val event = parser.peekEvent()
-
-                when (event.eventId) {
-                    Event.ID.MappingEnd -> {
-                        parser.consumeEventOfType(Event.ID.MappingEnd)
-                        return YamlMap(items, location)
-                    }
-
-                    else -> items += (fromParser(parser) to fromParser(parser))
-                }
-            }
-        }
-    }
 }
 
 data class YamlScalar(val content: String, override val location: Location) : YamlNode(location) {

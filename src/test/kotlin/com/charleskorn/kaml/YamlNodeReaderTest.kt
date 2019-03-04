@@ -25,8 +25,8 @@ import ch.tutteli.atrium.verbs.assert
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-object YamlNodeTest : Spek({
-    describe("a YAML node") {
+object YamlNodeReaderTest : Spek({
+    describe("a YAML node reader") {
         mapOf(
             "hello" to "hello",
             "12" to "12",
@@ -48,7 +48,7 @@ object YamlNodeTest : Spek({
             context("given the string '$input'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
-                    val result = YamlNode.fromParser(parser)
+                    val result = YamlNodeReader(parser).read()
 
                     it("returns the expected scalar value") {
                         assert(result).toBe(YamlScalar(expectedResult, Location(1, 1)))
@@ -188,7 +188,7 @@ object YamlNodeTest : Spek({
             context("given the block scalar '$input'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
-                    val result = YamlNode.fromParser(parser)
+                    val result = YamlNodeReader(parser).read()
 
                     it("returns the expected multi-line text value") {
                         assert(result).toBe(
@@ -212,7 +212,7 @@ object YamlNodeTest : Spek({
                     it("throws an appropriate exception") {
                         assert({
                             val parser = YamlParser(input)
-                            YamlNode.fromParser(parser)
+                            YamlNodeReader(parser).read()
                         }).toThrow<MalformedYamlException> {
                             message {
                                 toBe(
@@ -243,7 +243,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
                         message {
                             toBe(
@@ -277,7 +277,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
                     assert(result).toBe(
@@ -295,12 +295,88 @@ object YamlNodeTest : Spek({
             }
         }
 
+        context("given some input representing a list of strings with an alias and anchor present") {
+            val input = """
+                - &thing thing1
+                - thing2
+                - *thing
+            """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns the expected list") {
+                    assert(result).toBe(
+                        YamlList(
+                            listOf(
+                                YamlScalar("thing1", Location(1, 3)),
+                                YamlScalar("thing2", Location(2, 3)),
+                                YamlScalar("thing1", Location(1, 3))
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given some input representing a list of strings with an alias that is redefined") {
+            val input = """
+                - &thing thing1
+                - thing2
+                - *thing
+                - &thing thing3
+                - *thing
+            """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns the expected list, using the most-recently defined value each time the alias is referenced") {
+                    assert(result).toBe(
+                        YamlList(
+                            listOf(
+                                YamlScalar("thing1", Location(1, 3)),
+                                YamlScalar("thing2", Location(2, 3)),
+                                YamlScalar("thing1", Location(1, 3)),
+                                YamlScalar("thing3", Location(4, 3)),
+                                YamlScalar("thing3", Location(4, 3))
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given some input representing a list of strings with a reference to a non-existent anchor") {
+            val input = """
+                - thing2
+                - *thing
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<UnknownAnchorException> {
+                        message {
+                            toBe("Unknown anchor 'thing'.")
+                        }
+                        line { toBe(2) }
+                        column { toBe(3) }
+                    }
+                }
+            }
+        }
+
         context("given some input representing a list of strings in flow style") {
             val input = """[thing1, thing2, "thing3", 'thing4', "thing\"5"]"""
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
                     assert(result).toBe(
@@ -323,7 +399,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns an empty list") {
                     assert(result).toBe(YamlList(emptyList(), Location(1, 1)))
@@ -336,7 +412,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
                     assert(result).toBe(
@@ -359,7 +435,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
                     assert(result).toBe(
@@ -384,7 +460,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
                     assert(result).toBe(
@@ -416,7 +492,7 @@ object YamlNodeTest : Spek({
             context("given a list with a single null entry in the format '$input'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
-                    val result = YamlNode.fromParser(parser)
+                    val result = YamlNodeReader(parser).read()
 
                     it("returns a list with a single null entry") {
                         assert(result).toBe(
@@ -436,7 +512,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a single null entry") {
                     assert(result).toBe(YamlNull(Location(1, 1)))
@@ -449,7 +525,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair") {
                     assert(result).toBe(
@@ -468,7 +544,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair with a null value") {
                     assert(result).toBe(
@@ -490,7 +566,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with two key-value pairs") {
                     assert(result).toBe(
@@ -513,7 +589,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with two key-value pairs") {
                     assert(result).toBe(
@@ -543,7 +619,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with all expected key-value pairs") {
                     assert(result).toBe(
@@ -592,7 +668,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
                         message {
                             toBe(
@@ -622,7 +698,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
                         message {
                             toBe(
@@ -656,7 +732,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
                         message {
                             toBe(
@@ -684,7 +760,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns an empty map") {
                     assert(result).toBe(
@@ -701,7 +777,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
                         message {
                             toBe(
@@ -729,7 +805,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair") {
                     assert(result).toBe(
@@ -750,7 +826,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
                         message {
                             toBe(
@@ -778,7 +854,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair") {
                     assert(result).toBe(
@@ -801,7 +877,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
                     assert(result).toBe(
@@ -819,7 +895,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
                     assert(result).toBe(
@@ -839,7 +915,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comments") {
                     assert(result).toBe(
@@ -856,7 +932,7 @@ object YamlNodeTest : Spek({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNode.fromParser(parser)
+                val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
                     assert(result).toBe(
@@ -868,16 +944,14 @@ object YamlNodeTest : Spek({
 
         mapOf(
             "!thing" to "tags",
-            "!!str 'some string'" to "tags",
-            "*thing" to "aliases",
-            "&thing" to "anchors"
+            "!!str 'some string'" to "tags"
         ).forEach { input, featureName ->
             context("given the input '$input' which contains an unsupported YAML feature") {
                 describe("parsing that input") {
                     it("throws an appropriate exception stating that the YAML feature being used is not supported") {
                         assert({
                             val parser = YamlParser(input)
-                            YamlNode.fromParser(parser)
+                            YamlNodeReader(parser).read()
                         }).toThrow<UnsupportedYamlFeatureException> {
                             message { toBe("Unsupported YAML feature: $featureName") }
                             line { toBe(1) }
@@ -896,7 +970,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception stating that the document is empty") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<EmptyYamlDocumentException> {
                         message { toBe("The YAML document is empty.") }
                         line { toBe(1) }
@@ -913,7 +987,7 @@ object YamlNodeTest : Spek({
                 it("throws an appropriate exception stating that the document is empty") {
                     assert({
                         val parser = YamlParser(input)
-                        YamlNode.fromParser(parser)
+                        YamlNodeReader(parser).read()
                     }).toThrow<EmptyYamlDocumentException> {
                         message { toBe("The YAML document is empty.") }
                         line { toBe(1) }

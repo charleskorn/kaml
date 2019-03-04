@@ -30,7 +30,8 @@ import java.io.StringWriter
 class Yaml : AbstractSerialFormat(), StringFormat {
     override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
-        val rootNode = YamlNode.fromParser(parser)
+        val reader = YamlNodeReader(parser)
+        val rootNode = reader.read()
         parser.ensureEndOfStreamReached()
 
         val input = YamlInput.createFor(rootNode, context)

@@ -20,7 +20,6 @@ package com.charleskorn.kaml
 
 import org.snakeyaml.engine.v1.api.LoadSettingsBuilder
 import org.snakeyaml.engine.v1.events.Event
-import org.snakeyaml.engine.v1.events.NodeEvent
 import org.snakeyaml.engine.v1.events.ScalarEvent
 import org.snakeyaml.engine.v1.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v1.parser.ParserImpl
@@ -71,16 +70,6 @@ class YamlParser(yamlSource: String) {
     }
 
     private fun checkForUnsupportedFeatures(event: Event) {
-        if (event.isEvent(Event.ID.Alias)) {
-            throw UnsupportedYamlFeatureException("aliases", event)
-        }
-
-        if (event is NodeEvent) {
-            if (event.anchor.isPresent) {
-                throw UnsupportedYamlFeatureException("anchors", event)
-            }
-        }
-
         if (event is ScalarEvent) {
             if (event.tag.isPresent) {
                 throw UnsupportedYamlFeatureException("tags", event)
