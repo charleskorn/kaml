@@ -604,6 +604,29 @@ object YamlNodeReaderTest : Spek({
             }
         }
 
+        context("given a map with two key-value pairs, one of which has a reference to the other") {
+            val input = """
+                key1: &value value1
+                key2: *value
+                """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns a map with two key-value pairs") {
+                    assert(result).toBe(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
+                                YamlScalar("key2", Location(2, 1)) to YamlScalar("value1", Location(1, 7))
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
         context("given a map with nested values") {
             val input = """
                 key1: value1
