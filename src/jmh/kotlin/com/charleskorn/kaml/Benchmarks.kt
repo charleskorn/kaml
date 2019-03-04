@@ -122,6 +122,6 @@ open class Benchmarks {
     private fun parse(input: String): YamlNode {
         val parser = YamlParser(input)
 
-        return YamlNode.fromParser(parser)
+        return YamlNodeReader(parser).read()
     }
 }
