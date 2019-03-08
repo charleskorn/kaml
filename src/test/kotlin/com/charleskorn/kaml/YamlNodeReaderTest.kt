@@ -1019,5 +1019,300 @@ object YamlNodeReaderTest : Spek({
                 }
             }
         }
+
+        // The following examples are taken from https://yaml.org/type/merge.html
+        context("given a map with a single map to merge into it") {
+            val input = """
+                - &CENTER { x: 1, y: 2 }
+
+                - << : *CENTER
+                  r: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns that map with the values from the source map merged into it") {
+                    assert(result).toBe(
+                        YamlList(
+                            listOf(
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
+                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22))
+                                    ), Location(1, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
+                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22)),
+                                        YamlScalar("r", Location(4, 3)) to YamlScalar("10", Location(4, 6)),
+                                        YamlScalar("label", Location(5, 3)) to YamlScalar("center/big", Location(5, 10))
+                                    ), Location(3, 3)
+                                )
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a map with a single map to merge into it, with both containing the same key") {
+            val input = """
+                - &CENTER { x: 1, y: 2 }
+
+                - << : *CENTER
+                  x: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns that map with the values from the source map merged into it, with the local values taking precedence") {
+                    assert(result).toBe(
+                        YamlList(
+                            listOf(
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
+                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22))
+                                    ), Location(1, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(4, 3)) to YamlScalar("10", Location(4, 6)),
+                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22)),
+                                        YamlScalar("label", Location(5, 3)) to YamlScalar("center/big", Location(5, 10))
+                                    ), Location(3, 3)
+                                )
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a map with a single null value to merge into it") {
+            val input = """
+                - << : null
+                  r: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that merging a null value is not valid") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<MalformedYamlException> {
+                        message { toBe("Cannot merge a null value into a map.") }
+                        line { toBe(1) }
+                        column { toBe(8) }
+                    }
+                }
+            }
+        }
+
+        context("given a map with a single scalar value to merge into it") {
+            val input = """
+                - << : abc123
+                  r: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that merging a scalar value is not valid") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<MalformedYamlException> {
+                        message { toBe("Cannot merge a scalar value into a map.") }
+                        line { toBe(1) }
+                        column { toBe(8) }
+                    }
+                }
+            }
+        }
+
+        context("given a map with multiple maps to merge into it") {
+            val input = """
+                - &CENTER { x: 1, y: 2 }
+                - &BIG { r: 10 }
+
+                - << : [ *CENTER, *BIG ]
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns that map with the values from the source maps merged into it") {
+                    assert(result).toBe(
+                        YamlList(
+                            listOf(
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
+                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22))
+                                    ), Location(1, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13))
+                                    ), Location(2, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
+                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22)),
+                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13)),
+                                        YamlScalar("label", Location(5, 3)) to YamlScalar("center/big", Location(5, 10))
+                                    ), Location(4, 3)
+                                )
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a map with multiple maps to merge into it, with both source and destination maps containing the same keys") {
+            val input = """
+                - &LEFT { x: 0, y: 2 }
+                - &BIG { r: 10 }
+                - &SMALL { r: 1 }
+
+                - << : [ *BIG, *LEFT, *SMALL ]
+                  x: 1
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns that map with the values from the source maps merged into it, with local values taking precedence over earlier source values, and with earlier source values taking precedence over later source values") {
+                    assert(result).toBe(
+                        YamlList(
+                            listOf(
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(1, 11)) to YamlScalar("0", Location(1, 14)),
+                                        YamlScalar("y", Location(1, 17)) to YamlScalar("2", Location(1, 20))
+                                    ), Location(1, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13))
+                                    ), Location(2, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("r", Location(3, 12)) to YamlScalar("1", Location(3, 15))
+                                    ), Location(3, 3)
+                                ),
+                                YamlMap(
+                                    mapOf(
+                                        YamlScalar("x", Location(6, 3)) to YamlScalar("1", Location(6, 6)),
+                                        YamlScalar("y", Location(1, 17)) to YamlScalar("2", Location(1, 20)),
+                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13)),
+                                        YamlScalar("label", Location(7, 3)) to YamlScalar("center/big", Location(7, 10))
+                                    ), Location(5, 3)
+                                )
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a map with a null value in a list of values to merge into it") {
+            val input = """
+                - << : [null]
+                  r: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that merging a null value is not valid") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<MalformedYamlException> {
+                        message { toBe("Cannot merge a null value into a map.") }
+                        line { toBe(1) }
+                        column { toBe(9) }
+                    }
+                }
+            }
+        }
+
+        context("given a map with a scalar value in a list of values to merge into it") {
+            val input = """
+                - << : [abc123]
+                  r: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that merging a scalar value is not valid") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<MalformedYamlException> {
+                        message { toBe("Cannot merge a scalar value into a map.") }
+                        line { toBe(1) }
+                        column { toBe(9) }
+                    }
+                }
+            }
+        }
+
+        context("given a map with a list value in a list of values to merge into it") {
+            val input = """
+                - << : [ [] ]
+                  r: 10
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that merging a list value is not valid") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<MalformedYamlException> {
+                        message { toBe("Cannot merge a list value into a map.") }
+                        line { toBe(1) }
+                        column { toBe(10) }
+                    }
+                }
+            }
+        }
+
+        context("given a map with multiple lists of items to merge into it") {
+            val input = """
+                - << : []
+                  << : []
+                  label: center/big
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that multiple merges are not possible") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).toThrow<MalformedYamlException> {
+                        message { toBe("Cannot perform multiple merges into a map.") }
+                        line { toBe(2) }
+                        column { toBe(3) }
+                    }
+                }
+            }
+        }
     }
 })

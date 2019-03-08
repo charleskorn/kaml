@@ -84,12 +84,54 @@ class YamlNodeReader(private val parser: YamlParser) {
             when (event.eventId) {
                 Event.ID.MappingEnd -> {
                     parser.consumeEventOfType(Event.ID.MappingEnd)
-                    return YamlMap(items, location)
+                    return YamlMap(doMerges(items), location)
                 }
 
                 else -> items += (read() to read())
             }
         }
+    }
+
+    private fun doMerges(items: Map<YamlNode, YamlNode>): Map<YamlNode, YamlNode> {
+        val mergeEntries = items.entries.filter { (key, _) -> isMerge(key) }
+
+        when (mergeEntries.count()) {
+            0 -> return items
+            1 -> when (val mappingsToMerge = mergeEntries.single().value) {
+                is YamlList -> return doMerges(items, mappingsToMerge.items)
+                else -> return doMerges(items, listOf(mappingsToMerge))
+            }
+            else -> throw MalformedYamlException("Cannot perform multiple merges into a map.", mergeEntries.second().key.location)
+        }
+    }
+
+    private fun isMerge(key: YamlNode): Boolean = key is YamlScalar && key.content == "<<"
+
+    private fun doMerges(original: Map<YamlNode, YamlNode>, others: List<YamlNode>): Map<YamlNode, YamlNode> {
+        val merged = mutableMapOf<YamlNode, YamlNode>()
+
+        original
+            .filterNot { (key, _) -> isMerge(key) }
+            .forEach { (key, value) -> merged.put(key, value) }
+
+        others
+            .forEach { other ->
+                when (other) {
+                    is YamlNull -> throw MalformedYamlException("Cannot merge a null value into a map.", other.location)
+                    is YamlScalar -> throw MalformedYamlException("Cannot merge a scalar value into a map.", other.location)
+                    is YamlList -> throw MalformedYamlException("Cannot merge a list value into a map.", other.location)
+                    is YamlMap ->
+                        other.entries.forEach { (key, value) ->
+                            val existingEntry = merged.entries.singleOrNull { it.key.equivalentContentTo(key) }
+
+                            if (existingEntry == null) {
+                                merged.put(key, value)
+                            }
+                        }
+                }
+            }
+
+        return merged
     }
 
     private fun readAlias(event: AliasEvent): YamlNode {
@@ -99,4 +141,6 @@ class YamlNodeReader(private val parser: YamlParser) {
             throw UnknownAnchorException(anchor.anchor, event.location)
         }
     }
+
+    private fun <T> Iterable<T>.second(): T = this.drop(1).first()
 }
