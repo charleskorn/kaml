@@ -60,7 +60,10 @@ println(result)
 * [Aliases and anchors](https://yaml.org/spec/1.2/spec.html#id2765878)
 * [Merging aliases to form one map](https://yaml.org/type/merge.html)
 * [Docker Compose-style extension fields](https://medium.com/@kinghuang/docker-compose-anchors-aliases-extensions-a1e4105d70bd)
-  (specify the extension prefix by setting `extensionDefinitionPrefix` on an instance of `Yaml`)
+
+  Specify the extension prefix by setting `extensionDefinitionPrefix` when creating an instance of `Yaml`.
+
+  Extensions can only be defined at the top level of a document, and only if the top level element is a map or object. Any key starting with the extension prefix must have an anchor defined and will not be included in the deserialised value.
 
 ## Referencing kaml
 
