@@ -56,6 +56,17 @@ val result = Yaml.default.stringify(Team.serializer(), input)
 println(result)
 ```
 
+## Supported YAML features
+
+* Scalars, including strings, booleans, integers and floats
+* [Sequences (lists)](https://yaml.org/type/seq.html)
+* [Maps](https://yaml.org/type/map.html)
+* [Nulls](https://yaml.org/type/null.html)
+* [Aliases and anchors](https://yaml.org/spec/1.2/spec.html#id2765878)
+* [Merging aliases to form one map](https://yaml.org/type/merge.html)
+* [Docker Compose-style extension fields](https://medium.com/@kinghuang/docker-compose-anchors-aliases-extensions-a1e4105d70bd)
+  (specify the extension prefix by setting `extensionDefinitionPrefix` on an instance of `Yaml`)
+
 ## Referencing kaml
 
 Add the following to your Gradle build script:
