@@ -11,11 +11,6 @@ This library adds YAML support to [kotlinx.serialization](https://github.com/Kot
 
 YAML version 1.2 is supported.
 
-This is a very rough initial version:
-
-* Many operations are not yet optimised for performance.
-* Only the JVM is supported, Kotlin/Native support will be added in a future version.
-
 ## Usage samples
 
 ### Parsing from YAML to a Kotlin object
