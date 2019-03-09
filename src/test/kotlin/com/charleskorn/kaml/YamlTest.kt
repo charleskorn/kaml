@@ -1011,6 +1011,22 @@ object YamlTest : Spek({
                         }
                     }
                 }
+
+                context("given some input with some extensions") {
+                    val input = """
+                        .some-extension: &name Jamie
+
+                        name: *name
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = Yaml(extensionDefinitionPrefix = ".").parse(SimpleStructure.serializer(), input)
+
+                        it("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
+                            assert(result).toBe(SimpleStructure("Jamie"))
+                        }
+                    }
+                }
             }
 
             describe("parsing values with a dynamically installed serializer") {

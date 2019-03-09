@@ -53,5 +53,8 @@ class YamlScalarFormatException(message: String, location: Location, val origina
 class UnknownAnchorException(val anchorName: String, location: Location) :
     YamlException("Unknown anchor '$anchorName'.", location)
 
+class NoAnchorForExtensionException(val key: String, val extensionDefinitionPrefix: String, location: Location) :
+    YamlException("The key $key starts with the extension definition prefix '$extensionDefinitionPrefix' but does not define an anchor.", location)
+
 val Event.location: Location
     get() = Location(startMark.get().line + 1, startMark.get().column + 1)

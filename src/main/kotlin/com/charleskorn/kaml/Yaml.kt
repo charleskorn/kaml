@@ -27,10 +27,10 @@ import kotlinx.serialization.encode
 import org.snakeyaml.engine.v1.api.StreamDataWriter
 import java.io.StringWriter
 
-class Yaml : AbstractSerialFormat(), StringFormat {
+class Yaml(val extensionDefinitionPrefix: String? = null) : AbstractSerialFormat(), StringFormat {
     override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
-        val reader = YamlNodeReader(parser)
+        val reader = YamlNodeReader(parser, extensionDefinitionPrefix)
         val rootNode = reader.read()
         parser.ensureEndOfStreamReached()
 

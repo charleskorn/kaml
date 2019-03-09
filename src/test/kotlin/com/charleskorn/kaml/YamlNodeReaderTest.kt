@@ -1314,5 +1314,104 @@ object YamlNodeReaderTest : Spek({
                 }
             }
         }
+
+        context("given a top-level map with an entry matching the extension definition prefix") {
+            val input = """
+                .extension: &extension some-value
+
+                actual:
+                    key: value
+                    other-key: *extension
+            """.trimIndent()
+
+            describe("parsing that input with an extension definition prefix defined") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
+
+                it("returns the map, merging the alias where it is referenced and removing it from the top-level entry") {
+                    assert(result).toBe(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar("actual", Location(3, 1)) to YamlMap(
+                                    mapOf(
+                                        YamlScalar("key", Location(4, 5)) to YamlScalar("value", Location(4, 10)),
+                                        YamlScalar("other-key", Location(5, 5)) to YamlScalar("some-value", Location(1, 13))
+                                    ), Location(4, 5)
+                                )
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a non-top-level map with an entry matching the extension definition prefix") {
+            val input = """
+                actual:
+                    .key: value
+            """.trimIndent()
+
+            describe("parsing that input with an extension definition prefix defined") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
+
+                it("returns the map, retaining the key matching the extension definition prefix") {
+                    assert(result).toBe(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar("actual", Location(1, 1)) to YamlMap(
+                                    mapOf(
+                                        YamlScalar(".key", Location(2, 5)) to YamlScalar("value", Location(2, 11))
+                                    ), Location(2, 5)
+                                )
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a top-level map that has another map merged into it with an entry with a key matching the extension definition prefix") {
+            val input = """
+                .extension: &extension
+                    .some-key: some-value
+
+                << : [ *extension ]
+            """.trimIndent()
+
+            describe("parsing that input with an extension definition prefix defined") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
+
+                it("returns the map, merging the other map into it and preserving its keys") {
+                    assert(result).toBe(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar(".some-key", Location(2, 5)) to YamlScalar("some-value", Location(2, 16))
+                            ), Location(1, 1)
+                        )
+                    )
+                }
+            }
+        }
+
+        context("given a top-level map with a key matching the extension definition prefix but no anchor defined") {
+            val input = """
+                .invalid-extension: some-value
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("throws an appropriate exception stating that an anchor is required for keys with the extension definition prefix") {
+                    assert({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
+                    }).toThrow<NoAnchorForExtensionException> {
+                        message { toBe("The key '.invalid-extension' starts with the extension definition prefix '.' but does not define an anchor.") }
+                        line { toBe(1) }
+                        column { toBe(1) }
+                    }
+                }
+            }
+        }
     }
 })

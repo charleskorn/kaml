@@ -26,26 +26,35 @@ import org.snakeyaml.engine.v1.events.NodeEvent
 import org.snakeyaml.engine.v1.events.ScalarEvent
 import org.snakeyaml.engine.v1.events.SequenceStartEvent
 
-class YamlNodeReader(private val parser: YamlParser) {
+class YamlNodeReader(
+    private val parser: YamlParser,
+    private val extensionDefinitionPrefix: String? = null
+) {
     private val aliases = mutableMapOf<Anchor, YamlNode>()
 
-    fun read(): YamlNode {
+    fun read(): YamlNode = readNode(true)
+
+    private fun readNode(isTopLevel: Boolean = false): YamlNode = readNodeAndAnchor(isTopLevel).first
+
+    private fun readNodeAndAnchor(isTopLevel: Boolean = false): Pair<YamlNode, Anchor?> {
         val event = parser.consumeEvent()
-        val node = readFromEvent(event)
+        val node = readFromEvent(event, isTopLevel)
 
         if (event is NodeEvent) {
             event.anchor.ifPresent {
                 aliases.put(it, node)
             }
+
+            return node to event.anchor.orElse(null)
         }
 
-        return node
+        return node to null
     }
 
-    private fun readFromEvent(event: Event): YamlNode = when (event) {
+    private fun readFromEvent(event: Event, isTopLevel: Boolean): YamlNode = when (event) {
         is ScalarEvent -> readScalarOrNull(event)
         is SequenceStartEvent -> readSequence(event.location)
-        is MappingStartEvent -> readMapping(event.location)
+        is MappingStartEvent -> readMapping(event.location, isTopLevel)
         is AliasEvent -> readAlias(event)
         else -> throw MalformedYamlException("Unexpected ${event.eventId}", event.location)
     }
@@ -70,12 +79,12 @@ class YamlNodeReader(private val parser: YamlParser) {
                     return YamlList(items, location)
                 }
 
-                else -> items += read()
+                else -> items += readNode()
             }
         }
     }
 
-    private fun readMapping(location: Location): YamlMap {
+    private fun readMapping(location: Location, isTopLevel: Boolean): YamlMap {
         val items = mutableMapOf<YamlNode, YamlNode>()
 
         while (true) {
@@ -87,10 +96,23 @@ class YamlNodeReader(private val parser: YamlParser) {
                     return YamlMap(doMerges(items), location)
                 }
 
-                else -> items += (read() to read())
+                else -> {
+                    val key = readNode()
+                    val (value, anchor) = readNodeAndAnchor()
+
+                    if (isTopLevel && extensionDefinitionPrefix != null && key.isScalarAndStartsWith(extensionDefinitionPrefix)) {
+                        if (anchor == null) {
+                            throw NoAnchorForExtensionException(key.contentToString(), extensionDefinitionPrefix, event.location)
+                        }
+                    } else {
+                        items += (key to value)
+                    }
+                }
             }
         }
     }
+
+    private fun YamlNode.isScalarAndStartsWith(prefix: String): Boolean = this is YamlScalar && this.content.startsWith(prefix)
 
     private fun doMerges(items: Map<YamlNode, YamlNode>): Map<YamlNode, YamlNode> {
         val mergeEntries = items.entries.filter { (key, _) -> isMerge(key) }
