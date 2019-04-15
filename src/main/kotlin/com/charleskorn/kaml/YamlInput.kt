@@ -26,12 +26,12 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UpdateMode
-import kotlinx.serialization.context.SerialContext
+import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.internal.EnumDescriptor
 
-sealed class YamlInput(val node: YamlNode, override var context: SerialContext) : ElementValueDecoder() {
+sealed class YamlInput(val node: YamlNode, override var context: SerialModule) : ElementValueDecoder() {
     companion object {
-        fun createFor(node: YamlNode, context: SerialContext): YamlInput = when (node) {
+        fun createFor(node: YamlNode, context: SerialModule): YamlInput = when (node) {
             is YamlScalar -> YamlScalarInput(node, context)
             is YamlNull -> YamlNullInput(node, context)
             is YamlList -> YamlListInput(node, context)
@@ -44,7 +44,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialContext) 
     abstract fun getCurrentLocation(): Location
 }
 
-private class YamlScalarInput(val scalar: YamlScalar, context: SerialContext) : YamlInput(scalar, context) {
+private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule) : YamlInput(scalar, context) {
     override fun decodeString(): String = scalar.content
     override fun decodeInt(): Int = scalar.toInt()
     override fun decodeLong(): Long = scalar.toLong()
@@ -73,7 +73,7 @@ private class YamlScalarInput(val scalar: YamlScalar, context: SerialContext) : 
     override fun getCurrentLocation(): Location = scalar.location
 }
 
-private class YamlNullInput(val nullValue: YamlNode, context: SerialContext) : YamlInput(nullValue, context) {
+private class YamlNullInput(val nullValue: YamlNode, context: SerialModule) : YamlInput(nullValue, context) {
     override fun decodeNotNullMark(): Boolean = false
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.location)
@@ -83,7 +83,7 @@ private class YamlNullInput(val nullValue: YamlNode, context: SerialContext) : Y
     override fun getCurrentLocation(): Location = nullValue.location
 }
 
-private class YamlListInput(val list: YamlList, context: SerialContext) : YamlInput(list, context) {
+private class YamlListInput(val list: YamlList, context: SerialModule) : YamlInput(list, context) {
     private var nextElementIndex = 0
     private lateinit var currentElementDecoder: YamlInput
 
@@ -125,7 +125,7 @@ private class YamlListInput(val list: YamlList, context: SerialContext) : YamlIn
     override fun getCurrentLocation(): Location = currentElementDecoder.node.location
 }
 
-private class YamlMapInput(val map: YamlMap, context: SerialContext) : YamlInput(map, context) {
+private class YamlMapInput(val map: YamlMap, context: SerialModule) : YamlInput(map, context) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>

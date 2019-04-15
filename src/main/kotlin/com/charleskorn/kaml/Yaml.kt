@@ -24,10 +24,12 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.decode
 import kotlinx.serialization.encode
+import kotlinx.serialization.modules.EmptyModule
+import kotlinx.serialization.modules.SerialModule
 import org.snakeyaml.engine.v1.api.StreamDataWriter
 import java.io.StringWriter
 
-class Yaml(val extensionDefinitionPrefix: String? = null) : AbstractSerialFormat(), StringFormat {
+class Yaml(val extensionDefinitionPrefix: String? = null, override val context: SerialModule = EmptyModule) : AbstractSerialFormat(context), StringFormat {
     override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val reader = YamlNodeReader(parser, extensionDefinitionPrefix)
