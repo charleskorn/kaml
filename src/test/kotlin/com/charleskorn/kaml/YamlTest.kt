@@ -19,7 +19,6 @@
 package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.cc.en_GB.message
-import ch.tutteli.atrium.api.cc.en_GB.notToBeNullBut
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
@@ -69,7 +68,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(StringSerializer), input)
 
                         it("deserializes it to the expected string value") {
-                            assert(result).notToBeNullBut("hello")
+                            assert(result).toBe("hello")
                         }
                     }
 
@@ -137,7 +136,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(Int.serializer()), input)
 
                         it("deserializes it to the expected integer") {
-                            assert(result).notToBeNullBut(123)
+                            assert(result).toBe(123)
                         }
                     }
 
@@ -145,7 +144,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(Long.serializer()), input)
 
                         it("deserializes it to the expected long") {
-                            assert(result).notToBeNullBut(123)
+                            assert(result).toBe(123)
                         }
                     }
 
@@ -153,7 +152,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(Short.serializer()), input)
 
                         it("deserializes it to the expected short") {
-                            assert(result).notToBeNullBut(123)
+                            assert(result).toBe(123)
                         }
                     }
 
@@ -161,7 +160,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(Byte.serializer()), input)
 
                         it("deserializes it to the expected byte") {
-                            assert(result).notToBeNullBut(123)
+                            assert(result).toBe(123)
                         }
                     }
 
@@ -169,7 +168,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(Double.serializer()), input)
 
                         it("deserializes it to the expected double") {
-                            assert(result).notToBeNullBut(123.0)
+                            assert(result).toBe(123.0)
                         }
                     }
 
@@ -177,7 +176,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
 
                         it("deserializes it to the expected float") {
-                            assert(result).notToBeNullBut(123.0f)
+                            assert(result).toBe(123.0f)
                         }
                     }
                 }
@@ -197,7 +196,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
 
                         it("deserializes it to the expected boolean value") {
-                            assert(result).notToBeNullBut(true)
+                            assert(result).toBe(true)
                         }
                     }
                 }
@@ -217,7 +216,7 @@ object YamlTest : Spek({
                         val result = Yaml.default.parse(makeNullable(CharSerializer), input)
 
                         it("deserializes it to the expected character value") {
-                            assert(result).notToBeNullBut('c')
+                            assert(result).toBe('c')
                         }
                     }
                 }
