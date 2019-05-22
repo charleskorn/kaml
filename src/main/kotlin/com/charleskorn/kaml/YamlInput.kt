@@ -26,8 +26,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UpdateMode
-import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.internal.EnumDescriptor
+import kotlinx.serialization.modules.SerialModule
 
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule) : ElementValueDecoder() {
     companion object {
@@ -70,6 +70,16 @@ private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule) : Y
         throw YamlScalarFormatException("Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices", scalar.location, scalar.content)
     }
 
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        when (desc.kind) {
+            is StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a scalar value", scalar.location)
+            is StructureKind.CLASS -> throw IncorrectTypeException("Expected an object, but got a scalar value", scalar.location)
+            is StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a scalar value", scalar.location)
+        }
+
+        return super.beginStructure(desc, *typeParams)
+    }
+
     override fun getCurrentLocation(): Location = scalar.location
 }
 
@@ -99,17 +109,25 @@ private class YamlListInput(val list: YamlList, context: SerialModule) : YamlInp
         return nextElementIndex++
     }
 
-    override fun decodeNotNullMark(): Boolean = currentElementDecoder.decodeNotNullMark()
-    override fun decodeString(): String = currentElementDecoder.decodeString()
-    override fun decodeInt(): Int = currentElementDecoder.decodeInt()
-    override fun decodeLong(): Long = currentElementDecoder.decodeLong()
-    override fun decodeShort(): Short = currentElementDecoder.decodeShort()
-    override fun decodeByte(): Byte = currentElementDecoder.decodeByte()
-    override fun decodeDouble(): Double = currentElementDecoder.decodeDouble()
-    override fun decodeFloat(): Float = currentElementDecoder.decodeFloat()
-    override fun decodeBoolean(): Boolean = currentElementDecoder.decodeBoolean()
-    override fun decodeChar(): Char = currentElementDecoder.decodeChar()
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = currentElementDecoder.decodeEnum(enumDescription)
+    override fun decodeNotNullMark(): Boolean = checkTypeAndDecodeFromCurrentValue("a (possibly null) scalar value") { decodeNotNullMark() }
+    override fun decodeString(): String = checkTypeAndDecodeFromCurrentValue("a string") { decodeString() }
+    override fun decodeInt(): Int = checkTypeAndDecodeFromCurrentValue("an integer") { decodeInt() }
+    override fun decodeLong(): Long = checkTypeAndDecodeFromCurrentValue("a long") { decodeLong() }
+    override fun decodeShort(): Short = checkTypeAndDecodeFromCurrentValue("a short") { decodeShort() }
+    override fun decodeByte(): Byte = checkTypeAndDecodeFromCurrentValue("a byte") { decodeByte() }
+    override fun decodeDouble(): Double = checkTypeAndDecodeFromCurrentValue("a double") { decodeDouble() }
+    override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
+    override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
+    override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
+    override fun decodeEnum(enumDescription: EnumDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
+
+    private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
+        if (!::currentElementDecoder.isInitialized) {
+            throw IncorrectTypeException("Expected $expectedTypeDescription, but got a list", list.location)
+        }
+
+        return action(currentElementDecoder)
+    }
 
     private val haveStartedReadingElements: Boolean
         get() = nextElementIndex > 0
@@ -119,7 +137,11 @@ private class YamlListInput(val list: YamlList, context: SerialModule) : YamlInp
             return currentElementDecoder.beginStructure(desc, *typeParams)
         }
 
-        return super.beginStructure(desc, *typeParams)
+        when (desc.kind) {
+            is StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a list", list.location)
+            is StructureKind.CLASS -> throw IncorrectTypeException("Expected an object, but got a list", list.location)
+            else -> return super.beginStructure(desc, *typeParams)
+        }
     }
 
     override fun getCurrentLocation(): Location = currentElementDecoder.node.location
@@ -189,19 +211,27 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule) : YamlInput(
         throw UnknownPropertyException(name, knownPropertyNames, location)
     }
 
-    override fun decodeNotNullMark(): Boolean = fromCurrentValue { decodeNotNullMark() }
-    override fun decodeString(): String = fromCurrentValue { decodeString() }
-    override fun decodeInt(): Int = fromCurrentValue { decodeInt() }
-    override fun decodeLong(): Long = fromCurrentValue { decodeLong() }
-    override fun decodeShort(): Short = fromCurrentValue { decodeShort() }
-    override fun decodeByte(): Byte = fromCurrentValue { decodeByte() }
-    override fun decodeDouble(): Double = fromCurrentValue { decodeDouble() }
-    override fun decodeFloat(): Float = fromCurrentValue { decodeFloat() }
-    override fun decodeBoolean(): Boolean = fromCurrentValue { decodeBoolean() }
-    override fun decodeChar(): Char = fromCurrentValue { decodeChar() }
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = fromCurrentValue { decodeEnum(enumDescription) }
+    override fun decodeNotNullMark(): Boolean = checkTypeAndDecodeFromCurrentValue("a (possibly null) scalar value") { decodeNotNullMark() }
+    override fun decodeString(): String = checkTypeAndDecodeFromCurrentValue("a string") { decodeString() }
+    override fun decodeInt(): Int = checkTypeAndDecodeFromCurrentValue("an integer") { decodeInt() }
+    override fun decodeLong(): Long = checkTypeAndDecodeFromCurrentValue("a long") { decodeLong() }
+    override fun decodeShort(): Short = checkTypeAndDecodeFromCurrentValue("a short") { decodeShort() }
+    override fun decodeByte(): Byte = checkTypeAndDecodeFromCurrentValue("a byte") { decodeByte() }
+    override fun decodeDouble(): Double = checkTypeAndDecodeFromCurrentValue("a double") { decodeDouble() }
+    override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
+    override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
+    override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
+    override fun decodeEnum(enumDescription: EnumDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
 
-    private inline fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
+    private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
+        if (!::currentValueDecoder.isInitialized) {
+            throw IncorrectTypeException("Expected $expectedTypeDescription, but got a map", map.location)
+        }
+
+        return fromCurrentValue(action)
+    }
+
+    private fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
         try {
             return action(currentValueDecoder)
         } catch (e: YamlException) {
@@ -224,7 +254,8 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule) : YamlInput(
         readMode = when (desc.kind) {
             is StructureKind.MAP -> MapReadMode.Map
             is StructureKind.CLASS -> MapReadMode.Object
-            else -> throw YamlException("Can't decode into ${desc.kind}", this.map.location)
+            is StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a map", map.location)
+            else -> throw YamlException("Can't decode into ${desc.kind}", map.location)
         }
 
         return super.beginStructure(desc, *typeParams)

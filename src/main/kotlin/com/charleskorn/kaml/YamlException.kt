@@ -50,6 +50,8 @@ class UnsupportedYamlFeatureException(val featureName: String, event: Event) : Y
 
 class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
 
+class IncorrectTypeException(message: String, location: Location) : YamlException(message, location)
+
 class UnknownAnchorException(val anchorName: String, location: Location) :
     YamlException("Unknown anchor '$anchorName'.", location)
 

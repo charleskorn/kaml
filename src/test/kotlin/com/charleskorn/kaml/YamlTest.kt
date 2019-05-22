@@ -1056,6 +1056,217 @@ object YamlTest : Spek({
                     }
                 }
             }
+
+            describe("parsing values with mismatched types") {
+                context("given a list") {
+                    mapOf(
+                        "a string" to StringSerializer,
+                        "an integer" to IntSerializer,
+                        "a long" to LongSerializer,
+                        "a short" to ShortSerializer,
+                        "a byte" to ByteSerializer,
+                        "a double" to DoubleSerializer,
+                        "a float" to FloatSerializer,
+                        "a boolean" to BooleanSerializer,
+                        "a character" to CharSerializer,
+                        "an enumeration value" to EnumSerializer(TestEnum::class),
+                        "a map" to (StringSerializer to StringSerializer).map,
+                        "an object" to ComplexStructure.serializer(),
+                        "a (possibly null) scalar value" to makeNullable(StringSerializer)
+                    ).forEach { description, serializer ->
+                        val input = "- thing"
+
+                        context("parsing that input as $description") {
+                            it("throws an exception with the correct location information") {
+                                assert({ Yaml.default.parse(serializer, input) }).toThrow<IncorrectTypeException> {
+                                    message { toBe("Expected $description, but got a list") }
+                                    line { toBe(1) }
+                                    column { toBe(1) }
+                                }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in a map") {
+                        val input = """
+                            key:
+                                - some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse((StringSerializer to StringSerializer).map, input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'key' is invalid: Expected a string, but got a list") }
+                                line { toBe(2) }
+                                column { toBe(5) }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in an object") {
+                        val input = """
+                            string:
+                                - some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'string' is invalid: Expected a string, but got a list") }
+                                line { toBe(2) }
+                                column { toBe(5) }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in a list") {
+                        val input = """
+                            - [ some_value ]
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(StringSerializer.list, input) }).toThrow<IncorrectTypeException> {
+                                message { toBe("Expected a string, but got a list") }
+                                line { toBe(1) }
+                                column { toBe(3) }
+                            }
+                        }
+                    }
+                }
+
+                context("given a map") {
+                    mapOf(
+                        "a string" to StringSerializer,
+                        "an integer" to IntSerializer,
+                        "a long" to LongSerializer,
+                        "a short" to ShortSerializer,
+                        "a byte" to ByteSerializer,
+                        "a double" to DoubleSerializer,
+                        "a float" to FloatSerializer,
+                        "a boolean" to BooleanSerializer,
+                        "a character" to CharSerializer,
+                        "an enumeration value" to EnumSerializer(TestEnum::class),
+                        "a list" to StringSerializer.list,
+                        "a (possibly null) scalar value" to makeNullable(StringSerializer)
+                    ).forEach { description, serializer ->
+                        val input = "key: value"
+
+                        context("parsing that input as $description") {
+                            it("throws an exception with the correct location information") {
+                                assert({ Yaml.default.parse(serializer, input) }).toThrow<IncorrectTypeException> {
+                                    message { toBe("Expected $description, but got a map") }
+                                    line { toBe(1) }
+                                    column { toBe(1) }
+                                }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in a map") {
+                        val input = """
+                            key:
+                                some_key: some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse((StringSerializer to StringSerializer).map, input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'key' is invalid: Expected a string, but got a map") }
+                                line { toBe(2) }
+                                column { toBe(5) }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in an object") {
+                        val input = """
+                            string:
+                                some_key: some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'string' is invalid: Expected a string, but got a map") }
+                                line { toBe(2) }
+                                column { toBe(5) }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in a list") {
+                        val input = """
+                            - some_key: some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(StringSerializer.list, input) }).toThrow<IncorrectTypeException> {
+                                message { toBe("Expected a string, but got a map") }
+                                line { toBe(1) }
+                                column { toBe(3) }
+                            }
+                        }
+                    }
+                }
+
+                context("given a scalar value") {
+                    mapOf(
+                        "a list" to StringSerializer.list,
+                        "a map" to (StringSerializer to StringSerializer).map,
+                        "an object" to ComplexStructure.serializer()
+                    ).forEach { description, serializer ->
+                        val input = "blah"
+
+                        context("parsing that input as $description") {
+                            it("throws an exception with the correct location information") {
+                                assert({ Yaml.default.parse(serializer, input) }).toThrow<IncorrectTypeException> {
+                                    message { toBe("Expected $description, but got a scalar value") }
+                                    line { toBe(1) }
+                                    column { toBe(1) }
+                                }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in a map") {
+                        val input = """
+                            key: some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse((StringSerializer to StringSerializer.list).map, input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'key' is invalid: Expected a list, but got a scalar value") }
+                                line { toBe(1) }
+                                column { toBe(6) }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in an object") {
+                        val input = """
+                            members: some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'members' is invalid: Expected a list, but got a scalar value") }
+                                line { toBe(1) }
+                                column { toBe(10) }
+                            }
+                        }
+                    }
+
+                    context("parsing that input as the value in a list") {
+                        val input = """
+                            - some_value
+                        """.trimIndent()
+
+                        it("throws an exception with the correct location information") {
+                            assert({ Yaml.default.parse((StringSerializer.list).list, input) }).toThrow<IncorrectTypeException> {
+                                message { toBe("Expected a list, but got a scalar value") }
+                                line { toBe(1) }
+                                column { toBe(3) }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         describe("serializing to YAML") {
