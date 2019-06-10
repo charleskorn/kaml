@@ -1697,6 +1697,69 @@ object YamlTest : Spek({
                     }
                 }
             }
+
+            describe("serializing when handling default values") {
+                val noDefaultEncoder = Yaml(configuration = YamlConfiguration(encodeDefaults = false))
+                val defaultEncoder = Yaml.default
+
+                context("when encoding defaults") {
+                    it("property with no default is written") {
+                        val input = SimpleStructure("name1")
+                        assert(
+                            defaultEncoder.stringify(SimpleStructure.serializer(),
+                                input)
+                        ).toBe("""
+                        name: "name1"
+                        """.trimIndent())
+                    }
+                    it("property with default and not overwritten is written") {
+                        val input = SimpleStructureWithDefault()
+                        assert(
+                            defaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
+                                input)
+                        ).toBe("""
+                        name: "default"
+                        """.trimIndent())
+                    }
+                    it("property with default overwritten is written") {
+                        val input = SimpleStructureWithDefault("name1")
+                        assert(
+                            defaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
+                                input)
+                        ).toBe("""
+                        name: "name1"
+                        """.trimIndent())
+                    }
+                }
+
+                context("when not encoding defaults") {
+                    it("property with no default is written") {
+                        val input = SimpleStructure("name1")
+                        assert(
+                            noDefaultEncoder.stringify(SimpleStructure.serializer(),
+                                input)
+                        ).toBe("""
+                        name: "name1"
+                        """.trimIndent())
+                    }
+                    it("property with default and not overwritten is not written") {
+                        val input = SimpleStructureWithDefault()
+                        assert(
+                            noDefaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
+                                input)
+                        ).toBe("""{}""".trimIndent())
+                    }
+                    it("property with default overwritten is written") {
+                        val input = SimpleStructureWithDefault("name1")
+                        assert(
+                            noDefaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
+                                input)
+                        ).toBe("""
+                        name: "name1"
+                        """.trimIndent())
+                    }
+                }
+            }
         }
     }
 })
@@ -1704,6 +1767,11 @@ object YamlTest : Spek({
 @Serializable
 data class SimpleStructure(
     val name: String
+)
+
+@Serializable
+data class SimpleStructureWithDefault(
+    val name: String = "default"
 )
 
 @Serializable

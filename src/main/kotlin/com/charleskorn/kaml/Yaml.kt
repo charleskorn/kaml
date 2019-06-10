@@ -29,7 +29,11 @@ import kotlinx.serialization.modules.SerialModule
 import org.snakeyaml.engine.v1.api.StreamDataWriter
 import java.io.StringWriter
 
-class Yaml(val extensionDefinitionPrefix: String? = null, override val context: SerialModule = EmptyModule) : AbstractSerialFormat(context), StringFormat {
+class Yaml(
+    val extensionDefinitionPrefix: String? = null,
+    override val context: SerialModule = EmptyModule,
+    val configuration: YamlConfiguration = YamlConfiguration()
+) : AbstractSerialFormat(context), StringFormat {
     override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val reader = YamlNodeReader(parser, extensionDefinitionPrefix)
@@ -45,7 +49,7 @@ class Yaml(val extensionDefinitionPrefix: String? = null, override val context: 
             override fun flush() { }
         }
 
-        val output = YamlOutput(writer)
+        val output = YamlOutput(writer, configuration)
         output.encode(serializer, obj)
 
         return writer.toString()
