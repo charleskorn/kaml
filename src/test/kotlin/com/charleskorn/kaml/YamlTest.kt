@@ -1698,65 +1698,60 @@ object YamlTest : Spek({
                 }
             }
 
-            describe("serializing when handling default values") {
-                val noDefaultEncoder = Yaml(configuration = YamlConfiguration(encodeDefaults = false))
-                val defaultEncoder = Yaml.default
-
+            describe("handling default values") {
                 context("when encoding defaults") {
-                    it("property with no default is written") {
+                    val defaultEncoder = Yaml.default
+
+                    context("given a property with no default value") {
                         val input = SimpleStructure("name1")
-                        assert(
-                            defaultEncoder.stringify(SimpleStructure.serializer(),
-                                input)
-                        ).toBe("""
-                        name: "name1"
-                        """.trimIndent())
+
+                        it("is always written") {
+                            assert(defaultEncoder.stringify(SimpleStructure.serializer(), input)).toBe("""name: "name1"""")
+                        }
                     }
-                    it("property with default and not overwritten is written") {
+
+                    context("given a property with a default value") {
                         val input = SimpleStructureWithDefault()
-                        assert(
-                            defaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
-                                input)
-                        ).toBe("""
-                        name: "default"
-                        """.trimIndent())
+
+                        it("is written") {
+                            assert(defaultEncoder.stringify(SimpleStructureWithDefault.serializer(), input)).toBe("""name: "default"""")
+                        }
                     }
-                    it("property with default overwritten is written") {
+
+                    context("given a property with a default value has a non-default value") {
                         val input = SimpleStructureWithDefault("name1")
-                        assert(
-                            defaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
-                                input)
-                        ).toBe("""
-                        name: "name1"
-                        """.trimIndent())
+
+                        it("is written") {
+                            assert(defaultEncoder.stringify(SimpleStructureWithDefault.serializer(), input)).toBe("""name: "name1"""")
+                        }
                     }
                 }
 
                 context("when not encoding defaults") {
-                    it("property with no default is written") {
+                    val noDefaultEncoder = Yaml(configuration = YamlConfiguration(encodeDefaults = false))
+
+                    context("given a property with no default value") {
                         val input = SimpleStructure("name1")
-                        assert(
-                            noDefaultEncoder.stringify(SimpleStructure.serializer(),
-                                input)
-                        ).toBe("""
-                        name: "name1"
-                        """.trimIndent())
+
+                        it("is always written") {
+                            assert(noDefaultEncoder.stringify(SimpleStructure.serializer(), input)).toBe("""name: "name1"""")
+                        }
                     }
-                    it("property with default and not overwritten is not written") {
+
+                    context("given a property with a default value") {
                         val input = SimpleStructureWithDefault()
-                        assert(
-                            noDefaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
-                                input)
-                        ).toBe("""{}""".trimIndent())
+
+                        it("is not written") {
+                            assert(noDefaultEncoder.stringify(SimpleStructureWithDefault.serializer(), input)).toBe("""{}""")
+                        }
                     }
-                    it("property with default overwritten is written") {
+
+                    context("given a property with a default value has a non-default value") {
                         val input = SimpleStructureWithDefault("name1")
-                        assert(
-                            noDefaultEncoder.stringify(SimpleStructureWithDefault.serializer(),
-                                input)
-                        ).toBe("""
-                        name: "name1"
-                        """.trimIndent())
+
+                        it("is written") {
+                            assert(noDefaultEncoder.stringify(SimpleStructureWithDefault.serializer(), input)).toBe("""name: "name1"""")
+                        }
                     }
                 }
             }
