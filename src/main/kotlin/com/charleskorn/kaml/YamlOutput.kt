@@ -39,7 +39,10 @@ import org.snakeyaml.engine.v1.events.SequenceStartEvent
 import org.snakeyaml.engine.v1.events.StreamStartEvent
 import java.util.Optional
 
-internal class YamlOutput(writer: StreamDataWriter) : ElementValueEncoder() {
+internal class YamlOutput(
+    writer: StreamDataWriter,
+    private val configuration: YamlConfiguration
+) : ElementValueEncoder() {
     private val settings = DumpSettingsBuilder().build()
     private val emitter = Emitter(settings, writer)
 
@@ -48,6 +51,7 @@ internal class YamlOutput(writer: StreamDataWriter) : ElementValueEncoder() {
         emitter.emit(DocumentStartEvent(false, Optional.empty(), emptyMap()))
     }
 
+    override fun shouldEncodeElementDefault(desc: SerialDescriptor, index: Int): Boolean = configuration.encodeDefaults
     override fun encodeNull() = emitPlainScalar("null")
     override fun encodeBoolean(value: Boolean) = emitPlainScalar(value.toString())
     override fun encodeByte(value: Byte) = emitPlainScalar(value.toString())
