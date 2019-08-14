@@ -30,13 +30,12 @@ import org.snakeyaml.engine.v1.api.StreamDataWriter
 import java.io.StringWriter
 
 class Yaml(
-    val extensionDefinitionPrefix: String? = null,
     override val context: SerialModule = EmptyModule,
     val configuration: YamlConfiguration = YamlConfiguration()
 ) : AbstractSerialFormat(context), StringFormat {
     override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
-        val reader = YamlNodeReader(parser, extensionDefinitionPrefix)
+        val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix)
         val rootNode = reader.read()
         parser.ensureEndOfStreamReached()
 

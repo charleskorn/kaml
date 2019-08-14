@@ -1021,7 +1021,9 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml(extensionDefinitionPrefix = ".").parse(SimpleStructure.serializer(), input)
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".")
+                    val yaml = Yaml(configuration = configuration)
+                    val result = yaml.parse(SimpleStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
                         assert(result).toBe(SimpleStructure("Jamie"))
