@@ -18,6 +18,13 @@
 
 package com.charleskorn.kaml
 
+/**
+ * Configuration options for parsing YAML text and serialising objects to YAML.
+ *
+ * [encodeDefaults]: set to false to not write default property values to YAML (defaults to true)
+ * [strictMode]: set to true to throw an exception when reading an object that has an unknown property, or false to ignore unknown properties (defaults to true)
+ */
 data class YamlConfiguration constructor(
-    internal val encodeDefaults: Boolean = true
+    internal val encodeDefaults: Boolean = true,
+    internal val strictMode: Boolean = true
 )

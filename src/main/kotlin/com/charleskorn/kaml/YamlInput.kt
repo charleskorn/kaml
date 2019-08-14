@@ -29,13 +29,13 @@ import kotlinx.serialization.UpdateMode
 import kotlinx.serialization.internal.EnumDescriptor
 import kotlinx.serialization.modules.SerialModule
 
-sealed class YamlInput(val node: YamlNode, override var context: SerialModule) : ElementValueDecoder() {
+sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : ElementValueDecoder() {
     companion object {
-        fun createFor(node: YamlNode, context: SerialModule): YamlInput = when (node) {
-            is YamlScalar -> YamlScalarInput(node, context)
-            is YamlNull -> YamlNullInput(node, context)
-            is YamlList -> YamlListInput(node, context)
-            is YamlMap -> YamlMapInput(node, context)
+        fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration): YamlInput = when (node) {
+            is YamlScalar -> YamlScalarInput(node, context, configuration)
+            is YamlNull -> YamlNullInput(node, context, configuration)
+            is YamlList -> YamlListInput(node, context, configuration)
+            is YamlMap -> YamlMapInput(node, context, configuration)
         }
     }
 
@@ -44,7 +44,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule) :
     abstract fun getCurrentLocation(): Location
 }
 
-private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule) : YamlInput(scalar, context) {
+private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule, configuration: YamlConfiguration) : YamlInput(scalar, context, configuration) {
     override fun decodeString(): String = scalar.content
     override fun decodeInt(): Int = scalar.toInt()
     override fun decodeLong(): Long = scalar.toLong()
@@ -83,7 +83,7 @@ private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule) : Y
     override fun getCurrentLocation(): Location = scalar.location
 }
 
-private class YamlNullInput(val nullValue: YamlNode, context: SerialModule) : YamlInput(nullValue, context) {
+private class YamlNullInput(val nullValue: YamlNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(nullValue, context, configuration) {
     override fun decodeNotNullMark(): Boolean = false
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.location)
@@ -93,7 +93,7 @@ private class YamlNullInput(val nullValue: YamlNode, context: SerialModule) : Ya
     override fun getCurrentLocation(): Location = nullValue.location
 }
 
-private class YamlListInput(val list: YamlList, context: SerialModule) : YamlInput(list, context) {
+private class YamlListInput(val list: YamlList, context: SerialModule, configuration: YamlConfiguration) : YamlInput(list, context, configuration) {
     private var nextElementIndex = 0
     private lateinit var currentElementDecoder: YamlInput
 
@@ -104,7 +104,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule) : YamlInp
             return READ_DONE
         }
 
-        currentElementDecoder = createFor(list.items[nextElementIndex], context)
+        currentElementDecoder = createFor(list.items[nextElementIndex], context, configuration)
 
         return nextElementIndex++
     }
@@ -147,7 +147,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule) : YamlInp
     override fun getCurrentLocation(): Location = currentElementDecoder.node.location
 }
 
-private class YamlMapInput(val map: YamlMap, context: SerialModule) : YamlInput(map, context) {
+private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
@@ -161,24 +161,31 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule) : YamlInput(
     }
 
     private fun decodeElementIndexForObject(desc: SerialDescriptor): Int {
-        if (nextIndex == entriesList.size) {
-            return READ_DONE
+        while (true) {
+            if (nextIndex == entriesList.size) {
+                return READ_DONE
+            }
+
+            currentEntry = entriesList[nextIndex]
+            val key = currentEntry.key
+            val name = getPropertyName(key)
+            val fieldDescriptorIndex = desc.getElementIndex(name)
+
+            if (fieldDescriptorIndex == UNKNOWN_NAME) {
+                if (configuration.strictMode) {
+                    throwUnknownProperty(name, key.location, desc)
+                } else {
+                    nextIndex++
+                    continue
+                }
+            }
+
+            currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration)
+            currentlyReadingValue = true
+            nextIndex++
+
+            return fieldDescriptorIndex
         }
-
-        currentEntry = entriesList[nextIndex]
-        val key = currentEntry.key
-        val name = getPropertyName(key)
-        val fieldDescriptorIndex = desc.getElementIndex(name)
-
-        if (fieldDescriptorIndex == UNKNOWN_NAME) {
-            throwUnknownProperty(name, key.location, desc)
-        }
-
-        currentValueDecoder = createFor(entriesList[nextIndex].value, context)
-        currentlyReadingValue = true
-        nextIndex++
-
-        return fieldDescriptorIndex
     }
 
     private fun decodeElementIndexForMap(): Int {
@@ -191,8 +198,8 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule) : YamlInput(
         currentlyReadingValue = nextIndex % 2 != 0
 
         currentValueDecoder = when (currentlyReadingValue) {
-            true -> createFor(currentEntry.value, context)
-            false -> createFor(currentEntry.key, context)
+            true -> createFor(currentEntry.value, context, configuration)
+            false -> createFor(currentEntry.key, context, configuration)
         }
 
         return nextIndex++

@@ -1028,6 +1028,39 @@ object YamlReadingTest : Spek({
                     }
                 }
             }
+
+            context("given some input with an additional unknown field") {
+                val input = """
+                    name: Blah Blahson
+                    extra-field: Hello
+                """.trimIndent()
+
+                context("given strict mode is enabled") {
+                    val configuration = YamlConfiguration(strictMode = true)
+                    val yaml = Yaml(configuration = configuration)
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            assert({ yaml.parse(SimpleStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
+                                message { toBe("Unknown property 'extra-field'. Known properties are: name") }
+                                line { toBe(2) }
+                                column { toBe(1) }
+                            }
+                        }
+                    }
+                }
+
+                context("given strict mode is disabled") {
+                    val configuration = YamlConfiguration(strictMode = false)
+                    val yaml = Yaml(configuration = configuration)
+
+                    context("parsing that input") {
+                        it("ignores the extra field and returns a deserialised object") {
+                            assert(yaml.parse(SimpleStructure.serializer(), input)).toBe(SimpleStructure("Blah Blahson"))
+                        }
+                    }
+                }
+            }
         }
 
         describe("parsing values with a dynamically installed serializer") {
