@@ -19,5 +19,5 @@
 package com.charleskorn.kaml
 
 data class YamlConfiguration constructor(
-    @JvmField internal val encodeDefaults: Boolean = true
+    internal val encodeDefaults: Boolean = true
 )
