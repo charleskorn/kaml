@@ -53,14 +53,14 @@ repositories {
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8", "1.3.41"))
-    compile(group = "org.snakeyaml", name = "snakeyaml-engine", version = "1.0")
-    compile(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.11.0")
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "1.0")
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.11.0")
 
     val spekVersion = "2.0.6"
 
-    // Override the version of kotlin-reflect used by Spek.
-    testImplementation(kotlin("reflect", "1.3.41"))
     testImplementation(group = "org.spekframework.spek2", name = "spek-dsl-jvm", version = spekVersion)
     testImplementation(group = "ch.tutteli.atrium", name = "atrium-cc-en_GB-robstoll", version = "0.8.0")
 
