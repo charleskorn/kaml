@@ -60,12 +60,6 @@ tasks:
       container: build-env
       command: ./gradlew jacocoTestReport
 
-  benchmark:
-    description: Run the benchmarks.
-    run:
-      container: build-env
-      command: ./gradlew jmh
-
   publishSnapshot:
     description: Publish a snapshot version of the library to Sonatype's Open Source Software Repository Hosting (OSSRH).
     run:

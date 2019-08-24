@@ -14,10 +14,6 @@ echo "Generating code coverage report..."
 ./batect generateCodeCoverageReport
 echo
 
-echo "Running benchmarks..."
-./batect benchmark
-echo
-
 if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
     echo "Assembling release..."
     ./batect assembleRelease
