@@ -6,7 +6,7 @@ rem For more information, visit https://github.com/charleskorn/batect.
 
 setlocal EnableDelayedExpansion
 
-set "version=0.35.0"
+set "version=0.35.1"
 
 if "%BATECT_CACHE_DIR%" == "" (
     set "BATECT_CACHE_DIR=%USERPROFILE%\.batect\cache"
@@ -22,7 +22,7 @@ $ErrorActionPreference = 'Stop'^
 
 ^
 
-$Version='0.35.0'^
+$Version='0.35.1'^
 
 ^
 
