@@ -109,7 +109,14 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
         return nextElementIndex++
     }
 
-    override fun decodeNotNullMark(): Boolean = checkTypeAndDecodeFromCurrentValue("a (possibly null) scalar value") { decodeNotNullMark() }
+    override fun decodeNotNullMark(): Boolean {
+        if (!haveStartedReadingElements) {
+            return true
+        }
+
+        return currentElementDecoder.decodeNotNullMark()
+    }
+
     override fun decodeString(): String = checkTypeAndDecodeFromCurrentValue("a string") { decodeString() }
     override fun decodeInt(): Int = checkTypeAndDecodeFromCurrentValue("an integer") { decodeInt() }
     override fun decodeLong(): Long = checkTypeAndDecodeFromCurrentValue("a long") { decodeLong() }
@@ -122,7 +129,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     override fun decodeEnum(enumDescription: EnumDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
 
     private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
-        if (!::currentElementDecoder.isInitialized) {
+        if (!haveStartedReadingElements) {
             throw IncorrectTypeException("Expected $expectedTypeDescription, but got a list", list.location)
         }
 
@@ -218,7 +225,14 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         throw UnknownPropertyException(name, knownPropertyNames, location)
     }
 
-    override fun decodeNotNullMark(): Boolean = checkTypeAndDecodeFromCurrentValue("a (possibly null) scalar value") { decodeNotNullMark() }
+    override fun decodeNotNullMark(): Boolean {
+        if (!haveStartedReadingEntries) {
+            return true
+        }
+
+        return fromCurrentValue { decodeNotNullMark() }
+    }
+
     override fun decodeString(): String = checkTypeAndDecodeFromCurrentValue("a string") { decodeString() }
     override fun decodeInt(): Int = checkTypeAndDecodeFromCurrentValue("an integer") { decodeInt() }
     override fun decodeLong(): Long = checkTypeAndDecodeFromCurrentValue("a long") { decodeLong() }
@@ -231,7 +245,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     override fun decodeEnum(enumDescription: EnumDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
 
     private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
-        if (!::currentValueDecoder.isInitialized) {
+        if (!haveStartedReadingEntries) {
             throw IncorrectTypeException("Expected $expectedTypeDescription, but got a map", map.location)
         }
 

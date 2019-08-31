@@ -493,6 +493,14 @@ object YamlReadingTest : Spek({
                     }
                 }
 
+                context("parsing that input as a nullable list") {
+                    val result = Yaml.default.parse(makeNullable(String.serializer().list), input)
+
+                    it("deserializes it to the expected value") {
+                        assert(result).toBe(listOf("thing1", "thing2", "thing3"))
+                    }
+                }
+
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         assert({ Yaml.default.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
@@ -1063,6 +1071,25 @@ object YamlReadingTest : Spek({
                     }
                 }
             }
+
+            context("given an object where the first property is nullable") {
+                val input = """
+                    mariaDb:
+                      host: "db.test.com"
+                """.trimIndent()
+
+                @Serializable
+                data class MariaDb(val host: String)
+
+                @Serializable
+                data class Server(val mariaDb: MariaDb? = null)
+
+                val result = Yaml.default.parse(Server.serializer(), input)
+
+                it("deserializes it to the expected object") {
+                    assert(result).toBe(Server(MariaDb("db.test.com")))
+                }
+            }
         }
 
         describe("parsing values with a dynamically installed serializer") {
@@ -1097,7 +1124,7 @@ object YamlReadingTest : Spek({
 
         describe("parsing values with mismatched types") {
             context("given a list") {
-                mapOf(
+                listOf(
                     "a string" to StringSerializer,
                     "an integer" to IntSerializer,
                     "a long" to LongSerializer,
@@ -1110,8 +1137,8 @@ object YamlReadingTest : Spek({
                     "an enumeration value" to EnumSerializer(TestEnum::class),
                     "a map" to (StringSerializer to StringSerializer).map,
                     "an object" to ComplexStructure.serializer(),
-                    "a (possibly null) scalar value" to makeNullable(StringSerializer)
-                ).forEach { description, serializer ->
+                    "a string" to makeNullable(StringSerializer)
+                ).forEach { (description, serializer) ->
                     val input = "- thing"
 
                     context("parsing that input as $description") {
@@ -1171,7 +1198,7 @@ object YamlReadingTest : Spek({
             }
 
             context("given a map") {
-                mapOf(
+                listOf(
                     "a string" to StringSerializer,
                     "an integer" to IntSerializer,
                     "a long" to LongSerializer,
@@ -1183,8 +1210,8 @@ object YamlReadingTest : Spek({
                     "a character" to CharSerializer,
                     "an enumeration value" to EnumSerializer(TestEnum::class),
                     "a list" to StringSerializer.list,
-                    "a (possibly null) scalar value" to makeNullable(StringSerializer)
-                ).forEach { description, serializer ->
+                    "a string" to makeNullable(StringSerializer)
+                ).forEach { (description, serializer) ->
                     val input = "key: value"
 
                     context("parsing that input as $description") {
