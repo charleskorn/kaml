@@ -1,3 +1,5 @@
+dist: bionic
+
 services:
   - docker
 
@@ -11,10 +13,6 @@ env:
     - secure: "sWRpLLq0B2GveAEeHjXViVoCumxPEHooGmpcFunN/lHOYC44Kz5hzh1oXzeZFuBEuE0DwhqZIi6ZIY3rq4wBe4HsCwVqR9kBeyYQ3LZ2cocLOAhvXWXufenxz+0Q8gSAOR6zJaN9xv6muojixd3CWbMK/P082/PFI8sFvGXLqw874BRrojvPTTfNdemQYs7X+wpm7bJFHVnwgvdm/o6Cg2YAadF9JMJ6r25sjEHmxE50+Nhc9pKfQQujNPrM4vbOB3N/C0IU//FaH0mrXbkf2UohkW/Ku1mW59jpfUhlLOS/zLxdO4KvzrjSzfm5ASSHCj1gN2hzEOouvTRdBbTDj8GvN3Jb6p1XgoYtXk8Okbr+urpqHM9PEIgbeTR8j+5rkCsKU3uSUF+VH+yeUso6U8jDjB4FGHbW6eww0iFUlrStFUmfxzOnMkzfjBRQzc25Xwmf4lkLUW9SL0My8Ff53FOpy6QL1qdX+f4vHKxPDY5x9HoNPePg1Wn1JZygBx29fBC7LJk8kJiDzRhYlLkwwkDHma0vRmvO1fhwSXE3sHX8kfvBLThZks784PL4uDTxtMi0TI753vV187APfo46C3WgO5MVu6CnuIOWsnBApIoCo6ZgeFB9kvIP3/TW8/+D7pNruYeF/bEN1AFTS4uIVk+4gcChJQtr81YJP3jhZ7w="
 
 before_install:
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - sudo apt-get update
-  - sudo apt-get -y install docker-ce
   - docker --version
 
   # We can't use an environment variable for this because Travis doesn't support encrypted environment variables large enough to hold it.
