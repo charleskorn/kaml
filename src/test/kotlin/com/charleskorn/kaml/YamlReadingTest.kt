@@ -1072,22 +1072,18 @@ object YamlReadingTest : Spek({
                 }
             }
 
-            context("given an object where the first property is nullable") {
+            context("given a nullable object") {
                 val input = """
-                    mariaDb:
-                      host: "db.test.com"
+                    host: "db.test.com"
                 """.trimIndent()
 
                 @Serializable
-                data class MariaDb(val host: String)
+                data class Database(val host: String)
 
-                @Serializable
-                data class Server(val mariaDb: MariaDb? = null)
-
-                val result = Yaml.default.parse(Server.serializer(), input)
+                val result = Yaml.default.parse(makeNullable(Database.serializer()), input)
 
                 it("deserializes it to the expected object") {
-                    assert(result).toBe(Server(MariaDb("db.test.com")))
+                    assert(result).toBe(Database("db.test.com"))
                 }
             }
         }
