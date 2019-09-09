@@ -36,6 +36,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
             is YamlNull -> YamlNullInput(node, context, configuration)
             is YamlList -> YamlListInput(node, context, configuration)
             is YamlMap -> YamlMapInput(node, context, configuration)
+            is YamlTaggedNode -> YamlTaggedInput(node, context, configuration)
         }
     }
 
@@ -214,7 +215,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
 
     private fun getPropertyName(key: YamlNode): String = when (key) {
         is YamlScalar -> key.content
-        is YamlNull, is YamlMap, is YamlList -> throw MalformedYamlException("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)", key.location)
+        is YamlNull, is YamlMap, is YamlList, is YamlTaggedNode -> throw MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", key.location)
     }
 
     private fun throwUnknownProperty(name: String, location: Location, desc: SerialDescriptor): Nothing {
@@ -288,4 +289,50 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     }
 
     override fun getCurrentLocation(): Location = currentValueDecoder.node.location
+}
+
+private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(taggedNode, context, configuration) {
+    /**
+     * index 0 -> tag
+     * index 1 -> child node
+     */
+    private var currentIndex = -1
+    private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration)
+
+    override fun getCurrentLocation(): Location = if (currentIndex == 1) childDecoder.getCurrentLocation() else taggedNode.location
+
+    override fun decodeNotNullMark(): Boolean = when (currentIndex) {
+        0 -> true
+        1 -> childDecoder.decodeNotNullMark()
+        else -> super.decodeNotNullMark()
+    }
+
+    override fun decodeElementIndex(desc: SerialDescriptor): Int {
+        return when (++currentIndex) {
+            0, 1 -> currentIndex
+            else -> READ_DONE
+        }
+    }
+
+    override fun decodeString(): String {
+        return when (currentIndex) {
+            0 -> taggedNode.tag
+            1 -> childDecoder.decodeString()
+            else -> super.decodeString()
+        }
+    }
+
+    override fun decodeNull(): Nothing? = if (currentIndex == 1) childDecoder.decodeNull() else super.decodeNull()
+    override fun decodeUnit() = if (currentIndex == 1) childDecoder.decodeUnit() else super.decodeUnit()
+    override fun decodeInt(): Int = if (currentIndex == 1) childDecoder.decodeInt() else super.decodeInt()
+    override fun decodeLong(): Long = if (currentIndex == 1) childDecoder.decodeLong() else super.decodeLong()
+    override fun decodeShort(): Short = if (currentIndex == 1) childDecoder.decodeShort() else super.decodeShort()
+    override fun decodeByte(): Byte = if (currentIndex == 1) childDecoder.decodeByte() else super.decodeByte()
+    override fun decodeDouble(): Double = if (currentIndex == 1) childDecoder.decodeDouble() else super.decodeDouble()
+    override fun decodeFloat(): Float = if (currentIndex == 1) childDecoder.decodeFloat() else super.decodeFloat()
+    override fun decodeBoolean(): Boolean = if (currentIndex == 1) childDecoder.decodeBoolean() else super.decodeBoolean()
+    override fun decodeChar(): Char = if (currentIndex == 1) childDecoder.decodeChar() else super.decodeChar()
+    override fun decodeEnum(enumDescription: EnumDescriptor): Int = if (currentIndex == 1) childDecoder.decodeEnum(enumDescription) else super.decodeEnum(enumDescription)
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder =
+        if (currentIndex == 1) childDecoder.beginStructure(desc, *typeParams) else super.beginStructure(desc, *typeParams)
 }

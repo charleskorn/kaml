@@ -22,10 +22,17 @@ import ch.tutteli.atrium.api.cc.en_GB.message
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
+import com.charleskorn.kaml.testobjects.InterfaceInt
+import com.charleskorn.kaml.testobjects.InterfaceString
+import com.charleskorn.kaml.testobjects.InterfaceWrapper
 import com.charleskorn.kaml.testobjects.NestedObjects
+import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
+import com.charleskorn.kaml.testobjects.TestSealedStructure
+import com.charleskorn.kaml.testobjects.interfaceModule
+import com.charleskorn.kaml.testobjects.sealedModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
@@ -831,6 +838,120 @@ object YamlReadingTest : Spek({
                 }
             }
 
+            val sealedYaml = Yaml(context = sealedModule)
+
+            context("given some tagged input representing an object where the resulting type should be a sealed class (int)") {
+                val input = """
+                    element: !<sealedInt>
+                        value: 3
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = sealedYaml.parse(SealedWrapper.serializer(), input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedInt(3)))
+                    }
+                }
+            }
+
+            context("given some tagged input representing an object where the resulting type should be a sealed class (string)") {
+                val input = """
+                    element: !<sealedString>
+                        value: "asdfg"
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = sealedYaml.parse(SealedWrapper.serializer(), input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
+                    }
+                }
+            }
+
+            context("given some tagged input representing a list of objects where the resulting type should be a sealed class") {
+                val input = """
+                    - element: !<sealedString>
+                        value: "some"
+                    - element: !<sealedInt>
+                        value: -987
+                    - element: !<sealedInt>
+                        value: 654
+                    - element: !<sealedString>
+                        value: "tests"
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = sealedYaml.parse(SealedWrapper.serializer().list, input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(
+                            listOf(
+                                SealedWrapper(TestSealedStructure.SimpleSealedString("some")),
+                                SealedWrapper(TestSealedStructure.SimpleSealedInt(-987)),
+                                SealedWrapper(TestSealedStructure.SimpleSealedInt(654)),
+                                SealedWrapper(TestSealedStructure.SimpleSealedString("tests"))
+                            )
+                        )
+                    }
+                }
+            }
+
+            val interfaceYaml = Yaml(context = interfaceModule)
+
+            context("given some tagged input representing an object where the resulting type should be an interface (int)") {
+                val input = """
+                    test: !<interfaceInt>
+                        intVal: 55
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = interfaceYaml.parse(InterfaceWrapper.serializer(), input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(InterfaceWrapper(InterfaceInt(55)))
+                    }
+                }
+            }
+
+            context("given some tagged input representing an object where the resulting type should be an interface (string)") {
+                val input = """
+                    test: !<interfaceString>
+                        stringVal: "kudo"
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = interfaceYaml.parse(InterfaceWrapper.serializer(), input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(InterfaceWrapper(InterfaceString("kudo")))
+                    }
+                }
+            }
+
+            context("given some tagged input representing a list of objects where the resulting type should be an interface") {
+                val input = """
+                    - test: !<interfaceInt>
+                        intVal: 321
+                    - test: !<interfaceString>
+                        stringVal: "hello"
+                    - test: !<interfaceString>
+                        stringVal: "world"
+                    - test: !<interfaceInt>
+                        intVal: 890
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = interfaceYaml.parse(InterfaceWrapper.serializer().list, input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(
+                            listOf(
+                                InterfaceWrapper(InterfaceInt(321)),
+                                InterfaceWrapper(InterfaceString("hello")),
+                                InterfaceWrapper(InterfaceString("world")),
+                                InterfaceWrapper(InterfaceInt(890))
+                            )
+                        )
+                    }
+                }
+            }
+
             context("given some input representing an object with an unknown key") {
                 val input = """
                     abc123: something
@@ -857,7 +978,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input") {
                     it("throws an appropriate exception") {
                         assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
-                            message { toBe("Property name must not be a list, map or null value. (To use 'null' as a property name, enclose it in quotes.)") }
+                            message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
                         }
