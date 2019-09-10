@@ -927,8 +927,7 @@ object YamlReadingTest : Spek({
 
             context("given some tagged input representing a list of objects where the resulting type should be an interface") {
                 val input = """
-                    - test: !<interfaceInt>
-                        intVal: 321
+                    - test: null
                     - test: !<interfaceString>
                         stringVal: "hello"
                     - test: !<interfaceString>
@@ -942,7 +941,7 @@ object YamlReadingTest : Spek({
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
                             listOf(
-                                InterfaceWrapper(InterfaceInt(321)),
+                                InterfaceWrapper(null),
                                 InterfaceWrapper(InterfaceString("hello")),
                                 InterfaceWrapper(InterfaceString("world")),
                                 InterfaceWrapper(InterfaceInt(890))
@@ -973,6 +972,54 @@ object YamlReadingTest : Spek({
             context("given some input representing an object with a list as a key") {
                 val input = """
                     []: something
+                """.trimIndent()
+
+                context("parsing that input") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                            message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+            }
+
+            context("given some input representing an object with a null as a key") {
+                val input = """
+                    null: something
+                """.trimIndent()
+
+                context("parsing that input") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                            message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+            }
+
+            context("given some input representing an object with an object as a key") {
+                val input = """
+                    { }: something
+                """.trimIndent()
+
+                context("parsing that input") {
+                    it("throws an appropriate exception") {
+                        assert({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                            message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
+                            line { toBe(1) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+            }
+
+            context("given some input representing an object with a tagged value as a key") {
+                val input = """
+                    !<sealedInt> { }: something
                 """.trimIndent()
 
                 context("parsing that input") {

@@ -24,8 +24,8 @@ import ch.tutteli.atrium.verbs.assert
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-object YamlSealedTest : Spek({
-    describe("a YAML sealed structure") {
+object YamlTaggedTest : Spek({
+    describe("a YAML tagged node") {
         describe("creating an instance") {
 
             context("creating a tagged node with a map") {
@@ -52,6 +52,16 @@ object YamlSealedTest : Spek({
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
                     assert(tagged.equivalentContentTo(tagged)).toBe(true)
+                }
+            }
+
+            context("comparing it to another non-tagged node") {
+                it("indicates that they are not equivalent") {
+                    assert(
+                        tagged.equivalentContentTo(
+                            YamlScalar("test", Location(4, 1))
+                        )
+                    ).toBe(false)
                 }
             }
 
