@@ -100,8 +100,8 @@ internal class YamlOutput(
     }
 
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder {
-        val tag: Optional<String> = yamlTag
-        val implicit = tag.isEmpty
+        val tag = yamlTag
+        val implicit = !tag.isPresent
         when (desc.kind) {
             is StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
             is StructureKind.MAP, StructureKind.CLASS -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
