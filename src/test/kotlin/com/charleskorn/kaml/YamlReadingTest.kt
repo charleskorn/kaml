@@ -44,7 +44,7 @@ import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.internal.ShortSerializer
 import kotlinx.serialization.internal.StringDescriptor
 import kotlinx.serialization.internal.StringSerializer
-import kotlinx.serialization.internal.makeNullable
+import kotlinx.serialization.internal.nullable
 import kotlinx.serialization.list
 import kotlinx.serialization.map
 import kotlinx.serialization.modules.serializersModuleOf
@@ -67,7 +67,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable string") {
-                    val result = Yaml.default.parse(makeNullable(StringSerializer), input)
+                    val result = Yaml.default.parse(StringSerializer.nullable, input)
 
                     it("deserializes it to the expected string value") {
                         assert(result).toBe("hello")
@@ -135,7 +135,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable integer") {
-                    val result = Yaml.default.parse(makeNullable(Int.serializer()), input)
+                    val result = Yaml.default.parse(Int.serializer().nullable, input)
 
                     it("deserializes it to the expected integer") {
                         assert(result).toBe(123)
@@ -143,7 +143,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable long") {
-                    val result = Yaml.default.parse(makeNullable(Long.serializer()), input)
+                    val result = Yaml.default.parse(Long.serializer().nullable, input)
 
                     it("deserializes it to the expected long") {
                         assert(result).toBe(123)
@@ -151,7 +151,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable short") {
-                    val result = Yaml.default.parse(makeNullable(Short.serializer()), input)
+                    val result = Yaml.default.parse(Short.serializer().nullable, input)
 
                     it("deserializes it to the expected short") {
                         assert(result).toBe(123)
@@ -159,7 +159,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable byte") {
-                    val result = Yaml.default.parse(makeNullable(Byte.serializer()), input)
+                    val result = Yaml.default.parse(Byte.serializer().nullable, input)
 
                     it("deserializes it to the expected byte") {
                         assert(result).toBe(123)
@@ -167,7 +167,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable double") {
-                    val result = Yaml.default.parse(makeNullable(Double.serializer()), input)
+                    val result = Yaml.default.parse(Double.serializer().nullable, input)
 
                     it("deserializes it to the expected double") {
                         assert(result).toBe(123.0)
@@ -175,7 +175,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable float") {
-                    val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
+                    val result = Yaml.default.parse(FloatSerializer.nullable, input)
 
                     it("deserializes it to the expected float") {
                         assert(result).toBe(123.0f)
@@ -195,7 +195,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable boolean") {
-                    val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
+                    val result = Yaml.default.parse(BooleanSerializer.nullable, input)
 
                     it("deserializes it to the expected boolean value") {
                         assert(result).toBe(true)
@@ -215,7 +215,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable character") {
-                    val result = Yaml.default.parse(makeNullable(CharSerializer), input)
+                    val result = Yaml.default.parse(CharSerializer.nullable, input)
 
                     it("deserializes it to the expected character value") {
                         assert(result).toBe('c')
@@ -253,7 +253,7 @@ object YamlReadingTest : Spek({
             val input = "null"
 
             context("parsing a null value as a nullable string") {
-                val result = Yaml.default.parse(makeNullable(StringSerializer), input)
+                val result = Yaml.default.parse(StringSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -271,7 +271,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable integer") {
-                val result = Yaml.default.parse(makeNullable(IntSerializer), input)
+                val result = Yaml.default.parse(IntSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -289,7 +289,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable long") {
-                val result = Yaml.default.parse(makeNullable(LongSerializer), input)
+                val result = Yaml.default.parse(LongSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -307,7 +307,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable short") {
-                val result = Yaml.default.parse(makeNullable(ShortSerializer), input)
+                val result = Yaml.default.parse(ShortSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -325,7 +325,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable byte") {
-                val result = Yaml.default.parse(makeNullable(ByteSerializer), input)
+                val result = Yaml.default.parse(ByteSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -343,7 +343,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable double") {
-                val result = Yaml.default.parse(makeNullable(DoubleSerializer), input)
+                val result = Yaml.default.parse(DoubleSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -361,7 +361,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable float") {
-                val result = Yaml.default.parse(makeNullable(FloatSerializer), input)
+                val result = Yaml.default.parse(FloatSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -379,7 +379,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable boolean") {
-                val result = Yaml.default.parse(makeNullable(BooleanSerializer), input)
+                val result = Yaml.default.parse(BooleanSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -397,7 +397,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable character") {
-                val result = Yaml.default.parse(makeNullable(CharSerializer), input)
+                val result = Yaml.default.parse(CharSerializer.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -415,7 +415,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable enum") {
-                val result = Yaml.default.parse(makeNullable(EnumSerializer(TestEnum::class)), input)
+                val result = Yaml.default.parse(EnumSerializer(TestEnum::class).nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -433,7 +433,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable list") {
-                val result = Yaml.default.parse(makeNullable(StringSerializer.list), input)
+                val result = Yaml.default.parse(StringSerializer.list.nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -451,7 +451,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable object") {
-                val result = Yaml.default.parse(makeNullable(ComplexStructure.serializer()), input)
+                val result = Yaml.default.parse(ComplexStructure.serializer().nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -494,7 +494,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable list") {
-                    val result = Yaml.default.parse(makeNullable(String.serializer().list), input)
+                    val result = Yaml.default.parse(String.serializer().list.nullable, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf("thing1", "thing2", "thing3"))
@@ -618,7 +618,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(makeNullable(String.serializer()).list, input)
+                    val result = Yaml.default.parse(String.serializer().nullable.list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf("thing1", null))
@@ -1080,7 +1080,7 @@ object YamlReadingTest : Spek({
                 @Serializable
                 data class Database(val host: String)
 
-                val result = Yaml.default.parse(makeNullable(Database.serializer()), input)
+                val result = Yaml.default.parse(Database.serializer().nullable, input)
 
                 it("deserializes it to the expected object") {
                     assert(result).toBe(Database("db.test.com"))
@@ -1133,7 +1133,7 @@ object YamlReadingTest : Spek({
                     "an enumeration value" to EnumSerializer(TestEnum::class),
                     "a map" to (StringSerializer to StringSerializer).map,
                     "an object" to ComplexStructure.serializer(),
-                    "a string" to makeNullable(StringSerializer)
+                    "a string" to StringSerializer.nullable
                 ).forEach { (description, serializer) ->
                     val input = "- thing"
 
@@ -1206,7 +1206,7 @@ object YamlReadingTest : Spek({
                     "a character" to CharSerializer,
                     "an enumeration value" to EnumSerializer(TestEnum::class),
                     "a list" to StringSerializer.list,
-                    "a string" to makeNullable(StringSerializer)
+                    "a string" to StringSerializer.nullable
                 ).forEach { (description, serializer) ->
                     val input = "key: value"
 
