@@ -22,16 +22,12 @@ import ch.tutteli.atrium.api.cc.en_GB.message
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
-import com.charleskorn.kaml.testobjects.InterfaceInt
-import com.charleskorn.kaml.testobjects.InterfaceString
-import com.charleskorn.kaml.testobjects.InterfaceWrapper
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
-import com.charleskorn.kaml.testobjects.interfaceModule
 import com.charleskorn.kaml.testobjects.sealedModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
@@ -889,62 +885,6 @@ object YamlReadingTest : Spek({
                                 SealedWrapper(TestSealedStructure.SimpleSealedInt(-987)),
                                 SealedWrapper(TestSealedStructure.SimpleSealedInt(654)),
                                 SealedWrapper(TestSealedStructure.SimpleSealedString("tests"))
-                            )
-                        )
-                    }
-                }
-            }
-
-            val interfaceYaml = Yaml(context = interfaceModule)
-
-            context("given some tagged input representing an object where the resulting type should be an interface (int)") {
-                val input = """
-                    test: !<interfaceInt>
-                        intVal: 55
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = interfaceYaml.parse(InterfaceWrapper.serializer(), input)
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(InterfaceWrapper(InterfaceInt(55)))
-                    }
-                }
-            }
-
-            context("given some tagged input representing an object where the resulting type should be an interface (string)") {
-                val input = """
-                    test: !<interfaceString>
-                        stringVal: "kudo"
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = interfaceYaml.parse(InterfaceWrapper.serializer(), input)
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(InterfaceWrapper(InterfaceString("kudo")))
-                    }
-                }
-            }
-
-            context("given some tagged input representing a list of objects where the resulting type should be an interface") {
-                val input = """
-                    - test: null
-                    - test: !<interfaceString>
-                        stringVal: "hello"
-                    - test: !<interfaceString>
-                        stringVal: "world"
-                    - test: !<interfaceInt>
-                        intVal: 890
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = interfaceYaml.parse(InterfaceWrapper.serializer().list, input)
-                    it("deserializes it to a Kotlin object") {
-                        assert(result).toBe(
-                            listOf(
-                                InterfaceWrapper(null),
-                                InterfaceWrapper(InterfaceString("hello")),
-                                InterfaceWrapper(InterfaceString("world")),
-                                InterfaceWrapper(InterfaceInt(890))
                             )
                         )
                     }

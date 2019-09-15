@@ -44,19 +44,12 @@ import java.util.Optional
 
 internal class YamlOutput(
     writer: StreamDataWriter,
-    private val yaml: Yaml
+    override val context: SerialModule,
+    private val configuration: YamlConfiguration
 ) : ElementValueEncoder() {
     private val settings = DumpSettingsBuilder().build()
     private val emitter = Emitter(settings, writer)
     private var currentTag: String? = null
-    private val configuration: YamlConfiguration get() = yaml.configuration
-    override val context: SerialModule get() = yaml.context
-    private val yamlTag: Optional<String>
-        get() {
-            return Optional.ofNullable(currentTag).also {
-                currentTag = null
-            }
-        }
 
     init {
         emitter.emit(StreamStartEvent())
@@ -100,7 +93,7 @@ internal class YamlOutput(
     }
 
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder {
-        val tag = yamlTag
+        val tag = getAndClearTag()
         val implicit = !tag.isPresent
         when (desc.kind) {
             is StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
@@ -120,7 +113,13 @@ internal class YamlOutput(
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) =
-        emitter.emit(ScalarEvent(Optional.empty(), yamlTag, ALL_IMPLICIT, value, style))
+        emitter.emit(ScalarEvent(Optional.empty(), getAndClearTag(), ALL_IMPLICIT, value, style))
+
+    private fun getAndClearTag(): Optional<String> {
+        val tag = Optional.ofNullable(currentTag)
+        currentTag = null
+        return tag
+    }
 
     companion object {
         private val ALL_IMPLICIT = ImplicitTuple(true, true)

@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.notToThrow
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.verbs.assert
 import org.spekframework.spek2.Spek
@@ -26,23 +25,6 @@ import org.spekframework.spek2.style.specification.describe
 
 object YamlTaggedTest : Spek({
     describe("a YAML tagged node") {
-        describe("creating an instance") {
-
-            context("creating a tagged node with a map") {
-                it("does not throw an exception") {
-                    assert {
-                        YamlTaggedNode(
-                            "sealedInt",
-                            YamlMap(
-                                mapOf(YamlScalar("value", Location(1, 1)) to YamlScalar("5", Location(2, 1))),
-                                Location(1, 1)
-                            )
-                        )
-                    }.notToThrow()
-                }
-            }
-        }
-
         describe("testing equivalence") {
             val tagged = YamlTaggedNode(
                 "tag",

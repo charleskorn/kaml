@@ -63,23 +63,3 @@ val sealedModule = SerializersModule {
         TestSealedStructure.SimpleSealedString::class with TestSealedStructure.SimpleSealedString.serializer()
     }
 }
-
-interface TestInterface
-
-@Serializable
-@SerialName("interfaceInt")
-data class InterfaceInt(val intVal: Int) : TestInterface
-
-@Serializable
-@SerialName("interfaceString")
-data class InterfaceString(val stringVal: String) : TestInterface
-
-@Serializable
-data class InterfaceWrapper(val test: TestInterface?)
-
-val interfaceModule = SerializersModule {
-    polymorphic(TestInterface::class) {
-        InterfaceInt::class with InterfaceInt.serializer()
-        InterfaceString::class with InterfaceString.serializer()
-    }
-}
