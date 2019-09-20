@@ -69,7 +69,7 @@ internal class YamlOutput(
 
     override fun encodeElement(desc: SerialDescriptor, index: Int): Boolean {
         if (desc.kind is StructureKind.CLASS) {
-            emitScalar(desc.getElementName(index), ScalarStyle.PLAIN)
+            emitPlainScalar(desc.getElementName(index))
         }
 
         return super.encodeElement(desc, index)
