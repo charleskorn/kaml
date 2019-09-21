@@ -25,6 +25,7 @@ import org.snakeyaml.engine.v1.events.MappingStartEvent
 import org.snakeyaml.engine.v1.events.NodeEvent
 import org.snakeyaml.engine.v1.events.ScalarEvent
 import org.snakeyaml.engine.v1.events.SequenceStartEvent
+import java.util.Optional
 
 class YamlNodeReader(
     private val parser: YamlParser,
@@ -52,9 +53,9 @@ class YamlNodeReader(
     }
 
     private fun readFromEvent(event: Event, isTopLevel: Boolean): YamlNode = when (event) {
-        is ScalarEvent -> readScalarOrNull(event)
-        is SequenceStartEvent -> readSequence(event.location)
-        is MappingStartEvent -> readMapping(event.location, isTopLevel)
+        is ScalarEvent -> readScalarOrNull(event).maybeToTaggedNode(event.tag)
+        is SequenceStartEvent -> readSequence(event.location).maybeToTaggedNode(event.tag)
+        is MappingStartEvent -> readMapping(event.location, isTopLevel).maybeToTaggedNode(event.tag)
         is AliasEvent -> readAlias(event)
         else -> throw MalformedYamlException("Unexpected ${event.eventId}", event.location)
     }
@@ -111,6 +112,9 @@ class YamlNodeReader(
             }
         }
     }
+
+    private fun YamlNode.maybeToTaggedNode(tag: Optional<String>): YamlNode =
+        tag.map<YamlNode> { YamlTaggedNode(it, this) }.orElse(this)
 
     private fun YamlNode.isScalarAndStartsWith(prefix: String): Boolean = this is YamlScalar && this.content.startsWith(prefix)
 

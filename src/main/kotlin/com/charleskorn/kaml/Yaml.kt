@@ -48,7 +48,7 @@ class Yaml(
             override fun flush() { }
         }
 
-        val output = YamlOutput(writer, configuration)
+        val output = YamlOutput(writer, context, configuration)
         output.encode(serializer, obj)
 
         return writer.toString()

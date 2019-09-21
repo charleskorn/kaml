@@ -21,9 +21,12 @@ package com.charleskorn.kaml
 import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.verbs.assert
 import com.charleskorn.kaml.testobjects.NestedObjects
+import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
+import com.charleskorn.kaml.testobjects.TestSealedStructure
+import com.charleskorn.kaml.testobjects.sealedModule
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.BooleanSerializer
 import kotlinx.serialization.internal.ByteSerializer
@@ -465,6 +468,64 @@ object YamlWritingTest : Spek({
                         variables:
                           "var1": "value1"
                           "var2": "value2"
+                    """.trimIndent()
+                    )
+                }
+            }
+        }
+
+        describe("handling sealed classes") {
+            val yaml = Yaml(context = sealedModule)
+            context("serializing int sealed class") {
+                val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
+                val output = yaml.stringify(SealedWrapper.serializer(), input)
+
+                it("returns the value serialized in the expected YAML form") {
+                    assert(output).toBe(
+                        """
+                        element: !<sealedInt>
+                          value: 5
+                    """.trimIndent()
+                    )
+                }
+            }
+
+            context("serializing string sealed class") {
+                val input = SealedWrapper(TestSealedStructure.SimpleSealedString("5"))
+                val output = yaml.stringify(SealedWrapper.serializer(), input)
+
+                it("returns the value serialized in the expected YAML form") {
+                    assert(output).toBe(
+                        """
+                        element: !<sealedString>
+                          value: "5"
+                    """.trimIndent()
+                    )
+                }
+            }
+
+            context("serializing list of sealed class structures") {
+                val input = listOf(
+                    TestSealedStructure.SimpleSealedInt(5),
+                    TestSealedStructure.SimpleSealedString("some test"),
+                    TestSealedStructure.SimpleSealedInt(-20),
+                    TestSealedStructure.SimpleSealedString(null),
+                    null
+                ).map(::SealedWrapper)
+                val output = yaml.stringify(SealedWrapper.serializer().list, input)
+
+                it("returns the value serialized in the expected YAML form") {
+                    assert(output).toBe(
+                        """
+                        - element: !<sealedInt>
+                            value: 5
+                        - element: !<sealedString>
+                            value: "some test"
+                        - element: !<sealedInt>
+                            value: -20
+                        - element: !<sealedString>
+                            value: null
+                        - element: null
                     """.trimIndent()
                     )
                 }

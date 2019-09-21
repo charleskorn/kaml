@@ -21,9 +21,12 @@ package com.charleskorn.kaml
 import kotlinx.serialization.CompositeEncoder
 import kotlinx.serialization.ElementValueEncoder
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.internal.EnumDescriptor
+import kotlinx.serialization.modules.SerialModule
 import org.snakeyaml.engine.v1.api.DumpSettingsBuilder
 import org.snakeyaml.engine.v1.api.StreamDataWriter
 import org.snakeyaml.engine.v1.common.FlowStyle
@@ -41,10 +44,12 @@ import java.util.Optional
 
 internal class YamlOutput(
     writer: StreamDataWriter,
+    override val context: SerialModule,
     private val configuration: YamlConfiguration
 ) : ElementValueEncoder() {
     private val settings = DumpSettingsBuilder().build()
     private val emitter = Emitter(settings, writer)
+    private var currentTag: String? = null
 
     init {
         emitter.emit(StreamStartEvent())
@@ -75,10 +80,24 @@ internal class YamlOutput(
         return super.encodeElement(desc, index)
     }
 
+    override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
+        if (serializer !is PolymorphicSerializer<*>) {
+            serializer.serialize(this, value)
+            return
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val actualSerializer = serializer.findPolymorphicSerializer(this, value as Any) as KSerializer<Any>
+        currentTag = actualSerializer.descriptor.name
+        actualSerializer.serialize(this, value)
+    }
+
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder {
+        val tag = getAndClearTag()
+        val implicit = !tag.isPresent
         when (desc.kind) {
-            is StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
-            is StructureKind.MAP, StructureKind.CLASS -> emitter.emit(MappingStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
+            is StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
+            is StructureKind.MAP, StructureKind.CLASS -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
         }
 
         return super.beginStructure(desc, *typeParams)
@@ -94,5 +113,15 @@ internal class YamlOutput(
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) =
-        emitter.emit(ScalarEvent(Optional.empty(), Optional.empty(), ImplicitTuple(true, true), value, style))
+        emitter.emit(ScalarEvent(Optional.empty(), getAndClearTag(), ALL_IMPLICIT, value, style))
+
+    private fun getAndClearTag(): Optional<String> {
+        val tag = Optional.ofNullable(currentTag)
+        currentTag = null
+        return tag
+    }
+
+    companion object {
+        private val ALL_IMPLICIT = ImplicitTuple(true, true)
+    }
 }
