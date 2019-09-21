@@ -509,7 +509,8 @@ object YamlWritingTest : Spek({
                     TestSealedStructure.SimpleSealedInt(5),
                     TestSealedStructure.SimpleSealedString("some test"),
                     TestSealedStructure.SimpleSealedInt(-20),
-                    TestSealedStructure.SimpleSealedString("another test")
+                    TestSealedStructure.SimpleSealedString(null),
+                    null
                 ).map(::SealedWrapper)
                 val output = yaml.stringify(SealedWrapper.serializer().list, input)
 
@@ -523,7 +524,8 @@ object YamlWritingTest : Spek({
                         - element: !<sealedInt>
                             value: -20
                         - element: !<sealedString>
-                            value: "another test"
+                            value: null
+                        - element: null
                     """.trimIndent()
                     )
                 }

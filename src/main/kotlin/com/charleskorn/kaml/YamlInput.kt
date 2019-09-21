@@ -25,6 +25,7 @@ import kotlinx.serialization.ElementValueDecoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
+import kotlinx.serialization.UnionKind
 import kotlinx.serialization.UpdateMode
 import kotlinx.serialization.internal.EnumDescriptor
 import kotlinx.serialization.modules.SerialModule
@@ -152,7 +153,13 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
         }
     }
 
-    override fun getCurrentLocation(): Location = currentElementDecoder.node.location
+    override fun getCurrentLocation(): Location {
+        return if (haveStartedReadingElements) {
+            currentElementDecoder.node.location
+        } else {
+            list.location
+        }
+    }
 }
 
 private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
@@ -288,7 +295,13 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         Map
     }
 
-    override fun getCurrentLocation(): Location = currentValueDecoder.node.location
+    override fun getCurrentLocation(): Location {
+        return if (haveStartedReadingEntries) {
+            currentValueDecoder.node.location
+        } else {
+            map.location
+        }
+    }
 }
 
 private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(taggedNode, context, configuration) {
@@ -297,42 +310,35 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
      * index 1 -> child node
      */
     private var currentIndex = -1
+    private var isPolymorphic = false
     private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration)
 
-    override fun getCurrentLocation(): Location = if (currentIndex == 1) childDecoder.getCurrentLocation() else taggedNode.location
-
-    override fun decodeNotNullMark(): Boolean = when (currentIndex) {
-        0 -> true
-        1 -> childDecoder.decodeNotNullMark()
-        else -> super.decodeNotNullMark()
-    }
+    override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = { taggedNode.location }) { getCurrentLocation() }
 
     override fun decodeElementIndex(desc: SerialDescriptor): Int {
+        desc.calculatePolymorphic()
         return when (++currentIndex) {
             0, 1 -> currentIndex
             else -> READ_DONE
         }
     }
 
-    override fun decodeString(): String {
-        return when (currentIndex) {
-            0 -> taggedNode.tag
-            1 -> childDecoder.decodeString()
-            else -> super.decodeString()
-        }
+    override fun decodeString(): String = maybeCallOnChild(blockOnTag = { taggedNode.tag }) { decodeString() }
+
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        desc.calculatePolymorphic()
+        return maybeCallOnChild(blockOnTag = { super.beginStructure(desc, *typeParams) }) { beginStructure(desc, *typeParams) }
     }
 
-    override fun decodeNull(): Nothing? = if (currentIndex == 1) childDecoder.decodeNull() else super.decodeNull()
-    override fun decodeUnit() = if (currentIndex == 1) childDecoder.decodeUnit() else super.decodeUnit()
-    override fun decodeInt(): Int = if (currentIndex == 1) childDecoder.decodeInt() else super.decodeInt()
-    override fun decodeLong(): Long = if (currentIndex == 1) childDecoder.decodeLong() else super.decodeLong()
-    override fun decodeShort(): Short = if (currentIndex == 1) childDecoder.decodeShort() else super.decodeShort()
-    override fun decodeByte(): Byte = if (currentIndex == 1) childDecoder.decodeByte() else super.decodeByte()
-    override fun decodeDouble(): Double = if (currentIndex == 1) childDecoder.decodeDouble() else super.decodeDouble()
-    override fun decodeFloat(): Float = if (currentIndex == 1) childDecoder.decodeFloat() else super.decodeFloat()
-    override fun decodeBoolean(): Boolean = if (currentIndex == 1) childDecoder.decodeBoolean() else super.decodeBoolean()
-    override fun decodeChar(): Char = if (currentIndex == 1) childDecoder.decodeChar() else super.decodeChar()
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = if (currentIndex == 1) childDecoder.decodeEnum(enumDescription) else super.decodeEnum(enumDescription)
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder =
-        if (currentIndex == 1) childDecoder.beginStructure(desc, *typeParams) else super.beginStructure(desc, *typeParams)
+    private fun SerialDescriptor.calculatePolymorphic() {
+        isPolymorphic = kind === UnionKind.POLYMORPHIC
+    }
+
+    private inline fun <T> maybeCallOnChild(blockOnTag: () -> T, blockOnChild: YamlInput.() -> T): T {
+        return if (isPolymorphic && currentIndex != 1) {
+            blockOnTag()
+        } else {
+            childDecoder.blockOnChild()
+        }
+    }
 }

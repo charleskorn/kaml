@@ -848,6 +848,58 @@ object YamlReadingTest : Spek({
                         assert(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedInt(3)))
                     }
                 }
+
+                context("parsing that input as map") {
+                    val result = Yaml.default.parse((StringSerializer to (StringSerializer to IntSerializer).map).map, input)
+                    it("deserializes it to a Map ignoring the tag") {
+                        assert(result).toBe(mapOf("element" to mapOf("value" to 3)))
+                    }
+                }
+            }
+
+            context("given some tagged input representing an arbitrary list") {
+                val input = """
+                    !!list
+                        - 5
+                        - 3
+                """.trimIndent()
+
+                context("parsing that input as list") {
+                    val result = Yaml.default.parse(IntSerializer.list, input)
+                    it("deserializes it to a list ignoring the tag") {
+                        assert(result).toBe(listOf(5, 3))
+                    }
+                }
+
+                context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 1") }
+                        }
+                    }
+                }
+            }
+
+            context("given some tagged input representing an arbitrary map") {
+                val input = """
+                    !!map
+                    foo: bar
+                """.trimIndent()
+
+                context("parsing that input as map") {
+                    val result = Yaml.default.parse((StringSerializer to StringSerializer).map, input)
+                    it("deserializes it to a Map ignoring the tag") {
+                        assert(result).toBe(mapOf("foo" to "bar"))
+                    }
+                }
+
+                context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
+                    it("throws an exception with the correct location information") {
+                        assert({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                            message { toBe("Serializer called with location: 1, 1") }
+                        }
+                    }
+                }
             }
 
             context("given some tagged input representing an object where the resulting type should be a sealed class (string)") {
@@ -867,13 +919,14 @@ object YamlReadingTest : Spek({
             context("given some tagged input representing a list of objects where the resulting type should be a sealed class") {
                 val input = """
                     - element: !<sealedString>
-                        value: "some"
+                        value: null
                     - element: !<sealedInt>
                         value: -987
                     - element: !<sealedInt>
                         value: 654
                     - element: !<sealedString>
                         value: "tests"
+                    - element: null
                 """.trimIndent()
 
                 context("parsing that input") {
@@ -881,10 +934,11 @@ object YamlReadingTest : Spek({
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
                             listOf(
-                                SealedWrapper(TestSealedStructure.SimpleSealedString("some")),
+                                SealedWrapper(TestSealedStructure.SimpleSealedString(null)),
                                 SealedWrapper(TestSealedStructure.SimpleSealedInt(-987)),
                                 SealedWrapper(TestSealedStructure.SimpleSealedInt(654)),
-                                SealedWrapper(TestSealedStructure.SimpleSealedString("tests"))
+                                SealedWrapper(TestSealedStructure.SimpleSealedString("tests")),
+                                SealedWrapper(null)
                             )
                         )
                     }

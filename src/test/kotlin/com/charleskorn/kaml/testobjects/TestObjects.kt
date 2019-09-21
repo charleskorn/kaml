@@ -51,11 +51,11 @@ sealed class TestSealedStructure {
 
     @Serializable
     @SerialName("sealedString")
-    data class SimpleSealedString(val value: String) : TestSealedStructure()
+    data class SimpleSealedString(val value: String?) : TestSealedStructure()
 }
 
 @Serializable
-data class SealedWrapper(@Polymorphic val element: TestSealedStructure)
+data class SealedWrapper(@Polymorphic val element: TestSealedStructure?)
 
 val sealedModule = SerializersModule {
     polymorphic(TestSealedStructure::class) {
