@@ -22,6 +22,7 @@ import kotlinx.serialization.CompositeEncoder
 import kotlinx.serialization.ElementValueEncoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StructureKind
@@ -96,8 +97,8 @@ internal class YamlOutput(
         val tag = getAndClearTag()
         val implicit = !tag.isPresent
         when (desc.kind) {
-            is StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
-            is StructureKind.MAP, StructureKind.CLASS -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
+            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
+            StructureKind.MAP, StructureKind.CLASS, PrimitiveKind.UNIT -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
         }
 
         return super.beginStructure(desc, *typeParams)
@@ -105,15 +106,18 @@ internal class YamlOutput(
 
     override fun endStructure(desc: SerialDescriptor) {
         when (desc.kind) {
-            is StructureKind.LIST -> emitter.emit(SequenceEndEvent())
-            is StructureKind.MAP, StructureKind.CLASS -> emitter.emit(MappingEndEvent())
+            StructureKind.LIST -> emitter.emit(SequenceEndEvent())
+            StructureKind.MAP, StructureKind.CLASS, PrimitiveKind.UNIT -> emitter.emit(MappingEndEvent())
         }
 
         super.endStructure(desc)
     }
 
-    private fun emitScalar(value: String, style: ScalarStyle) =
-        emitter.emit(ScalarEvent(Optional.empty(), getAndClearTag(), ALL_IMPLICIT, value, style))
+    private fun emitScalar(value: String, style: ScalarStyle) {
+        val tag = getAndClearTag()
+        val implicit = if (tag.isPresent) ALL_EXPLICIT else ALL_IMPLICIT
+        emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, value, style))
+    }
 
     private fun getAndClearTag(): Optional<String> {
         val tag = Optional.ofNullable(currentTag)
@@ -123,5 +127,6 @@ internal class YamlOutput(
 
     companion object {
         private val ALL_IMPLICIT = ImplicitTuple(true, true)
+        private val ALL_EXPLICIT = ImplicitTuple(false, false)
     }
 }

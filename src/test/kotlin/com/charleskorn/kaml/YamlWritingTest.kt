@@ -22,11 +22,26 @@ import ch.tutteli.atrium.api.cc.en_GB.toBe
 import ch.tutteli.atrium.verbs.assert
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
+import com.charleskorn.kaml.testobjects.SimpleBoolean
+import com.charleskorn.kaml.testobjects.SimpleByte
+import com.charleskorn.kaml.testobjects.SimpleChar
+import com.charleskorn.kaml.testobjects.SimpleDouble
+import com.charleskorn.kaml.testobjects.SimpleEnum
+import com.charleskorn.kaml.testobjects.SimpleFloat
+import com.charleskorn.kaml.testobjects.SimpleInt
+import com.charleskorn.kaml.testobjects.SimpleLong
+import com.charleskorn.kaml.testobjects.SimpleNull
+import com.charleskorn.kaml.testobjects.SimpleNullableInt
+import com.charleskorn.kaml.testobjects.SimpleShort
+import com.charleskorn.kaml.testobjects.SimpleString
 import com.charleskorn.kaml.testobjects.SimpleStructure
+import com.charleskorn.kaml.testobjects.SimpleUnit
+import com.charleskorn.kaml.testobjects.SimpleWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.sealedModule
+import com.charleskorn.kaml.testobjects.simpleModule
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.BooleanSerializer
 import kotlinx.serialization.internal.ByteSerializer
@@ -38,7 +53,7 @@ import kotlinx.serialization.internal.IntSerializer
 import kotlinx.serialization.internal.LongSerializer
 import kotlinx.serialization.internal.ShortSerializer
 import kotlinx.serialization.internal.StringSerializer
-import kotlinx.serialization.internal.makeNullable
+import kotlinx.serialization.internal.nullable
 import kotlinx.serialization.list
 import kotlinx.serialization.map
 import org.spekframework.spek2.Spek
@@ -50,7 +65,7 @@ object YamlWritingTest : Spek({
             val input = null as String?
 
             context("serializing a null string value") {
-                val output = Yaml.default.stringify(makeNullable(StringSerializer), input)
+                val output = Yaml.default.stringify(StringSerializer.nullable, input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe("null")
@@ -216,7 +231,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a list of nullable integers") {
-                val output = Yaml.default.stringify(makeNullable(IntSerializer).list, listOf(1, null, 3))
+                val output = Yaml.default.stringify(IntSerializer.nullable.list, listOf(1, null, 3))
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -527,6 +542,63 @@ object YamlWritingTest : Spek({
                             value: null
                         - element: null
                     """.trimIndent()
+                    )
+                }
+            }
+        }
+
+        describe("handling simple polymorphic structures") {
+            val yaml = Yaml(context = simpleModule)
+            context("serializing a boolean structure") {
+                val input = SimpleWrapper(SimpleBoolean(true))
+                val output = yaml.stringify(SimpleWrapper.serializer(), input)
+
+                it("returns the value serialized in the expected YAML form") {
+                    assert(output).toBe(
+                        """
+                        test: !<simpleBoolean> 'true'
+                        """.trimIndent()
+                    )
+                }
+            }
+
+            context("serializing a list of structures") {
+                val input = listOf(
+                    SimpleWrapper(SimpleNull()),
+                    SimpleWrapper(SimpleUnit(Unit)),
+                    SimpleWrapper(SimpleBoolean(true)),
+                    SimpleWrapper(SimpleByte(24)),
+                    SimpleWrapper(SimpleShort(34)),
+                    SimpleWrapper(SimpleInt(44)),
+                    SimpleWrapper(SimpleLong(54L)),
+                    SimpleWrapper(SimpleFloat(2.4f)),
+                    SimpleWrapper(SimpleDouble(2.4)),
+                    SimpleWrapper(SimpleChar('2')),
+                    SimpleWrapper(SimpleString("24")),
+                    SimpleWrapper(SimpleEnum.TEST),
+                    SimpleWrapper(SimpleNullableInt(3)),
+                    SimpleWrapper(SimpleNullableInt(null))
+                )
+                val output = yaml.stringify(SimpleWrapper.serializer().list, input)
+
+                it("returns the value serialized in the expected YAML form") {
+                    assert(output).toBe(
+                        """
+                        - test: !<simpleNull> 'null'
+                        - test: !<simpleUnit> {}
+                        - test: !<simpleBoolean> 'true'
+                        - test: !<simpleByte> '24'
+                        - test: !<simpleShort> '34'
+                        - test: !<simpleInt> '44'
+                        - test: !<simpleLong> '54'
+                        - test: !<simpleFloat> '2.4'
+                        - test: !<simpleDouble> '2.4'
+                        - test: !<simpleChar> "2"
+                        - test: !<simpleString> "24"
+                        - test: !<simpleEnum> "TEST"
+                        - test: !<simpleNullableInt> '3'
+                        - test: !<simpleNullableInt> 'null'
+                        """.trimIndent()
                     )
                 }
             }

@@ -23,6 +23,7 @@ import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME
 import kotlinx.serialization.ElementValueDecoder
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UnionKind
@@ -281,9 +282,9 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         }
 
         readMode = when (desc.kind) {
-            is StructureKind.MAP -> MapReadMode.Map
-            is StructureKind.CLASS -> MapReadMode.Object
-            is StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a map", map.location)
+            StructureKind.MAP -> MapReadMode.Map
+            StructureKind.CLASS, PrimitiveKind.UNIT -> MapReadMode.Object
+            StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a map", map.location)
             else -> throw YamlException("Can't decode into ${desc.kind}", map.location)
         }
 
@@ -313,7 +314,7 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     private var isPolymorphic = false
     private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration)
 
-    override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = { taggedNode.location }) { getCurrentLocation() }
+    override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = taggedNode::location, blockOnChild = YamlInput::getCurrentLocation)
 
     override fun decodeElementIndex(desc: SerialDescriptor): Int {
         desc.calculatePolymorphic()
@@ -323,7 +324,19 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
         }
     }
 
-    override fun decodeString(): String = maybeCallOnChild(blockOnTag = { taggedNode.tag }) { decodeString() }
+    override fun decodeNotNullMark(): Boolean = maybeCallOnChild(blockOnTag = { true }, blockOnChild = YamlInput::decodeNotNullMark)
+    override fun decodeNull(): Nothing? = maybeCallOnChild("decodeNull", blockOnChild = YamlInput::decodeNull)
+    override fun decodeUnit(): Unit = maybeCallOnChild("decodeUnit", blockOnChild = YamlInput::decodeUnit)
+    override fun decodeBoolean(): Boolean = maybeCallOnChild("decodeBoolean", blockOnChild = YamlInput::decodeBoolean)
+    override fun decodeByte(): Byte = maybeCallOnChild("decodeByte", blockOnChild = YamlInput::decodeByte)
+    override fun decodeShort(): Short = maybeCallOnChild("decodeShort", blockOnChild = YamlInput::decodeShort)
+    override fun decodeInt(): Int = maybeCallOnChild("decodeInt", blockOnChild = YamlInput::decodeInt)
+    override fun decodeLong(): Long = maybeCallOnChild("decodeLong", blockOnChild = YamlInput::decodeLong)
+    override fun decodeFloat(): Float = maybeCallOnChild("decodeFloat", blockOnChild = YamlInput::decodeFloat)
+    override fun decodeDouble(): Double = maybeCallOnChild("decodeDouble", blockOnChild = YamlInput::decodeDouble)
+    override fun decodeChar(): Char = maybeCallOnChild("decodeChar", blockOnChild = YamlInput::decodeChar)
+    override fun decodeString(): String = maybeCallOnChild(blockOnTag = taggedNode::tag, blockOnChild = YamlInput::decodeString)
+    override fun decodeEnum(enumDescription: EnumDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescription) }
 
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         desc.calculatePolymorphic()
@@ -334,7 +347,7 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
         isPolymorphic = kind === UnionKind.POLYMORPHIC
     }
 
-    private inline fun <T> maybeCallOnChild(blockOnTag: () -> T, blockOnChild: YamlInput.() -> T): T {
+    private inline fun <T> maybeCallOnChild(functionName: String = "", blockOnTag: () -> T = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnChild: YamlInput.() -> T): T {
         return if (isPolymorphic && currentIndex != 1) {
             blockOnTag()
         } else {
