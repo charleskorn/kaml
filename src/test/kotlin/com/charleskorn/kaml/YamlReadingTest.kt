@@ -968,7 +968,6 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    SimpleWrapper.serializer().list
                     val result = simpleYaml.parse(SimpleWrapper.serializer(), input)
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(SimpleWrapper(SimpleInt(42)))
@@ -999,7 +998,7 @@ object YamlReadingTest : Spek({
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
                             listOf(
-                                SimpleWrapper(SimpleNull()),
+                                SimpleWrapper(SimpleNull),
                                 SimpleWrapper(SimpleUnit(Unit)),
                                 SimpleWrapper(SimpleBoolean(false)),
                                 SimpleWrapper(SimpleByte(42)),

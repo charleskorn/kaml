@@ -26,7 +26,6 @@ open class YamlException(
     val column: Int,
     override val cause: Throwable? = null
 ) : RuntimeException(message, cause) {
-    constructor(message: String, event: Event, cause: Throwable? = null) : this(message, event.location, cause)
     constructor(message: String, location: Location, cause: Throwable? = null) : this(message, location.line, location.column, cause)
 
     val location: Location = Location(line, column)
@@ -45,8 +44,6 @@ class UnexpectedNullValueException(location: Location) : YamlException("Unexpect
 
 class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)
-
-class UnsupportedYamlFeatureException(val featureName: String, event: Event) : YamlException("Unsupported YAML feature: $featureName", event)
 
 class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
 

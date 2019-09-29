@@ -564,7 +564,7 @@ object YamlWritingTest : Spek({
 
             context("serializing a list of structures") {
                 val input = listOf(
-                    SimpleWrapper(SimpleNull()),
+                    SimpleWrapper(SimpleNull),
                     SimpleWrapper(SimpleUnit(Unit)),
                     SimpleWrapper(SimpleBoolean(true)),
                     SimpleWrapper(SimpleByte(24)),

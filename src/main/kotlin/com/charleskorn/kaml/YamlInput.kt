@@ -347,7 +347,10 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
         isPolymorphic = kind === UnionKind.POLYMORPHIC
     }
 
-    private inline fun <T> maybeCallOnChild(functionName: String = "", blockOnTag: () -> T = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnChild: YamlInput.() -> T): T {
+    private inline fun <T> maybeCallOnChild(functionName: String, blockOnChild: YamlInput.() -> T): T =
+        maybeCallOnChild(blockOnTag = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnChild = blockOnChild)
+
+    private inline fun <T> maybeCallOnChild(blockOnTag: () -> T, blockOnChild: YamlInput.() -> T): T {
         return if (isPolymorphic && currentIndex != 1) {
             blockOnTag()
         } else {
