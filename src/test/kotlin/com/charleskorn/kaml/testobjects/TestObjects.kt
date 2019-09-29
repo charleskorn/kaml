@@ -18,10 +18,7 @@
 
 package com.charleskorn.kaml.testobjects
 
-import kotlinx.serialization.Polymorphic
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.modules.SerializersModule
 
 @Serializable
 data class SimpleStructure(
@@ -42,24 +39,4 @@ data class NestedObjects(
 enum class TestEnum {
     Value1,
     Value2
-}
-
-sealed class TestSealedStructure {
-    @Serializable
-    @SerialName("sealedInt")
-    data class SimpleSealedInt(val value: Int) : TestSealedStructure()
-
-    @Serializable
-    @SerialName("sealedString")
-    data class SimpleSealedString(val value: String?) : TestSealedStructure()
-}
-
-@Serializable
-data class SealedWrapper(@Polymorphic val element: TestSealedStructure?)
-
-val sealedModule = SerializersModule {
-    polymorphic(TestSealedStructure::class) {
-        TestSealedStructure.SimpleSealedInt::class with TestSealedStructure.SimpleSealedInt.serializer()
-        TestSealedStructure.SimpleSealedString::class with TestSealedStructure.SimpleSealedString.serializer()
-    }
 }

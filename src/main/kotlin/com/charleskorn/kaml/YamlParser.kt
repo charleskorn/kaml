@@ -20,7 +20,6 @@ package com.charleskorn.kaml
 
 import org.snakeyaml.engine.v1.api.LoadSettingsBuilder
 import org.snakeyaml.engine.v1.events.Event
-import org.snakeyaml.engine.v1.events.ScalarEvent
 import org.snakeyaml.engine.v1.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v1.parser.ParserImpl
 import org.snakeyaml.engine.v1.scanner.StreamReader
@@ -60,20 +59,9 @@ class YamlParser(yamlSource: String) {
 
     private fun checkEvent(retrieve: () -> Event): Event {
         try {
-            val event = retrieve()
-            checkForUnsupportedFeatures(event)
-
-            return event
+            return retrieve()
         } catch (e: MarkedYamlEngineException) {
             throw translateYamlEngineException(e)
-        }
-    }
-
-    private fun checkForUnsupportedFeatures(event: Event) {
-        if (event is ScalarEvent) {
-            if (event.tag.isPresent) {
-                throw UnsupportedYamlFeatureException("tags", event)
-            }
         }
     }
 

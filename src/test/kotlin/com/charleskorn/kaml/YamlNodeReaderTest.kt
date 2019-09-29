@@ -966,21 +966,13 @@ object YamlNodeReaderTest : Spek({
         }
 
         mapOf(
-            "!thing" to "tags",
-            "!!str 'some string'" to "tags"
+            "!thing" to YamlTaggedNode("!thing", YamlNull(Location(1, 1))),
+            "!!str 'some string'" to YamlTaggedNode("tag:yaml.org,2002:str", YamlScalar("some string", Location(1, 1)))
         ).forEach { input, featureName ->
-            context("given the input '$input' which contains an unsupported YAML feature") {
+            context("given the input '$input' which contains a tagged node") {
                 describe("parsing that input") {
-                    it("throws an appropriate exception stating that the YAML feature being used is not supported") {
-                        assert({
-                            val parser = YamlParser(input)
-                            YamlNodeReader(parser).read()
-                        }).toThrow<UnsupportedYamlFeatureException> {
-                            message { toBe("Unsupported YAML feature: $featureName") }
-                            line { toBe(1) }
-                            column { toBe(1) }
-                            featureName { toBe(featureName) }
-                        }
+                    it("returns the expected node") {
+                        assert(YamlNodeReader(YamlParser(input)).read()).toBe(featureName)
                     }
                 }
             }

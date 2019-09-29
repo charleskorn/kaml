@@ -59,10 +59,6 @@ fun Assert<UnknownPropertyException>.validPropertyNames(assertionCreator: Assert
     property(subject::validPropertyNames).addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<UnsupportedYamlFeatureException>.featureName(assertionCreator: Assert<String>.() -> Unit) {
-    property(subject::featureName).addAssertionsCreatedBy(assertionCreator)
-}
-
 fun Assert<YamlScalarFormatException>.originalValue(assertionCreator: Assert<String>.() -> Unit) {
     property(subject::originalValue).addAssertionsCreatedBy(assertionCreator)
 }

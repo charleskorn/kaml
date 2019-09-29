@@ -24,11 +24,26 @@ import ch.tutteli.atrium.api.cc.en_GB.toThrow
 import ch.tutteli.atrium.verbs.assert
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
+import com.charleskorn.kaml.testobjects.SimpleBoolean
+import com.charleskorn.kaml.testobjects.SimpleByte
+import com.charleskorn.kaml.testobjects.SimpleChar
+import com.charleskorn.kaml.testobjects.SimpleDouble
+import com.charleskorn.kaml.testobjects.SimpleEnum
+import com.charleskorn.kaml.testobjects.SimpleFloat
+import com.charleskorn.kaml.testobjects.SimpleInt
+import com.charleskorn.kaml.testobjects.SimpleLong
+import com.charleskorn.kaml.testobjects.SimpleNull
+import com.charleskorn.kaml.testobjects.SimpleNullableInt
+import com.charleskorn.kaml.testobjects.SimpleShort
+import com.charleskorn.kaml.testobjects.SimpleString
 import com.charleskorn.kaml.testobjects.SimpleStructure
+import com.charleskorn.kaml.testobjects.SimpleUnit
+import com.charleskorn.kaml.testobjects.SimpleWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.sealedModule
+import com.charleskorn.kaml.testobjects.simpleModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
@@ -945,6 +960,64 @@ object YamlReadingTest : Spek({
                 }
             }
 
+            val simpleYaml = Yaml(context = simpleModule)
+
+            context("given some simple int input representing an object") {
+                val input = """
+                    test: !<simpleInt> 42
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = simpleYaml.parse(SimpleWrapper.serializer(), input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(SimpleWrapper(SimpleInt(42)))
+                    }
+                }
+            }
+
+            context("given some simple inputs representing a list of object") {
+                val input = """
+                    - test: !<simpleNull> null
+                    - test: !<simpleUnit> {}
+                    - test: !<simpleBoolean> 'false'
+                    - test: !<simpleByte> 42
+                    - test: !<simpleShort> 43
+                    - test: !<simpleInt> 44
+                    - test: !<simpleLong> 45
+                    - test: !<simpleFloat> 4.2
+                    - test: !<simpleDouble> 4.2
+                    - test: !<simpleChar> 4
+                    - test: !<simpleString> 42
+                    - test: !<simpleEnum> TEST2
+                    - test: !<simpleNullableInt> 4
+                    - test: !<simpleNullableInt> null
+                """.trimIndent()
+
+                context("parsing that input") {
+                    val result = simpleYaml.parse(SimpleWrapper.serializer().list, input)
+                    it("deserializes it to a Kotlin object") {
+                        assert(result).toBe(
+                            listOf(
+                                SimpleWrapper(SimpleNull),
+                                SimpleWrapper(SimpleUnit(Unit)),
+                                SimpleWrapper(SimpleBoolean(false)),
+                                SimpleWrapper(SimpleByte(42)),
+                                SimpleWrapper(SimpleShort(43)),
+                                SimpleWrapper(SimpleInt(44)),
+                                SimpleWrapper(SimpleLong(45L)),
+                                SimpleWrapper(SimpleFloat(4.2f)),
+                                SimpleWrapper(SimpleDouble(4.2)),
+                                SimpleWrapper(SimpleChar('4')),
+                                SimpleWrapper(SimpleString("42")),
+                                SimpleWrapper(SimpleEnum.TEST2),
+                                SimpleWrapper(SimpleNullableInt(4)),
+                                SimpleWrapper(SimpleNullableInt(null))
+                            )
+                        )
+                    }
+                }
+            }
+
             context("given some input representing an object with an unknown key") {
                 val input = """
                     abc123: something
@@ -1013,7 +1086,7 @@ object YamlReadingTest : Spek({
 
             context("given some input representing an object with a tagged value as a key") {
                 val input = """
-                    !<sealedInt> { }: something
+                    !<sealedInt> test: something
                 """.trimIndent()
 
                 context("parsing that input") {
