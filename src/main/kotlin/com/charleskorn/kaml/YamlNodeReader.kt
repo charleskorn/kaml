@@ -18,13 +18,13 @@
 
 package com.charleskorn.kaml
 
-import org.snakeyaml.engine.v1.common.Anchor
-import org.snakeyaml.engine.v1.events.AliasEvent
-import org.snakeyaml.engine.v1.events.Event
-import org.snakeyaml.engine.v1.events.MappingStartEvent
-import org.snakeyaml.engine.v1.events.NodeEvent
-import org.snakeyaml.engine.v1.events.ScalarEvent
-import org.snakeyaml.engine.v1.events.SequenceStartEvent
+import org.snakeyaml.engine.v2.common.Anchor
+import org.snakeyaml.engine.v2.events.AliasEvent
+import org.snakeyaml.engine.v2.events.Event
+import org.snakeyaml.engine.v2.events.MappingStartEvent
+import org.snakeyaml.engine.v2.events.NodeEvent
+import org.snakeyaml.engine.v2.events.ScalarEvent
+import org.snakeyaml.engine.v2.events.SequenceStartEvent
 import java.util.Optional
 
 class YamlNodeReader(

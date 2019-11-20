@@ -26,7 +26,7 @@ import kotlinx.serialization.decode
 import kotlinx.serialization.encode
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
-import org.snakeyaml.engine.v1.api.StreamDataWriter
+import org.snakeyaml.engine.v2.api.StreamDataWriter
 import java.io.StringWriter
 
 class Yaml(

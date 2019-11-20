@@ -18,7 +18,7 @@
 
 package com.charleskorn.kaml
 
-import org.snakeyaml.engine.v1.events.Event
+import org.snakeyaml.engine.v2.events.Event
 
 open class YamlException(
     override val message: String,

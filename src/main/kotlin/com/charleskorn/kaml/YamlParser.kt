@@ -18,16 +18,16 @@
 
 package com.charleskorn.kaml
 
-import org.snakeyaml.engine.v1.api.LoadSettingsBuilder
-import org.snakeyaml.engine.v1.events.Event
-import org.snakeyaml.engine.v1.exceptions.MarkedYamlEngineException
-import org.snakeyaml.engine.v1.parser.ParserImpl
-import org.snakeyaml.engine.v1.scanner.StreamReader
+import org.snakeyaml.engine.v2.api.LoadSettings
+import org.snakeyaml.engine.v2.events.Event
+import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
+import org.snakeyaml.engine.v2.parser.ParserImpl
+import org.snakeyaml.engine.v2.scanner.StreamReader
 import java.io.StringReader
 
 class YamlParser(yamlSource: String) {
     private val dummyFileName = "DUMMY_FILE_NAME"
-    private val loadSettings = LoadSettingsBuilder().setLabel(dummyFileName).build()
+    private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
     private val streamReader = StreamReader(StringReader(yamlSource), loadSettings)
     private val events = ParserImpl(streamReader, loadSettings)
 

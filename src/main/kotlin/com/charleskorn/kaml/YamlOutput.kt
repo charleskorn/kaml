@@ -28,19 +28,19 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlinx.serialization.modules.SerialModule
-import org.snakeyaml.engine.v1.api.DumpSettingsBuilder
-import org.snakeyaml.engine.v1.api.StreamDataWriter
-import org.snakeyaml.engine.v1.common.FlowStyle
-import org.snakeyaml.engine.v1.common.ScalarStyle
-import org.snakeyaml.engine.v1.emitter.Emitter
-import org.snakeyaml.engine.v1.events.DocumentStartEvent
-import org.snakeyaml.engine.v1.events.ImplicitTuple
-import org.snakeyaml.engine.v1.events.MappingEndEvent
-import org.snakeyaml.engine.v1.events.MappingStartEvent
-import org.snakeyaml.engine.v1.events.ScalarEvent
-import org.snakeyaml.engine.v1.events.SequenceEndEvent
-import org.snakeyaml.engine.v1.events.SequenceStartEvent
-import org.snakeyaml.engine.v1.events.StreamStartEvent
+import org.snakeyaml.engine.v2.api.DumpSettings
+import org.snakeyaml.engine.v2.api.StreamDataWriter
+import org.snakeyaml.engine.v2.common.FlowStyle
+import org.snakeyaml.engine.v2.common.ScalarStyle
+import org.snakeyaml.engine.v2.emitter.Emitter
+import org.snakeyaml.engine.v2.events.DocumentStartEvent
+import org.snakeyaml.engine.v2.events.ImplicitTuple
+import org.snakeyaml.engine.v2.events.MappingEndEvent
+import org.snakeyaml.engine.v2.events.MappingStartEvent
+import org.snakeyaml.engine.v2.events.ScalarEvent
+import org.snakeyaml.engine.v2.events.SequenceEndEvent
+import org.snakeyaml.engine.v2.events.SequenceStartEvent
+import org.snakeyaml.engine.v2.events.StreamStartEvent
 import java.util.Optional
 
 internal class YamlOutput(
@@ -48,7 +48,7 @@ internal class YamlOutput(
     override val context: SerialModule,
     private val configuration: YamlConfiguration
 ) : ElementValueEncoder() {
-    private val settings = DumpSettingsBuilder().build()
+    private val settings = DumpSettings.builder().build()
     private val emitter = Emitter(settings, writer)
     private var currentTag: String? = null
 
