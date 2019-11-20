@@ -42,7 +42,6 @@ import com.charleskorn.kaml.testobjects.SimpleWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
-import com.charleskorn.kaml.testobjects.sealedModule
 import com.charleskorn.kaml.testobjects.simpleModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
@@ -848,8 +847,6 @@ object YamlReadingTest : Spek({
                 }
             }
 
-            val sealedYaml = Yaml(context = sealedModule)
-
             context("given some tagged input representing an object where the resulting type should be a sealed class (int)") {
                 val input = """
                     element: !<sealedInt>
@@ -857,7 +854,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = sealedYaml.parse(SealedWrapper.serializer(), input)
+                    val result = Yaml.default.parse(SealedWrapper.serializer(), input)
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedInt(3)))
                     }
@@ -923,7 +920,8 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = sealedYaml.parse(SealedWrapper.serializer(), input)
+                    val result = Yaml.default.parse(SealedWrapper.serializer(), input)
+
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
                     }
@@ -944,7 +942,8 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = sealedYaml.parse(SealedWrapper.serializer().list, input)
+                    val result = Yaml.default.parse(SealedWrapper.serializer().list, input)
+
                     it("deserializes it to a Kotlin object") {
                         assert(result).toBe(
                             listOf(

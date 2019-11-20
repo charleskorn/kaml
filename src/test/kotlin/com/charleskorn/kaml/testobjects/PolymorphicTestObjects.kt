@@ -21,7 +21,6 @@ package com.charleskorn.kaml.testobjects
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -38,6 +37,7 @@ import kotlinx.serialization.internal.UnitSerializer
 import kotlinx.serialization.internal.nullable
 import kotlinx.serialization.modules.SerializersModule
 
+@Serializable
 sealed class TestSealedStructure {
     @Serializable
     @SerialName("sealedInt")
@@ -49,14 +49,7 @@ sealed class TestSealedStructure {
 }
 
 @Serializable
-data class SealedWrapper(@Polymorphic val element: TestSealedStructure?)
-
-val sealedModule = SerializersModule {
-    polymorphic(TestSealedStructure::class) {
-        TestSealedStructure.SimpleSealedInt::class with TestSealedStructure.SimpleSealedInt.serializer()
-        TestSealedStructure.SimpleSealedString::class with TestSealedStructure.SimpleSealedString.serializer()
-    }
-}
+data class SealedWrapper(val element: TestSealedStructure?)
 
 interface SimpleInterface
 

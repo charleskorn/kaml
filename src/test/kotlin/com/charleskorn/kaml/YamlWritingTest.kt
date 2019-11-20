@@ -40,7 +40,6 @@ import com.charleskorn.kaml.testobjects.SimpleWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
-import com.charleskorn.kaml.testobjects.sealedModule
 import com.charleskorn.kaml.testobjects.simpleModule
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.BooleanSerializer
@@ -489,10 +488,9 @@ object YamlWritingTest : Spek({
         }
 
         describe("handling sealed classes") {
-            val yaml = Yaml(context = sealedModule)
             context("serializing int sealed class") {
                 val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
-                val output = yaml.stringify(SealedWrapper.serializer(), input)
+                val output = Yaml.default.stringify(SealedWrapper.serializer(), input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -506,7 +504,7 @@ object YamlWritingTest : Spek({
 
             context("serializing string sealed class") {
                 val input = SealedWrapper(TestSealedStructure.SimpleSealedString("5"))
-                val output = yaml.stringify(SealedWrapper.serializer(), input)
+                val output = Yaml.default.stringify(SealedWrapper.serializer(), input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -526,7 +524,8 @@ object YamlWritingTest : Spek({
                     TestSealedStructure.SimpleSealedString(null),
                     null
                 ).map(::SealedWrapper)
-                val output = yaml.stringify(SealedWrapper.serializer().list, input)
+
+                val output = Yaml.default.stringify(SealedWrapper.serializer().list, input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
