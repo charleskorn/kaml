@@ -47,7 +47,6 @@ import kotlinx.serialization.internal.BooleanSerializer
 import kotlinx.serialization.internal.ByteSerializer
 import kotlinx.serialization.internal.CharSerializer
 import kotlinx.serialization.internal.DoubleSerializer
-import kotlinx.serialization.internal.EnumSerializer
 import kotlinx.serialization.internal.FloatSerializer
 import kotlinx.serialization.internal.IntSerializer
 import kotlinx.serialization.internal.LongSerializer
@@ -208,7 +207,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing enumeration values") {
-            val output = Yaml.default.stringify(EnumSerializer(TestEnum::class), TestEnum.Value1)
+            val output = Yaml.default.stringify(TestEnum.serializer(), TestEnum.Value1)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe(""""Value1"""")

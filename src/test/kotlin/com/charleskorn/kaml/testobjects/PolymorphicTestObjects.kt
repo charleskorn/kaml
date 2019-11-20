@@ -28,7 +28,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.internal.BooleanSerializer
 import kotlinx.serialization.internal.ByteSerializer
 import kotlinx.serialization.internal.CharSerializer
-import kotlinx.serialization.internal.CommonEnumSerializer
 import kotlinx.serialization.internal.DoubleSerializer
 import kotlinx.serialization.internal.FloatSerializer
 import kotlinx.serialization.internal.IntSerializer
@@ -131,12 +130,10 @@ data class SimpleString(val data: String) : SimpleInterface {
     }
 }
 
+@Serializable
+@SerialName("simpleEnum")
 enum class SimpleEnum : SimpleInterface {
     TEST, TEST2;
-
-    companion object {
-        val kSerializer = CommonEnumSerializer("simpleEnum", values(), values().map(SimpleEnum::name).toTypedArray())
-    }
 }
 
 fun SerialDescriptor.withName(newName: String): SerialDescriptor {
@@ -171,7 +168,7 @@ val simpleModule = SerializersModule {
         SimpleDouble::class with SimpleDouble.kSerializer
         SimpleChar::class with SimpleChar.kSerializer
         SimpleString::class with SimpleString.kSerializer
-        SimpleEnum::class with SimpleEnum.kSerializer
+        SimpleEnum::class with SimpleEnum.serializer()
         SimpleNullableInt::class with SimpleNullableInt.kSerializer
     }
 }

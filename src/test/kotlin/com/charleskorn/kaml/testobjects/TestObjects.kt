@@ -36,6 +36,7 @@ data class NestedObjects(
     val secondPerson: SimpleStructure
 )
 
+@Serializable
 enum class TestEnum {
     Value1,
     Value2

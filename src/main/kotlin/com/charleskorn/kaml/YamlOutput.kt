@@ -20,13 +20,13 @@ package com.charleskorn.kaml
 
 import kotlinx.serialization.CompositeEncoder
 import kotlinx.serialization.ElementValueEncoder
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StructureKind
-import kotlinx.serialization.internal.EnumDescriptor
+import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlinx.serialization.modules.SerialModule
 import org.snakeyaml.engine.v1.api.DumpSettingsBuilder
 import org.snakeyaml.engine.v1.api.StreamDataWriter
@@ -68,7 +68,7 @@ internal class YamlOutput(
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
     override fun encodeString(value: String) = emitQuotedScalar(value)
-    override fun encodeEnum(enumDescription: EnumDescriptor, ordinal: Int) = emitQuotedScalar(enumDescription.getElementName(ordinal))
+    override fun encodeEnum(enumDescription: SerialDescriptor, ordinal: Int) = emitQuotedScalar(enumDescription.getElementName(ordinal))
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
     private fun emitQuotedScalar(value: String) = emitScalar(value, ScalarStyle.DOUBLE_QUOTED)
@@ -81,14 +81,15 @@ internal class YamlOutput(
         return super.encodeElement(desc, index)
     }
 
+    @UseExperimental(InternalSerializationApi::class)
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
-        if (serializer !is PolymorphicSerializer<*>) {
+        if (serializer !is AbstractPolymorphicSerializer<*>) {
             serializer.serialize(this, value)
             return
         }
 
         @Suppress("UNCHECKED_CAST")
-        val actualSerializer = serializer.findPolymorphicSerializer(this, value as Any) as KSerializer<Any>
+        val actualSerializer = (serializer as AbstractPolymorphicSerializer<Any>).findPolymorphicSerializer(this, value as Any) as KSerializer<Any>
         currentTag = actualSerializer.descriptor.name
         actualSerializer.serialize(this, value)
     }

@@ -55,7 +55,6 @@ import kotlinx.serialization.internal.BooleanSerializer
 import kotlinx.serialization.internal.ByteSerializer
 import kotlinx.serialization.internal.CharSerializer
 import kotlinx.serialization.internal.DoubleSerializer
-import kotlinx.serialization.internal.EnumSerializer
 import kotlinx.serialization.internal.FloatSerializer
 import kotlinx.serialization.internal.IntSerializer
 import kotlinx.serialization.internal.LongSerializer
@@ -247,7 +246,7 @@ object YamlReadingTest : Spek({
             ).forEach { input, expectedValue ->
                 context("given the input '$input'") {
                     context("parsing that input as an enumeration value") {
-                        val result = Yaml.default.parse(EnumSerializer(TestEnum::class), input)
+                        val result = Yaml.default.parse(TestEnum.serializer(), input)
 
                         it("deserializes it to the expected enumeration value") {
                             assert(result).toBe(expectedValue)
@@ -258,7 +257,7 @@ object YamlReadingTest : Spek({
 
             context("parsing an invalid enumeration value") {
                 it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(EnumSerializer(TestEnum::class), "nonsense") }).toThrow<YamlScalarFormatException> {
+                    assert({ Yaml.default.parse(TestEnum.serializer(), "nonsense") }).toThrow<YamlScalarFormatException> {
                         message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -433,7 +432,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable enum") {
-                val result = Yaml.default.parse(EnumSerializer(TestEnum::class).nullable, input)
+                val result = Yaml.default.parse(TestEnum.serializer().nullable, input)
 
                 it("returns a null value") {
                     assert(result).toBe(null)
@@ -442,7 +441,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable enum") {
                 it("throws an appropriate exception") {
-                    assert({ Yaml.default.parse(EnumSerializer(TestEnum::class), input) }).toThrow<UnexpectedNullValueException> {
+                    assert({ Yaml.default.parse(TestEnum.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -606,7 +605,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(EnumSerializer(TestEnum::class).list, input)
+                    val result = Yaml.default.parse(TestEnum.serializer().list, input)
 
                     it("deserializes it to the expected value") {
                         assert(result).toBe(listOf(TestEnum.Value1, TestEnum.Value2))
@@ -1365,7 +1364,7 @@ object YamlReadingTest : Spek({
                     "a float" to FloatSerializer,
                     "a boolean" to BooleanSerializer,
                     "a character" to CharSerializer,
-                    "an enumeration value" to EnumSerializer(TestEnum::class),
+                    "an enumeration value" to TestEnum.serializer(),
                     "a map" to (StringSerializer to StringSerializer).map,
                     "an object" to ComplexStructure.serializer(),
                     "a string" to StringSerializer.nullable
@@ -1439,7 +1438,7 @@ object YamlReadingTest : Spek({
                     "a float" to FloatSerializer,
                     "a boolean" to BooleanSerializer,
                     "a character" to CharSerializer,
-                    "an enumeration value" to EnumSerializer(TestEnum::class),
+                    "an enumeration value" to TestEnum.serializer(),
                     "a list" to StringSerializer.list,
                     "a string" to StringSerializer.nullable
                 ).forEach { (description, serializer) ->

@@ -23,12 +23,11 @@ import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME
 import kotlinx.serialization.ElementValueDecoder
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicKind
 import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
-import kotlinx.serialization.UnionKind
 import kotlinx.serialization.UpdateMode
-import kotlinx.serialization.internal.EnumDescriptor
 import kotlinx.serialization.modules.SerialModule
 
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : ElementValueDecoder() {
@@ -58,7 +57,7 @@ private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule, con
     override fun decodeBoolean(): Boolean = scalar.toBoolean()
     override fun decodeChar(): Char = scalar.toChar()
 
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int {
+    override fun decodeEnum(enumDescription: SerialDescriptor): Int {
         val index = enumDescription.getElementIndex(scalar.content)
 
         if (index != UNKNOWN_NAME) {
@@ -129,7 +128,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
     override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
     override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
+    override fun decodeEnum(enumDescription: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
 
     private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
         if (!haveStartedReadingElements) {
@@ -251,7 +250,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
     override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
     override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
+    override fun decodeEnum(enumDescription: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
 
     private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
         if (!haveStartedReadingEntries) {
@@ -336,7 +335,7 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     override fun decodeDouble(): Double = maybeCallOnChild("decodeDouble", blockOnChild = YamlInput::decodeDouble)
     override fun decodeChar(): Char = maybeCallOnChild("decodeChar", blockOnChild = YamlInput::decodeChar)
     override fun decodeString(): String = maybeCallOnChild(blockOnTag = taggedNode::tag, blockOnChild = YamlInput::decodeString)
-    override fun decodeEnum(enumDescription: EnumDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescription) }
+    override fun decodeEnum(enumDescription: SerialDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescription) }
 
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         desc.calculatePolymorphic()
@@ -344,7 +343,7 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     }
 
     private fun SerialDescriptor.calculatePolymorphic() {
-        isPolymorphic = kind === UnionKind.POLYMORPHIC
+        isPolymorphic = kind is PolymorphicKind
     }
 
     private inline fun <T> maybeCallOnChild(functionName: String, blockOnChild: YamlInput.() -> T): T =
