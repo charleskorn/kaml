@@ -31,12 +31,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.61")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.70")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.3.61"
+    kotlin("jvm") version "1.3.70"
 
     apply { id("com.github.ben-manes.versions") version "0.27.0" }
 }
@@ -56,7 +56,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.0")
-    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.14.0")
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.20.0")
 
     val spekVersion = "2.0.9"
 

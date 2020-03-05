@@ -21,16 +21,15 @@ package com.charleskorn.kaml
 import kotlinx.serialization.CompositeDecoder
 import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME
-import kotlinx.serialization.ElementValueDecoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicKind
-import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UpdateMode
+import kotlinx.serialization.builtins.AbstractDecoder
 import kotlinx.serialization.modules.SerialModule
 
-sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : ElementValueDecoder() {
+sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : AbstractDecoder() {
     companion object {
         fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration): YamlInput = when (node) {
             is YamlScalar -> YamlScalarInput(node, context, configuration)
@@ -47,6 +46,8 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
 }
 
 private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule, configuration: YamlConfiguration) : YamlInput(scalar, context, configuration) {
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = UNKNOWN_NAME
+
     override fun decodeString(): String = scalar.content
     override fun decodeInt(): Int = scalar.toInt()
     override fun decodeLong(): Long = scalar.toLong()
@@ -57,40 +58,41 @@ private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule, con
     override fun decodeBoolean(): Boolean = scalar.toBoolean()
     override fun decodeChar(): Char = scalar.toChar()
 
-    override fun decodeEnum(enumDescription: SerialDescriptor): Int {
-        val index = enumDescription.getElementIndex(scalar.content)
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int {
+        val index = enumDescriptor.getElementIndex(scalar.content)
 
         if (index != UNKNOWN_NAME) {
             return index
         }
 
-        val choices = (0..enumDescription.elementsCount - 1)
-            .map { enumDescription.getElementName(it) }
+        val choices = (0 until enumDescriptor.elementsCount)
+            .map { enumDescriptor.getElementName(it) }
             .sorted()
             .joinToString(", ")
 
         throw YamlScalarFormatException("Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices", scalar.location, scalar.content)
     }
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        when (desc.kind) {
-            is StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a scalar value", scalar.location)
-            is StructureKind.CLASS -> throw IncorrectTypeException("Expected an object, but got a scalar value", scalar.location)
-            is StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a scalar value", scalar.location)
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        when (descriptor.kind) {
+            StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a scalar value", scalar.location)
+            StructureKind.CLASS, StructureKind.OBJECT -> throw IncorrectTypeException("Expected an object, but got a scalar value", scalar.location)
+            StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a scalar value", scalar.location)
         }
 
-        return super.beginStructure(desc, *typeParams)
+        return super.beginStructure(descriptor, *typeParams)
     }
 
     override fun getCurrentLocation(): Location = scalar.location
 }
 
 private class YamlNullInput(val nullValue: YamlNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(nullValue, context, configuration) {
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = UNKNOWN_NAME
     override fun decodeNotNullMark(): Boolean = false
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.location)
-    override fun decodeCollectionSize(desc: SerialDescriptor): Int = throw UnexpectedNullValueException(nullValue.location)
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder = throw UnexpectedNullValueException(nullValue.location)
+    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int = throw UnexpectedNullValueException(nullValue.location)
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder = throw UnexpectedNullValueException(nullValue.location)
 
     override fun getCurrentLocation(): Location = nullValue.location
 }
@@ -99,9 +101,9 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     private var nextElementIndex = 0
     private lateinit var currentElementDecoder: YamlInput
 
-    override fun decodeCollectionSize(desc: SerialDescriptor): Int = list.items.size
+    override fun decodeCollectionSize(descriptor: SerialDescriptor): Int = list.items.size
 
-    override fun decodeElementIndex(desc: SerialDescriptor): Int {
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (nextElementIndex == list.items.size) {
             return READ_DONE
         }
@@ -128,7 +130,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
     override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
     override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
-    override fun decodeEnum(enumDescription: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescriptor) }
 
     private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
         if (!haveStartedReadingElements) {
@@ -141,15 +143,15 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     private val haveStartedReadingElements: Boolean
         get() = nextElementIndex > 0
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         if (haveStartedReadingElements) {
-            return currentElementDecoder.beginStructure(desc, *typeParams)
+            return currentElementDecoder.beginStructure(descriptor, *typeParams)
         }
 
-        when (desc.kind) {
-            is StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a list", list.location)
-            is StructureKind.CLASS -> throw IncorrectTypeException("Expected an object, but got a list", list.location)
-            else -> return super.beginStructure(desc, *typeParams)
+        when (descriptor.kind) {
+            StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a list", list.location)
+            StructureKind.CLASS, StructureKind.OBJECT -> throw IncorrectTypeException("Expected an object, but got a list", list.location)
+            else -> return super.beginStructure(descriptor, *typeParams)
         }
     }
 
@@ -170,8 +172,8 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     private lateinit var readMode: MapReadMode
     private var currentlyReadingValue: Boolean = false
 
-    override fun decodeElementIndex(desc: SerialDescriptor): Int = when (readMode) {
-        MapReadMode.Object -> decodeElementIndexForObject(desc)
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = when (readMode) {
+        MapReadMode.Object -> decodeElementIndexForObject(descriptor)
         MapReadMode.Map -> decodeElementIndexForMap()
     }
 
@@ -250,7 +252,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
     override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
     override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
-    override fun decodeEnum(enumDescription: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescription) }
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescriptor) }
 
     private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
         if (!haveStartedReadingEntries) {
@@ -275,19 +277,19 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     private val haveStartedReadingEntries: Boolean
         get() = nextIndex > 0
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         if (haveStartedReadingEntries) {
-            return fromCurrentValue { beginStructure(desc, *typeParams) }
+            return fromCurrentValue { beginStructure(descriptor, *typeParams) }
         }
 
-        readMode = when (desc.kind) {
+        readMode = when (descriptor.kind) {
             StructureKind.MAP -> MapReadMode.Map
-            StructureKind.CLASS, PrimitiveKind.UNIT -> MapReadMode.Object
+            StructureKind.CLASS, StructureKind.OBJECT -> MapReadMode.Object
             StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a map", map.location)
-            else -> throw YamlException("Can't decode into ${desc.kind}", map.location)
+            else -> throw YamlException("Can't decode into ${descriptor.kind}", map.location)
         }
 
-        return super.beginStructure(desc, *typeParams)
+        return super.beginStructure(descriptor, *typeParams)
     }
 
     private enum class MapReadMode {
@@ -315,8 +317,8 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
 
     override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = taggedNode::location, blockOnChild = YamlInput::getCurrentLocation)
 
-    override fun decodeElementIndex(desc: SerialDescriptor): Int {
-        desc.calculatePolymorphic()
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        descriptor.calculatePolymorphic()
         return when (++currentIndex) {
             0, 1 -> currentIndex
             else -> READ_DONE
@@ -335,11 +337,11 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     override fun decodeDouble(): Double = maybeCallOnChild("decodeDouble", blockOnChild = YamlInput::decodeDouble)
     override fun decodeChar(): Char = maybeCallOnChild("decodeChar", blockOnChild = YamlInput::decodeChar)
     override fun decodeString(): String = maybeCallOnChild(blockOnTag = taggedNode::tag, blockOnChild = YamlInput::decodeString)
-    override fun decodeEnum(enumDescription: SerialDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescription) }
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescriptor) }
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        desc.calculatePolymorphic()
-        return maybeCallOnChild(blockOnTag = { super.beginStructure(desc, *typeParams) }) { beginStructure(desc, *typeParams) }
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        descriptor.calculatePolymorphic()
+        return maybeCallOnChild(blockOnTag = { super.beginStructure(descriptor, *typeParams) }) { beginStructure(descriptor, *typeParams) }
     }
 
     private fun SerialDescriptor.calculatePolymorphic() {

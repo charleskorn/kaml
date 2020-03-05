@@ -19,13 +19,12 @@
 package com.charleskorn.kaml
 
 import kotlinx.serialization.CompositeEncoder
-import kotlinx.serialization.ElementValueEncoder
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StructureKind
+import kotlinx.serialization.builtins.AbstractEncoder
 import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlinx.serialization.modules.SerialModule
 import org.snakeyaml.engine.v2.api.DumpSettings
@@ -47,7 +46,7 @@ internal class YamlOutput(
     writer: StreamDataWriter,
     override val context: SerialModule,
     private val configuration: YamlConfiguration
-) : ElementValueEncoder() {
+) : AbstractEncoder() {
     private val settings = DumpSettings.builder().build()
     private val emitter = Emitter(settings, writer)
     private var currentTag: String? = null
@@ -57,7 +56,7 @@ internal class YamlOutput(
         emitter.emit(DocumentStartEvent(false, Optional.empty(), emptyMap()))
     }
 
-    override fun shouldEncodeElementDefault(desc: SerialDescriptor, index: Int): Boolean = configuration.encodeDefaults
+    override fun shouldEncodeElementDefault(descriptor: SerialDescriptor, index: Int): Boolean = configuration.encodeDefaults
     override fun encodeNull() = emitPlainScalar("null")
     override fun encodeBoolean(value: Boolean) = emitPlainScalar(value.toString())
     override fun encodeByte(value: Byte) = emitPlainScalar(value.toString())
@@ -68,20 +67,20 @@ internal class YamlOutput(
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
     override fun encodeString(value: String) = emitQuotedScalar(value)
-    override fun encodeEnum(enumDescription: SerialDescriptor, ordinal: Int) = emitQuotedScalar(enumDescription.getElementName(ordinal))
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index))
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
     private fun emitQuotedScalar(value: String) = emitScalar(value, ScalarStyle.DOUBLE_QUOTED)
 
-    override fun encodeElement(desc: SerialDescriptor, index: Int): Boolean {
-        if (desc.kind is StructureKind.CLASS) {
-            emitPlainScalar(desc.getElementName(index))
+    override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
+        if (descriptor.kind is StructureKind.CLASS) {
+            emitPlainScalar(descriptor.getElementName(index))
         }
 
-        return super.encodeElement(desc, index)
+        return super.encodeElement(descriptor, index)
     }
 
-    @UseExperimental(InternalSerializationApi::class)
+    @OptIn(InternalSerializationApi::class)
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
         if (serializer !is AbstractPolymorphicSerializer<*>) {
             serializer.serialize(this, value)
@@ -90,28 +89,26 @@ internal class YamlOutput(
 
         @Suppress("UNCHECKED_CAST")
         val actualSerializer = (serializer as AbstractPolymorphicSerializer<Any>).findPolymorphicSerializer(this, value as Any) as KSerializer<Any>
-        currentTag = actualSerializer.descriptor.name
+        currentTag = actualSerializer.descriptor.serialName
         actualSerializer.serialize(this, value)
     }
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeEncoder {
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeSerializers: KSerializer<*>): CompositeEncoder {
         val tag = getAndClearTag()
         val implicit = !tag.isPresent
-        when (desc.kind) {
+        when (descriptor.kind) {
             StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
-            StructureKind.MAP, StructureKind.CLASS, PrimitiveKind.UNIT -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
+            StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
         }
 
-        return super.beginStructure(desc, *typeParams)
+        return super.beginStructure(descriptor, *typeSerializers)
     }
 
-    override fun endStructure(desc: SerialDescriptor) {
-        when (desc.kind) {
+    override fun endStructure(descriptor: SerialDescriptor) {
+        when (descriptor.kind) {
             StructureKind.LIST -> emitter.emit(SequenceEndEvent())
-            StructureKind.MAP, StructureKind.CLASS, PrimitiveKind.UNIT -> emitter.emit(MappingEndEvent())
+            StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingEndEvent())
         }
-
-        super.endStructure(desc)
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) {

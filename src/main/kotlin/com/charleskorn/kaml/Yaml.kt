@@ -18,7 +18,7 @@
 
 package com.charleskorn.kaml
 
-import kotlinx.serialization.AbstractSerialFormat
+import kotlinx.serialization.SerialFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
@@ -32,7 +32,7 @@ import java.io.StringWriter
 class Yaml(
     override val context: SerialModule = EmptyModule,
     val configuration: YamlConfiguration = YamlConfiguration()
-) : AbstractSerialFormat(context), StringFormat {
+) : SerialFormat, StringFormat {
     override fun <T> parse(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix)
@@ -43,13 +43,13 @@ class Yaml(
         return input.decode(deserializer)
     }
 
-    override fun <T> stringify(serializer: SerializationStrategy<T>, obj: T): String {
+    override fun <T> stringify(serializer: SerializationStrategy<T>, value: T): String {
         val writer = object : StringWriter(), StreamDataWriter {
             override fun flush() { }
         }
 
         val output = YamlOutput(writer, context, configuration)
-        output.encode(serializer, obj)
+        output.encode(serializer, value)
 
         return writer.toString()
     }
