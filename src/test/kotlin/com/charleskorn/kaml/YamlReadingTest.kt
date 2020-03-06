@@ -1323,7 +1323,7 @@ object YamlReadingTest : Spek({
                     get() = String.serializer().descriptor
 
                 override fun deserialize(decoder: Decoder): Inner = Inner("from context serializer")
-                override fun serialize(encoder: Encoder, obj: Inner) = throw UnsupportedOperationException()
+                override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
             }
 
             val module = serializersModuleOf(Inner::class, contextSerializer)

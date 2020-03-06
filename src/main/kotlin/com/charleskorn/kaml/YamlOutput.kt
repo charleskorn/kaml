@@ -80,7 +80,7 @@ internal class YamlOutput(
         return super.encodeElement(descriptor, index)
     }
 
-    @UseExperimental(InternalSerializationApi::class)
+    @OptIn(InternalSerializationApi::class)
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
         if (serializer !is AbstractPolymorphicSerializer<*>) {
             serializer.serialize(this, value)
