@@ -24,17 +24,9 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.internal.BooleanSerializer
-import kotlinx.serialization.internal.ByteSerializer
-import kotlinx.serialization.internal.CharSerializer
-import kotlinx.serialization.internal.DoubleSerializer
-import kotlinx.serialization.internal.FloatSerializer
-import kotlinx.serialization.internal.IntSerializer
-import kotlinx.serialization.internal.LongSerializer
-import kotlinx.serialization.internal.ShortSerializer
-import kotlinx.serialization.internal.StringSerializer
-import kotlinx.serialization.internal.UnitSerializer
-import kotlinx.serialization.internal.nullable
+import kotlinx.serialization.builtins.UnitSerializer
+import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.modules.SerializersModule
 
 @Serializable
@@ -54,72 +46,72 @@ data class SealedWrapper(val element: TestSealedStructure?)
 interface SimpleInterface
 
 object SimpleNull : SimpleInterface {
-    val kSerializer: KSerializer<SimpleNull> = UnitSerializer.nullable.mapped("simpleNull", { SimpleNull }, { null })
+    val kSerializer: KSerializer<SimpleNull> = UnitSerializer().nullable.mapped("simpleNull", { SimpleNull }, { null })
 }
 
 data class SimpleUnit(val data: Unit) : SimpleInterface {
     companion object {
-        val kSerializer = UnitSerializer.mapped("simpleUnit", ::SimpleUnit, SimpleUnit::data)
+        val kSerializer = UnitSerializer().mapped("simpleUnit", ::SimpleUnit, SimpleUnit::data)
     }
 }
 
 data class SimpleBoolean(val data: Boolean) : SimpleInterface {
     companion object {
-        val kSerializer = BooleanSerializer.mapped("simpleBoolean", ::SimpleBoolean, SimpleBoolean::data)
+        val kSerializer = Boolean.serializer().mapped("simpleBoolean", ::SimpleBoolean, SimpleBoolean::data)
     }
 }
 
 data class SimpleByte(val data: Byte) : SimpleInterface {
     companion object {
-        val kSerializer = ByteSerializer.mapped("simpleByte", ::SimpleByte, SimpleByte::data)
+        val kSerializer = Byte.serializer().mapped("simpleByte", ::SimpleByte, SimpleByte::data)
     }
 }
 
 data class SimpleShort(val data: Short) : SimpleInterface {
     companion object {
-        val kSerializer = ShortSerializer.mapped("simpleShort", ::SimpleShort, SimpleShort::data)
+        val kSerializer = Short.serializer().mapped("simpleShort", ::SimpleShort, SimpleShort::data)
     }
 }
 
 data class SimpleInt(val data: Int) : SimpleInterface {
     companion object {
-        val kSerializer = IntSerializer.mapped("simpleInt", ::SimpleInt, SimpleInt::data)
+        val kSerializer = Int.serializer().mapped("simpleInt", ::SimpleInt, SimpleInt::data)
     }
 }
 
 data class SimpleNullableInt(val data: Int?) : SimpleInterface {
     companion object {
-        val kSerializer = IntSerializer.nullable.mapped("simpleNullableInt", ::SimpleNullableInt, SimpleNullableInt::data)
+        val kSerializer = Int.serializer().nullable.mapped("simpleNullableInt", ::SimpleNullableInt, SimpleNullableInt::data)
     }
 }
 
 data class SimpleLong(val data: Long) : SimpleInterface {
     companion object {
-        val kSerializer = LongSerializer.mapped("simpleLong", ::SimpleLong, SimpleLong::data)
+        val kSerializer = Long.serializer().mapped("simpleLong", ::SimpleLong, SimpleLong::data)
     }
 }
 
 data class SimpleFloat(val data: Float) : SimpleInterface {
     companion object {
-        val kSerializer = FloatSerializer.mapped("simpleFloat", ::SimpleFloat, SimpleFloat::data)
+        val kSerializer = Float.serializer().mapped("simpleFloat", ::SimpleFloat, SimpleFloat::data)
     }
 }
 
 data class SimpleDouble(val data: Double) : SimpleInterface {
     companion object {
-        val kSerializer = DoubleSerializer.mapped("simpleDouble", ::SimpleDouble, SimpleDouble::data)
+        val kSerializer = Double.serializer().mapped("simpleDouble", ::SimpleDouble, SimpleDouble::data)
     }
 }
 
 data class SimpleChar(val data: Char) : SimpleInterface {
     companion object {
-        val kSerializer = CharSerializer.mapped("simpleChar", ::SimpleChar, SimpleChar::data)
+        val kSerializer = Char.serializer().mapped("simpleChar", ::SimpleChar, SimpleChar::data)
     }
 }
 
 data class SimpleString(val data: String) : SimpleInterface {
     companion object {
-        val kSerializer = StringSerializer.mapped("simpleString", ::SimpleString, SimpleString::data)
+        val kSerializer = String.serializer().mapped("simpleString", ::SimpleString, SimpleString::data)
     }
 }
 
@@ -131,17 +123,17 @@ enum class SimpleEnum : SimpleInterface {
 
 fun SerialDescriptor.withName(newName: String): SerialDescriptor {
     return object : SerialDescriptor by this {
-        override val name: String = newName
+        override val serialName: String = newName
     }
 }
 
-inline fun <S, T> KSerializer<S>.mapped(descriptorName: String = descriptor.name, crossinline fromSource: (S) -> T, crossinline toSource: (T) -> S): KSerializer<T> {
+inline fun <S, T> KSerializer<S>.mapped(descriptorName: String = descriptor.serialName, crossinline fromSource: (S) -> T, crossinline toSource: (T) -> S): KSerializer<T> {
     return object : KSerializer<T> {
         override val descriptor: SerialDescriptor = this@mapped.descriptor.withName(descriptorName)
 
         override fun deserialize(decoder: Decoder): T = fromSource(this@mapped.deserialize(decoder))
 
-        override fun serialize(encoder: Encoder, obj: T) = this@mapped.serialize(encoder, toSource(obj))
+        override fun serialize(encoder: Encoder, value: T) = this@mapped.serialize(encoder, toSource(value))
     }
 }
 
