@@ -38,7 +38,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.3.70"
 
-    apply { id("com.github.ben-manes.versions") version "0.27.0" }
+    apply { id("com.github.ben-manes.versions") version "0.28.0" }
 }
 
 apply(plugin = "kotlinx-serialization")
