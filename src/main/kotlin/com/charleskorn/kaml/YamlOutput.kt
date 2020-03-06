@@ -19,13 +19,11 @@
 package com.charleskorn.kaml
 
 import kotlinx.serialization.CompositeEncoder
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicKind
 import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.builtins.AbstractEncoder
-import kotlinx.serialization.internal.AbstractPolymorphicSerializer
 import kotlinx.serialization.modules.SerialModule
 import org.snakeyaml.engine.v2.api.DumpSettings
 import org.snakeyaml.engine.v2.api.StreamDataWriter
@@ -49,6 +47,7 @@ internal class YamlOutput(
 ) : AbstractEncoder() {
     private val settings = DumpSettings.builder().build()
     private val emitter = Emitter(settings, writer)
+    private var readTag = false
     private var currentTag: String? = null
 
     init {
@@ -66,7 +65,15 @@ internal class YamlOutput(
     override fun encodeInt(value: Int) = emitPlainScalar(value.toString())
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
-    override fun encodeString(value: String) = emitQuotedScalar(value)
+    override fun encodeString(value: String) {
+        if (readTag) {
+            currentTag = value
+            readTag = false
+        } else {
+            emitQuotedScalar(value)
+        }
+    }
+
     override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index))
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
@@ -80,25 +87,13 @@ internal class YamlOutput(
         return super.encodeElement(descriptor, index)
     }
 
-    @OptIn(InternalSerializationApi::class)
-    override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
-        if (serializer !is AbstractPolymorphicSerializer<*>) {
-            serializer.serialize(this, value)
-            return
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        val actualSerializer = (serializer as AbstractPolymorphicSerializer<Any>).findPolymorphicSerializer(this, value as Any) as KSerializer<Any>
-        currentTag = actualSerializer.descriptor.serialName
-        actualSerializer.serialize(this, value)
-    }
-
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeSerializers: KSerializer<*>): CompositeEncoder {
         val tag = getAndClearTag()
         val implicit = !tag.isPresent
         when (descriptor.kind) {
             StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
             StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
+            is PolymorphicKind -> readTag = true
         }
 
         return super.beginStructure(descriptor, *typeSerializers)
