@@ -2,11 +2,11 @@
 rem This file is part of batect.
 rem Do not modify this file, it will be overwritten next time you upgrade batect.
 rem You should commit this file to version control alongside the rest of your project. It should not be installed globally.
-rem For more information, visit https://github.com/charleskorn/batect.
+rem For more information, visit https://github.com/batect/batect.
 
 setlocal EnableDelayedExpansion
 
-set "version=0.35.1"
+set "version=0.47.0"
 
 if "%BATECT_CACHE_DIR%" == "" (
     set "BATECT_CACHE_DIR=%USERPROFILE%\.batect\cache"
@@ -22,7 +22,7 @@ $ErrorActionPreference = 'Stop'^
 
 ^
 
-$Version='0.35.1'^
+$Version='0.47.0'^
 
 ^
 
@@ -42,7 +42,7 @@ function getValueOrDefault($value, $default) {^
 
 ^
 
-$DownloadUrlRoot = getValueOrDefault $env:BATECT_DOWNLOAD_URL_ROOT "https://dl.bintray.com/charleskorn/batect"^
+$DownloadUrlRoot = getValueOrDefault $env:BATECT_DOWNLOAD_URL_ROOT "https://dl.bintray.com/batect/batect"^
 
 $UrlEncodedVersion = [Uri]::EscapeDataString($Version)^
 
@@ -222,7 +222,9 @@ function findJava() {^
 
 function checkJavaVersion([System.Management.Automation.CommandInfo]$java) {^
 
-    $rawVersion = getJavaVersion $java^
+    $versionInfo = getJavaVersionInfo $java^
+
+    $rawVersion = getJavaVersion $versionInfo^
 
     $parsedVersion = New-Object Version -ArgumentList $rawVersion^
 
@@ -242,13 +244,25 @@ function checkJavaVersion([System.Management.Automation.CommandInfo]$java) {^
 
 ^
 
+    if (-not ($versionInfo -match "64\-[bB]it")) {^
+
+        Write-Host -ForegroundColor Red "The version of Java that is available on your PATH is a 32-bit version, but batect requires a 64-bit Java runtime."^
+
+        Write-Host -ForegroundColor Red "If you have a 64-bit version of Java installed, please make sure your PATH is set correctly."^
+
+        exit 1^
+
+    }^
+
+^
+
     return $parsedVersion^
 
 }^
 
 ^
 
-function getJavaVersion([System.Management.Automation.CommandInfo]$java) {^
+function getJavaVersionInfo([System.Management.Automation.CommandInfo]$java) {^
 
     $info = New-Object System.Diagnostics.ProcessStartInfo^
 
@@ -276,7 +290,15 @@ function getJavaVersion([System.Management.Automation.CommandInfo]$java) {^
 
     $stderr = $process.StandardError.ReadToEnd()^
 
-    $versionLine = ($stderr -split [Environment]::NewLine)[0]^
+    return $stderr^
+
+}^
+
+^
+
+function getJavaVersion([String]$versionInfo) {^
+
+    $versionLine = ($versionInfo -split [Environment]::NewLine)[0]^
 
 ^
 
