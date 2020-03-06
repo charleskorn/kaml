@@ -25,19 +25,11 @@ after_success:
 
 deploy:
   - provider: script
-    script: ./batect publishSnapshot
+    script: ./batect publish
     skip_cleanup: true
     on:
-      tags: false
       repo: charleskorn/kaml
-      condition: $TRAVIS_BRANCH = "master" # We can't use branch: master here because we're using tags: false (see https://docs.travis-ci.com/user/deployment/#conditional-releases-with-on)
-
-  - provider: script
-    script: ./batect publishRelease
-    skip_cleanup: true
-    on:
-      tags: true
-      repo: charleskorn/kaml
+      condition: branch = "master" OR tag IS present
 
   - provider: releases
     api_key:

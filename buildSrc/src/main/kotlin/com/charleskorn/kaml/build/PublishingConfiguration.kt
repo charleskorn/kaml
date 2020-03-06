@@ -18,6 +18,8 @@
 
 package com.charleskorn.kaml.build
 
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
+import de.marcphilipp.gradle.nexus.NexusPublishPlugin
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
 import org.gradle.api.Project
@@ -43,6 +45,7 @@ import java.util.Base64
 
 fun Project.configurePublishing() {
     apply<MavenPublishPlugin>()
+    apply<NexusPublishPlugin>()
     apply<SigningPlugin>()
 
     val usernameEnvironmentVariableName = "OSSRH_USERNAME"
@@ -86,9 +89,6 @@ private fun Project.createJarTasks() {
 }
 
 private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
-    val snapshotsRepositoryName = "mavenSnapshots"
-    val releasesRepositoryName = "mavenReleases"
-
     configure<PublishingExtension> {
         publications {
             register<MavenPublication>("mavenJava") {
@@ -124,45 +124,21 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
                 }
             }
         }
+    }
 
+    configure<NexusPublishExtension> {
         repositories {
-            maven {
-                name = snapshotsRepositoryName
-                url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-
-                credentials {
-                    username = repoUsername
-                    password = repoPassword
-                }
-            }
-
-            maven {
-                name = releasesRepositoryName
-                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-
-                credentials {
-                    username = repoUsername
-                    password = repoPassword
-                }
+            sonatype {
+                username.set(repoUsername)
+                password.set(repoPassword)
             }
         }
     }
 
-    val validateReleaseTask = tasks.register("validateRelease") {
-        doFirst {
-            if (version.toString().contains("-")) {
-                throw RuntimeException("Attempting to publish a release of an untagged commit.")
-            }
+    afterEvaluate {
+        tasks.named("publishMavenJavaPublicationToSonatypeRepository").configure {
+            dependsOn(validateCredentialsTask)
         }
-    }
-
-    tasks.named("publishMavenJavaPublicationTo${snapshotsRepositoryName.capitalize()}Repository").configure {
-        dependsOn(validateCredentialsTask)
-    }
-
-    tasks.named("publishMavenJavaPublicationTo${releasesRepositoryName.capitalize()}Repository").configure {
-        dependsOn(validateCredentialsTask)
-        dependsOn(validateReleaseTask)
     }
 }
 
