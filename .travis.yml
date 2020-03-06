@@ -29,7 +29,8 @@ deploy:
     skip_cleanup: true
     on:
       repo: charleskorn/kaml
-      condition: branch = "master" OR tag IS present
+      all_branches: true
+      condition: $TRAVIS_BRANCH = "master" || $TRAVIS_TAG != ""
 
   - provider: releases
     api_key:
