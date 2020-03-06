@@ -42,18 +42,10 @@ import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.simpleModule
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.internal.BooleanSerializer
-import kotlinx.serialization.internal.ByteSerializer
-import kotlinx.serialization.internal.CharSerializer
-import kotlinx.serialization.internal.DoubleSerializer
-import kotlinx.serialization.internal.FloatSerializer
-import kotlinx.serialization.internal.IntSerializer
-import kotlinx.serialization.internal.LongSerializer
-import kotlinx.serialization.internal.ShortSerializer
-import kotlinx.serialization.internal.StringSerializer
-import kotlinx.serialization.internal.nullable
-import kotlinx.serialization.list
-import kotlinx.serialization.map
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.builtins.list
+import kotlinx.serialization.builtins.nullable
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -63,7 +55,7 @@ object YamlWritingTest : Spek({
             val input = null as String?
 
             context("serializing a null string value") {
-                val output = Yaml.default.stringify(StringSerializer.nullable, input)
+                val output = Yaml.default.stringify(String.serializer().nullable, input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe("null")
@@ -73,7 +65,7 @@ object YamlWritingTest : Spek({
 
         describe("serializing boolean values") {
             context("serializing a true value") {
-                val output = Yaml.default.stringify(BooleanSerializer, true)
+                val output = Yaml.default.stringify(Boolean.serializer(), true)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe("true")
@@ -81,7 +73,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a false value") {
-                val output = Yaml.default.stringify(BooleanSerializer, false)
+                val output = Yaml.default.stringify(Boolean.serializer(), false)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe("false")
@@ -90,7 +82,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing byte values") {
-            val output = Yaml.default.stringify(ByteSerializer, 12)
+            val output = Yaml.default.stringify(Byte.serializer(), 12)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe("12")
@@ -99,7 +91,7 @@ object YamlWritingTest : Spek({
 
         describe("serializing character values") {
             context("serializing a alphanumeric character") {
-                val output = Yaml.default.stringify(CharSerializer, 'A')
+                val output = Yaml.default.stringify(Char.serializer(), 'A')
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(""""A"""")
@@ -107,7 +99,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a double-quote character") {
-                val output = Yaml.default.stringify(CharSerializer, '"')
+                val output = Yaml.default.stringify(Char.serializer(), '"')
 
                 it("returns the value serialized in the expected YAML form, escaping the double-quote character") {
                     assert(output).toBe(""""\""""")
@@ -115,7 +107,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a newline character") {
-                val output = Yaml.default.stringify(CharSerializer, '\n')
+                val output = Yaml.default.stringify(Char.serializer(), '\n')
 
                 it("returns the value serialized in the expected YAML form, escaping the newline character") {
                     assert(output).toBe(""""\n"""")
@@ -124,7 +116,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing double values") {
-            val output = Yaml.default.stringify(DoubleSerializer, 12.3)
+            val output = Yaml.default.stringify(Double.serializer(), 12.3)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe("12.3")
@@ -132,7 +124,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing floating point values") {
-            val output = Yaml.default.stringify(FloatSerializer, 45.6f)
+            val output = Yaml.default.stringify(Float.serializer(), 45.6f)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe("45.6")
@@ -140,7 +132,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing integer values") {
-            val output = Yaml.default.stringify(IntSerializer, 12)
+            val output = Yaml.default.stringify(Int.serializer(), 12)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe("12")
@@ -148,7 +140,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing long integer values") {
-            val output = Yaml.default.stringify(LongSerializer, 12)
+            val output = Yaml.default.stringify(Long.serializer(), 12)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe("12")
@@ -156,7 +148,7 @@ object YamlWritingTest : Spek({
         }
 
         describe("serializing short integer values") {
-            val output = Yaml.default.stringify(ShortSerializer, 12)
+            val output = Yaml.default.stringify(Short.serializer(), 12)
 
             it("returns the value serialized in the expected YAML form") {
                 assert(output).toBe("12")
@@ -165,7 +157,7 @@ object YamlWritingTest : Spek({
 
         describe("serializing string values") {
             context("serializing a string without any special characters") {
-                val output = Yaml.default.stringify(StringSerializer, "hello world")
+                val output = Yaml.default.stringify(String.serializer(), "hello world")
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(""""hello world"""")
@@ -173,7 +165,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing an empty string") {
-                val output = Yaml.default.stringify(StringSerializer, "")
+                val output = Yaml.default.stringify(String.serializer(), "")
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe("""""""")
@@ -181,7 +173,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing the string 'null'") {
-                val output = Yaml.default.stringify(StringSerializer, "null")
+                val output = Yaml.default.stringify(String.serializer(), "null")
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(""""null"""")
@@ -189,7 +181,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a multi-line string") {
-                val output = Yaml.default.stringify(StringSerializer, "This is line 1\nThis is line 2")
+                val output = Yaml.default.stringify(String.serializer(), "This is line 1\nThis is line 2")
 
                 it("returns the value serialized in the expected YAML form, escaping the newline character") {
                     assert(output).toBe(""""This is line 1\nThis is line 2"""")
@@ -197,7 +189,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a string containing a double-quote character") {
-                val output = Yaml.default.stringify(StringSerializer, """They said "hello" to me""")
+                val output = Yaml.default.stringify(String.serializer(), """They said "hello" to me""")
 
                 it("returns the value serialized in the expected YAML form, escaping the double-quote characters") {
                     assert(output).toBe(""""They said \"hello\" to me"""")
@@ -215,7 +207,7 @@ object YamlWritingTest : Spek({
 
         describe("serializing lists") {
             context("serializing a list of integers") {
-                val output = Yaml.default.stringify(IntSerializer.list, listOf(1, 2, 3))
+                val output = Yaml.default.stringify(Int.serializer().list, listOf(1, 2, 3))
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -229,7 +221,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a list of nullable integers") {
-                val output = Yaml.default.stringify(IntSerializer.nullable.list, listOf(1, null, 3))
+                val output = Yaml.default.stringify(Int.serializer().nullable.list, listOf(1, null, 3))
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -243,7 +235,7 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a list of strings") {
-                val output = Yaml.default.stringify(StringSerializer.list, listOf("item1", "item2"))
+                val output = Yaml.default.stringify(String.serializer().list, listOf("item1", "item2"))
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -261,7 +253,7 @@ object YamlWritingTest : Spek({
                     listOf(4, 5)
                 )
 
-                val output = Yaml.default.stringify(IntSerializer.list.list, input)
+                val output = Yaml.default.stringify(Int.serializer().list.list, input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -287,7 +279,7 @@ object YamlWritingTest : Spek({
                     )
                 )
 
-                val serializer = (StringSerializer to StringSerializer).map.list
+                val serializer = MapSerializer(String.serializer(), String.serializer()).list
                 val output = Yaml.default.stringify(serializer, input)
 
                 it("returns the value serialized in the expected YAML form") {
@@ -327,7 +319,7 @@ object YamlWritingTest : Spek({
                     "key2" to "value2"
                 )
 
-                val output = Yaml.default.stringify((StringSerializer to StringSerializer).map, input)
+                val output = Yaml.default.stringify(MapSerializer(String.serializer(), String.serializer()), input)
 
                 it("returns the value serialized in the expected YAML form") {
                     assert(output).toBe(
@@ -350,7 +342,7 @@ object YamlWritingTest : Spek({
                     )
                 )
 
-                val serializer = (StringSerializer to (StringSerializer to StringSerializer).map).map
+                val serializer = MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer()))
                 val output = Yaml.default.stringify(serializer, input)
 
                 it("returns the value serialized in the expected YAML form") {
@@ -372,7 +364,7 @@ object YamlWritingTest : Spek({
                     "list2" to listOf(4, 5, 6)
                 )
 
-                val serializer = (StringSerializer to IntSerializer.list).map
+                val serializer = MapSerializer(String.serializer(), Int.serializer().list)
                 val output = Yaml.default.stringify(serializer, input)
 
                 it("returns the value serialized in the expected YAML form") {
@@ -397,7 +389,7 @@ object YamlWritingTest : Spek({
                     "item2" to SimpleStructure("name2")
                 )
 
-                val serializer = (StringSerializer to SimpleStructure.serializer()).map
+                val serializer = MapSerializer(String.serializer(), SimpleStructure.serializer())
                 val output = Yaml.default.stringify(serializer, input)
 
                 it("returns the value serialized in the expected YAML form") {

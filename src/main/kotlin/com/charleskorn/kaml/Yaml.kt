@@ -43,13 +43,13 @@ class Yaml(
         return input.decode(deserializer)
     }
 
-    override fun <T> stringify(serializer: SerializationStrategy<T>, obj: T): String {
+    override fun <T> stringify(serializer: SerializationStrategy<T>, value: T): String {
         val writer = object : StringWriter(), StreamDataWriter {
             override fun flush() { }
         }
 
         val output = YamlOutput(writer, context, configuration)
-        output.encode(serializer, obj)
+        output.encode(serializer, value)
 
         return writer.toString()
     }
