@@ -179,6 +179,28 @@ private fun Project.createReleaseTasks(
             dependsOn(validateCredentialsTask)
         }
     }
+
+    val validateReleaseTask = tasks.register("validateRelease") {
+        doFirst {
+            if (version.toString().contains("-")) {
+                throw RuntimeException("Attempting to publish a release of an untagged commit.")
+            }
+        }
+    }
+
+    tasks.register("publishSnapshot") {
+        dependsOn("publishMavenJavaPublicationToSonatypeRepository")
+    }
+
+    tasks.named("closeRepository") {
+        mustRunAfter("publishMavenJavaPublicationToSonatypeRepository")
+    }
+
+    tasks.register("publishRelease") {
+        dependsOn(validateReleaseTask)
+        dependsOn("publishMavenJavaPublicationToSonatypeRepository")
+        dependsOn("closeAndReleaseRepository")
+    }
 }
 
 private val Project.sourceSets: SourceSetContainer
