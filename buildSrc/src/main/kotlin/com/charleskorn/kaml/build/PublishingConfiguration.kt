@@ -44,7 +44,6 @@ import java.nio.file.Files
 import java.util.Base64
 
 fun Project.configurePublishing() {
-    apply<MavenPublishPlugin>()
     apply<NexusPublishPlugin>()
     apply<SigningPlugin>()
 
