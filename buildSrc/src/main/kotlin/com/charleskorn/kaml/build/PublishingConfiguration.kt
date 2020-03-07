@@ -26,7 +26,6 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -44,6 +43,7 @@ import java.nio.file.Files
 import java.util.Base64
 
 fun Project.configurePublishing() {
+    apply<NexusStagingPlugin>()
     apply<NexusPublishPlugin>()
     apply<SigningPlugin>()
 
@@ -169,8 +169,6 @@ private fun Project.createReleaseTasks(
     repoPassword: String?,
     validateCredentialsTask: TaskProvider<Task>
 ) {
-    apply<NexusStagingPlugin>()
-
     configure<NexusStagingExtension> {
         username = repoUsername
         password = repoPassword
