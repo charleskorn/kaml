@@ -5,6 +5,7 @@ services:
 
 env:
   global:
+    - BATECT_CACHE_TYPE=directory
     # GPG_KEY_PASSPHRASE:
     - secure: "iT+68YhJqPhlG0KR3GrNUlKf2pCaH4Hm4+4lY2byhlfeN3gakRPUBdfDjn6xzyziBXSLwj6EjUzZmMxCUQQGaENAhF3hrFtMRRFVOoLf3O4Uv8qMiIzk3Y7ULPRJPZzaqafW1a9K3LFNSHm47Wf2Wsf9rfO0dmatFkbsTMlJvb/FkbQWbqdDM7kxNNcpMQUmiFZ+j+sjWlabH+rc9Hi/uOjg95hHW4YWu4f43ROKzfaWX+75URAQ8Ih2Tw/oHNkvwMlOlVd9Csb5T3fvmTGBvdAPntLIdN/Iz7rionzMP3EUm2tC49A1PNRxLAEF4zNim9cHCbHGNpJnnWsPux9N128s+i1KMFtxZR5tBqSbX/gO2CN+SQJiSUvMx2Zu7NgRwsz1tYD8667i65//ZtrQbAvaSjxOSav0Q6Cdz/PlCWbfOmActwRxdEdrt+CtYnh2XyBmzLySDFqEjRCa5zedJrMJ2WbAxxmL/UgyMRYLbOEk5/7NR2q7ZX3FCWj+FJdQbRxayJ/6cltB4DYAXqdHv1hpWVgQGTfUkhiHunAuZygOl44pLeEWi4j6ETB8xzgscgcO0wzjToHcpnWQvDBnpkm26uCaR8jcn2ObEbBci1QdaRch9PfV81YIAL9Ssay/WQktGE/Ewe0Gm2DOcU0YWvU3BJixL50Wc1UBYGt+Xxw="
     - GPG_KEY_ID=6382A4D7
@@ -50,12 +51,12 @@ deploy:
       repo: charleskorn/kaml
 
 before_cache:
-  - rm -f  .gradle-cache/caches/modules-2/modules-2.lock
-  - rm -fr .gradle-cache/caches/*/plugin-resolution/
-  - rm -f  .gradle-cache/caches/*/fileHashes/fileHashes.bin
-  - rm -f  .gradle-cache/caches/*/fileHashes/fileHashes.lock
+  - rm -f  .batect/caches/gradle-cache/caches/modules-2/modules-2.lock
+  - rm -fr .batect/caches/gradle-cache/caches/*/plugin-resolution/
+  - rm -f  .batect/caches/gradle-cache/caches/*/fileHashes/fileHashes.bin
+  - rm -f  .batect/caches/gradle-cache/caches/*/fileHashes/fileHashes.lock
+  - rm -f  .batect/caches/gradle-cache/caches/*/javaCompile/javaCompile.lock
 
 cache:
   directories:
-    - .gradle-cache/caches/
-    - .gradle-cache/wrapper/
+    - .batect/caches

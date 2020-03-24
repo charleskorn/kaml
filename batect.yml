@@ -7,9 +7,9 @@ containers:
       - local: .
         container: /code
         options: cached
-      - local: .gradle-cache
+      - type: cache
+        name: gradle-cache
         container: /home/container-user/.gradle
-        options: cached
     working_directory: /code
     environment:
       GRADLE_OPTS: -Dorg.gradle.daemon=false

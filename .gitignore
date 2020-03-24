@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Gradle template
 .gradle
-.gradle-cache
+.batect/caches/
 
 build/
 !buildSrc/src/main/kotlin/com/charleskorn/kaml/build/
