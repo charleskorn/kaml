@@ -31,12 +31,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.70")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.71")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.3.70"
+    kotlin("jvm") version "1.3.71"
 
     apply { id("com.github.ben-manes.versions") version "0.28.0" }
 }
