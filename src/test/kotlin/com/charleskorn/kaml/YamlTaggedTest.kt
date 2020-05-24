@@ -18,8 +18,8 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.toBe
-import ch.tutteli.atrium.verbs.assert
+import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -33,13 +33,13 @@ object YamlTaggedTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    assert(tagged.equivalentContentTo(tagged)).toBe(true)
+                    expect(tagged.equivalentContentTo(tagged)).toBe(true)
                 }
             }
 
             context("comparing it to another non-tagged node") {
                 it("indicates that they are not equivalent") {
-                    assert(
+                    expect(
                         tagged.equivalentContentTo(
                             YamlScalar("test", Location(4, 1))
                         )
@@ -49,7 +49,7 @@ object YamlTaggedTest : Spek({
 
             context("comparing it to another tagged node with a different tag") {
                 it("indicates that they are not equivalent") {
-                    assert(
+                    expect(
                         tagged.equivalentContentTo(
                             YamlTaggedNode(
                                 "tag2",
@@ -62,7 +62,7 @@ object YamlTaggedTest : Spek({
 
             context("comparing it to another tagged node with different child node") {
                 it("indicates that they are not equivalent") {
-                    assert(
+                    expect(
                         tagged.equivalentContentTo(
                             YamlTaggedNode(
                                 "tag",
@@ -79,7 +79,7 @@ object YamlTaggedTest : Spek({
                 val map = YamlTaggedNode("tag", YamlScalar("test", Location(4, 1)))
 
                 it("returns tag and child") {
-                    assert(map.contentToString()).toBe("!tag 'test'")
+                    expect(map.contentToString()).toBe("!tag 'test'")
                 }
             }
         }

@@ -18,8 +18,8 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.toBe
-import ch.tutteli.atrium.verbs.assert
+import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -30,44 +30,44 @@ object YamlNullTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    assert(nullValue.equivalentContentTo(nullValue)).toBe(true)
+                    expect(nullValue.equivalentContentTo(nullValue)).toBe(true)
                 }
             }
 
             context("comparing it to another null value with the same location") {
                 it("indicates that they are equivalent") {
-                    assert(nullValue.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(true)
+                    expect(nullValue.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(true)
                 }
             }
 
             context("comparing it to another null with a different location") {
                 it("indicates that they are equivalent") {
-                    assert(nullValue.equivalentContentTo(YamlNull(Location(2, 4)))).toBe(true)
+                    expect(nullValue.equivalentContentTo(YamlNull(Location(2, 4)))).toBe(true)
                 }
             }
 
             context("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    assert(nullValue.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
+                    expect(nullValue.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    assert(nullValue.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
+                    expect(nullValue.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
                 }
             }
 
             context("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    assert(nullValue.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
+                    expect(nullValue.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
                 }
             }
         }
 
         describe("converting the content to a human-readable string") {
             it("always returns the value 'null'") {
-                assert(YamlNull(Location(1, 1)).contentToString()).toBe("null")
+                expect(YamlNull(Location(1, 1)).contentToString()).toBe("null")
             }
         }
     }

@@ -18,10 +18,10 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.message
-import ch.tutteli.atrium.api.cc.en_GB.toBe
-import ch.tutteli.atrium.api.cc.en_GB.toThrow
-import ch.tutteli.atrium.verbs.assert
+import ch.tutteli.atrium.api.fluent.en_GB.message
+import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
+import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -51,7 +51,7 @@ object YamlNodeReaderTest : Spek({
                     val result = YamlNodeReader(parser).read()
 
                     it("returns the expected scalar value") {
-                        assert(result).toBe(YamlScalar(expectedResult, Location(1, 1)))
+                        expect(result).toBe(YamlScalar(expectedResult, Location(1, 1)))
                     }
                 }
             }
@@ -191,7 +191,7 @@ object YamlNodeReaderTest : Spek({
                     val result = YamlNodeReader(parser).read()
 
                     it("returns the expected multi-line text value") {
-                        assert(result).toBe(
+                        expect(result).toBe(
                             YamlMap(
                                 mapOf(
                                     YamlScalar("thing", Location(1, 1)) to YamlScalar(text, Location(1, 8))
@@ -210,7 +210,7 @@ object YamlNodeReaderTest : Spek({
             context(description) {
                 describe("parsing that input") {
                     it("throws an appropriate exception") {
-                        assert({
+                        expect({
                             val parser = YamlParser(input)
                             YamlNodeReader(parser).read()
                         }).toThrow<MalformedYamlException> {
@@ -241,7 +241,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -280,7 +280,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlScalar("thing1", Location(1, 3)),
@@ -307,7 +307,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlScalar("thing1", Location(1, 3)),
@@ -334,7 +334,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list, using the most-recently defined value each time the alias is referenced") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlScalar("thing1", Location(1, 3)),
@@ -357,7 +357,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<UnknownAnchorException> {
@@ -379,7 +379,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlScalar("thing1", Location(1, 2)),
@@ -402,7 +402,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns an empty list") {
-                    assert(result).toBe(YamlList(emptyList(), Location(1, 1)))
+                    expect(result).toBe(YamlList(emptyList(), Location(1, 1)))
                 }
             }
         }
@@ -415,7 +415,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlList(emptyList(), Location(1, 2)),
@@ -438,7 +438,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlList(emptyList(), Location(1, 3)),
@@ -463,7 +463,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns the expected list") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlList(
@@ -495,7 +495,7 @@ object YamlNodeReaderTest : Spek({
                     val result = YamlNodeReader(parser).read()
 
                     it("returns a list with a single null entry") {
-                        assert(result).toBe(
+                        expect(result).toBe(
                             YamlList(
                                 listOf(
                                     YamlNull(Location(1, 2))
@@ -515,7 +515,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a single null entry") {
-                    assert(result).toBe(YamlNull(Location(1, 1)))
+                    expect(result).toBe(YamlNull(Location(1, 1)))
                 }
             }
         }
@@ -528,7 +528,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key", Location(1, 1)) to YamlScalar("value", Location(1, 6))
@@ -547,7 +547,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair with a null value") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key", Location(1, 1)) to YamlNull(Location(1, 5))
@@ -569,7 +569,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with two key-value pairs") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
@@ -592,7 +592,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with two key-value pairs") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
@@ -615,7 +615,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with two key-value pairs") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
@@ -645,7 +645,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with all expected key-value pairs") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
@@ -689,7 +689,7 @@ object YamlNodeReaderTest : Spek({
                 """.trimIndent()
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -719,7 +719,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -753,7 +753,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -786,7 +786,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns an empty map") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(emptyMap(), Location(1, 1))
                     )
                 }
@@ -798,7 +798,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -831,7 +831,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key", Location(1, 2)) to YamlScalar("value", Location(1, 7))
@@ -847,7 +847,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -880,7 +880,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a map with a single key-value pair") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 2)) to YamlScalar("value1", Location(1, 8)),
@@ -903,7 +903,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlScalar("somevalue", Location(2, 1))
                     )
                 }
@@ -921,7 +921,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlScalar("somevalue", Location(1, 1))
                     )
                 }
@@ -941,7 +941,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comments") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlScalar("somevalue", Location(3, 1))
                     )
                 }
@@ -958,7 +958,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlScalar("somevalue", Location(1, 1))
                     )
                 }
@@ -972,7 +972,7 @@ object YamlNodeReaderTest : Spek({
             context("given the input '$input' which contains a tagged node") {
                 describe("parsing that input") {
                     it("returns the expected node") {
-                        assert(YamlNodeReader(YamlParser(input)).read()).toBe(featureName)
+                        expect(YamlNodeReader(YamlParser(input)).read()).toBe(featureName)
                     }
                 }
             }
@@ -983,7 +983,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that the document is empty") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<EmptyYamlDocumentException> {
@@ -1000,7 +1000,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that the document is empty") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<EmptyYamlDocumentException> {
@@ -1027,7 +1027,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that map with the values from the source map merged into it") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
@@ -1065,7 +1065,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that map with the values from the source map merged into it, with the local values taking precedence") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
@@ -1097,7 +1097,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that merging a null value is not valid") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -1118,7 +1118,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that merging a scalar value is not valid") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -1144,7 +1144,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that map with the values from the source maps merged into it") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
@@ -1189,7 +1189,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that map with the values from the source maps merged into it, with local values taking precedence over earlier source values, and with earlier source values taking precedence over later source values") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
@@ -1232,7 +1232,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that merging a null value is not valid") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -1253,7 +1253,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that merging a scalar value is not valid") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -1274,7 +1274,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that merging a list value is not valid") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -1295,7 +1295,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that multiple merges are not possible") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
@@ -1321,7 +1321,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
 
                 it("returns the map, merging the alias where it is referenced and removing it from the top-level entry") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("actual", Location(3, 1)) to YamlMap(
@@ -1348,7 +1348,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
 
                 it("returns the map, retaining the key matching the extension definition prefix") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar("actual", Location(1, 1)) to YamlMap(
@@ -1376,7 +1376,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
 
                 it("returns the map, merging the other map into it and preserving its keys") {
-                    assert(result).toBe(
+                    expect(result).toBe(
                         YamlMap(
                             mapOf(
                                 YamlScalar(".some-key", Location(2, 5)) to YamlScalar("some-value", Location(2, 16))
@@ -1394,7 +1394,7 @@ object YamlNodeReaderTest : Spek({
 
             describe("parsing that input") {
                 it("throws an appropriate exception stating that an anchor is required for keys with the extension definition prefix") {
-                    assert({
+                    expect({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
                     }).toThrow<NoAnchorForExtensionException> {

@@ -18,11 +18,11 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.message
-import ch.tutteli.atrium.api.cc.en_GB.notToThrow
-import ch.tutteli.atrium.api.cc.en_GB.toBe
-import ch.tutteli.atrium.api.cc.en_GB.toThrow
-import ch.tutteli.atrium.verbs.assert
+import ch.tutteli.atrium.api.fluent.en_GB.message
+import ch.tutteli.atrium.api.fluent.en_GB.notToThrow
+import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
+import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -31,13 +31,13 @@ object YamlMapTest : Spek({
         describe("creating an instance") {
             context("creating an empty map") {
                 it("does not throw an exception") {
-                    assert({ YamlMap(emptyMap(), Location(1, 1)) }).notToThrow()
+                    expect({ YamlMap(emptyMap(), Location(1, 1)) }).notToThrow()
                 }
             }
 
             context("creating a map with a single entry") {
                 it("does not throw an exception") {
-                    assert({
+                    expect({
                         YamlMap(
                             mapOf(YamlScalar("key", Location(1, 1)) to YamlScalar("value", Location(2, 1))),
                             Location(1, 1)
@@ -48,7 +48,7 @@ object YamlMapTest : Spek({
 
             context("creating a map with two entries, each with unique keys") {
                 it("does not throw an exception") {
-                    assert({
+                    expect({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 1)) to YamlScalar("value", Location(2, 1)),
@@ -62,7 +62,7 @@ object YamlMapTest : Spek({
 
             context("creating a map with two entries with the same key") {
                 it("throws an appropriate exception") {
-                    assert({
+                    expect({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", Location(1, 1)) to YamlScalar("value", Location(2, 1)),
@@ -92,19 +92,19 @@ object YamlMapTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    assert(map.equivalentContentTo(map)).toBe(true)
+                    expect(map.equivalentContentTo(map)).toBe(true)
                 }
             }
 
             context("comparing it to another map with the same items in the same order in a different location") {
                 it("indicates that they are equivalent") {
-                    assert(map.equivalentContentTo(YamlMap(map.entries, Location(5, 6)))).toBe(true)
+                    expect(map.equivalentContentTo(YamlMap(map.entries, Location(5, 6)))).toBe(true)
                 }
             }
 
             context("comparing it to another map with the same items in a different order in the same location") {
                 it("indicates that they are equivalent") {
-                    assert(
+                    expect(
                         map.equivalentContentTo(
                             YamlMap(
                                 mapOf(
@@ -119,7 +119,7 @@ object YamlMapTest : Spek({
 
             context("comparing it to another map with different keys in the same location") {
                 it("indicates that they are not equivalent") {
-                    assert(
+                    expect(
                         map.equivalentContentTo(
                             YamlMap(
                                 mapOf(
@@ -134,7 +134,7 @@ object YamlMapTest : Spek({
 
             context("comparing it to another map with different values in the same location") {
                 it("indicates that they are not equivalent") {
-                    assert(
+                    expect(
                         map.equivalentContentTo(
                             YamlMap(
                                 mapOf(
@@ -149,25 +149,25 @@ object YamlMapTest : Spek({
 
             context("comparing it to another map with different items in the same location") {
                 it("indicates that they are not equivalent") {
-                    assert(map.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
+                    expect(map.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
                 }
             }
 
             context("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    assert(map.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
+                    expect(map.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
                 }
             }
 
             context("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    assert(map.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
+                    expect(map.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    assert(map.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
+                    expect(map.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
                 }
             }
         }
@@ -177,7 +177,7 @@ object YamlMapTest : Spek({
                 val map = YamlMap(emptyMap(), Location(1, 1))
 
                 it("returns empty curly brackets") {
-                    assert(map.contentToString()).toBe("{}")
+                    expect(map.contentToString()).toBe("{}")
                 }
             }
 
@@ -187,7 +187,7 @@ object YamlMapTest : Spek({
                 ), Location(1, 1))
 
                 it("returns that item surrounded by curly brackets") {
-                    assert(map.contentToString()).toBe("{'hello': 'world'}")
+                    expect(map.contentToString()).toBe("{'hello': 'world'}")
                 }
             }
 
@@ -198,7 +198,7 @@ object YamlMapTest : Spek({
                 ), Location(1, 1))
 
                 it("returns all items separated by commas and surrounded by curly brackets") {
-                    assert(map.contentToString()).toBe("{'hello': 'world', 'also': 'thanks'}")
+                    expect(map.contentToString()).toBe("{'hello': 'world', 'also': 'thanks'}")
                 }
             }
         }

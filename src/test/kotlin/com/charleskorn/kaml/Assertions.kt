@@ -18,47 +18,47 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.property
-import ch.tutteli.atrium.creating.Assert
+import ch.tutteli.atrium.api.fluent.en_GB.feature
+import ch.tutteli.atrium.creating.Expect
 
-fun Assert<YamlException>.line(assertionCreator: Assert<Int>.() -> Unit) {
-    property(subject::line).addAssertionsCreatedBy(assertionCreator)
+fun <T : YamlException> Expect<T>.line(assertionCreator: Expect<Int>.() -> Unit) {
+    feature { f(it::line) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<YamlException>.column(assertionCreator: Assert<Int>.() -> Unit) {
-    property(subject::column).addAssertionsCreatedBy(assertionCreator)
+fun <T : YamlException> Expect<T>.column(assertionCreator: Expect<Int>.() -> Unit) {
+    feature { f(it::column) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<DuplicateKeyException>.originalLocation(assertionCreator: Assert<Location>.() -> Unit) {
-    property(subject::originalLocation).addAssertionsCreatedBy(assertionCreator)
+fun Expect<DuplicateKeyException>.originalLocation(assertionCreator: Expect<Location>.() -> Unit) {
+    feature { f(it::originalLocation) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<DuplicateKeyException>.duplicateLocation(assertionCreator: Assert<Location>.() -> Unit) {
-    property(subject::duplicateLocation).addAssertionsCreatedBy(assertionCreator)
+fun Expect<DuplicateKeyException>.duplicateLocation(assertionCreator: Expect<Location>.() -> Unit) {
+    feature { f(it::duplicateLocation) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<DuplicateKeyException>.key(assertionCreator: Assert<String>.() -> Unit) {
-    property(subject::key).addAssertionsCreatedBy(assertionCreator)
+fun Expect<DuplicateKeyException>.key(assertionCreator: Expect<String>.() -> Unit) {
+    feature { f(it::key) }.addAssertionsCreatedBy(assertionCreator)
 }
 
 @JvmName("InvalidPropertyValueExceptionPropertyName")
-fun Assert<InvalidPropertyValueException>.propertyName(assertionCreator: Assert<String>.() -> Unit) {
-    property(subject::propertyName).addAssertionsCreatedBy(assertionCreator)
+fun Expect<InvalidPropertyValueException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
+    feature { f(it::propertyName) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<InvalidPropertyValueException>.reason(assertionCreator: Assert<String>.() -> Unit) {
-    property(subject::reason).addAssertionsCreatedBy(assertionCreator)
+fun Expect<InvalidPropertyValueException>.reason(assertionCreator: Expect<String>.() -> Unit) {
+    feature { f(it::reason) }.addAssertionsCreatedBy(assertionCreator)
 }
 
 @JvmName("UnknownPropertyExceptionPropertyName")
-fun Assert<UnknownPropertyException>.propertyName(assertionCreator: Assert<String>.() -> Unit) {
-    property(subject::propertyName).addAssertionsCreatedBy(assertionCreator)
+fun Expect<UnknownPropertyException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
+    feature { f(it::propertyName) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<UnknownPropertyException>.validPropertyNames(assertionCreator: Assert<Set<String>>.() -> Unit) {
-    property(subject::validPropertyNames).addAssertionsCreatedBy(assertionCreator)
+fun Expect<UnknownPropertyException>.validPropertyNames(assertionCreator: Expect<Set<String>>.() -> Unit) {
+    feature { f(it::validPropertyNames) }.addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Assert<YamlScalarFormatException>.originalValue(assertionCreator: Assert<String>.() -> Unit) {
-    property(subject::originalValue).addAssertionsCreatedBy(assertionCreator)
+fun Expect<YamlScalarFormatException>.originalValue(assertionCreator: Expect<String>.() -> Unit) {
+    feature { f(it::originalValue) }.addAssertionsCreatedBy(assertionCreator)
 }

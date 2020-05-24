@@ -18,8 +18,8 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.cc.en_GB.toBe
-import ch.tutteli.atrium.verbs.assert
+import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -35,43 +35,43 @@ object YamlListTest : Spek({
 
             describe("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    assert(list.equivalentContentTo(list)).toBe(true)
+                    expect(list.equivalentContentTo(list)).toBe(true)
                 }
             }
 
             describe("comparing it to another list with the same items in the same order in a different location") {
                 it("indicates that they are equivalent") {
-                    assert(list.equivalentContentTo(YamlList(list.items, Location(5, 6)))).toBe(true)
+                    expect(list.equivalentContentTo(YamlList(list.items, Location(5, 6)))).toBe(true)
                 }
             }
 
             describe("comparing it to another list with the same items in a different order in the same location") {
                 it("indicates that they are not equivalent") {
-                    assert(list.equivalentContentTo(YamlList(list.items.reversed(), Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlList(list.items.reversed(), Location(2, 3)))).toBe(false)
                 }
             }
 
             describe("comparing it to another list with different items in the same location") {
                 it("indicates that they are not equivalent") {
-                    assert(list.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
                 }
             }
 
             describe("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    assert(list.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
                 }
             }
 
             describe("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    assert(list.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
                 }
             }
 
             describe("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    assert(list.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
                 }
             }
         }
@@ -81,7 +81,7 @@ object YamlListTest : Spek({
                 val list = YamlList(emptyList(), Location(1, 1))
 
                 it("returns empty square brackets") {
-                    assert(list.contentToString()).toBe("[]")
+                    expect(list.contentToString()).toBe("[]")
                 }
             }
 
@@ -89,7 +89,7 @@ object YamlListTest : Spek({
                 val list = YamlList(listOf(YamlScalar("hello", Location(1, 1))), Location(1, 1))
 
                 it("returns that item surrounded by square brackets") {
-                    assert(list.contentToString()).toBe("['hello']")
+                    expect(list.contentToString()).toBe("['hello']")
                 }
             }
 
@@ -100,7 +100,7 @@ object YamlListTest : Spek({
                 ), Location(1, 1))
 
                 it("returns all items separated by commas and surrounded by square brackets") {
-                    assert(list.contentToString()).toBe("['hello', 'world']")
+                    expect(list.contentToString()).toBe("['hello', 'world']")
                 }
             }
         }
