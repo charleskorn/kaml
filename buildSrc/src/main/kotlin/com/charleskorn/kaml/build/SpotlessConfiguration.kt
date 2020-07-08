@@ -90,4 +90,8 @@ fun Project.configureSpotless() {
             endWithNewline()
         }
     }
+
+    tasks.named("spotlessKotlinCheck") {
+        mustRunAfter("test")
+    }
 }
