@@ -61,7 +61,7 @@ dependencies {
     val spekVersion = "2.0.10"
 
     testImplementation(group = "org.spekframework.spek2", name = "spek-dsl-jvm", version = spekVersion)
-    testImplementation(group = "ch.tutteli.atrium", name = "atrium-fluent-en_GB", version = "0.11.1")
+    testImplementation(group = "ch.tutteli.atrium", name = "atrium-fluent-en_GB", version = "0.12.0")
 
     testRuntimeOnly(group = "org.spekframework.spek2", name = "spek-runner-junit5", version = spekVersion)
 }
