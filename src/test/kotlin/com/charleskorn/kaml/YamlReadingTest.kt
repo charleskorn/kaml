@@ -25,26 +25,26 @@ import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
-import com.charleskorn.kaml.testobjects.SimpleBoolean
-import com.charleskorn.kaml.testobjects.SimpleByte
-import com.charleskorn.kaml.testobjects.SimpleChar
-import com.charleskorn.kaml.testobjects.SimpleClass
-import com.charleskorn.kaml.testobjects.SimpleDouble
-import com.charleskorn.kaml.testobjects.SimpleEnum
-import com.charleskorn.kaml.testobjects.SimpleFloat
-import com.charleskorn.kaml.testobjects.SimpleInt
-import com.charleskorn.kaml.testobjects.SimpleLong
-import com.charleskorn.kaml.testobjects.SimpleNull
-import com.charleskorn.kaml.testobjects.SimpleNullableInt
-import com.charleskorn.kaml.testobjects.SimpleShort
-import com.charleskorn.kaml.testobjects.SimpleString
+import com.charleskorn.kaml.testobjects.PolymorphicBoolean
+import com.charleskorn.kaml.testobjects.PolymorphicByte
+import com.charleskorn.kaml.testobjects.PolymorphicChar
+import com.charleskorn.kaml.testobjects.PolymorphicClass
+import com.charleskorn.kaml.testobjects.PolymorphicDouble
+import com.charleskorn.kaml.testobjects.PolymorphicEnum
+import com.charleskorn.kaml.testobjects.PolymorphicFloat
+import com.charleskorn.kaml.testobjects.PolymorphicInt
+import com.charleskorn.kaml.testobjects.PolymorphicLong
+import com.charleskorn.kaml.testobjects.PolymorphicNull
+import com.charleskorn.kaml.testobjects.PolymorphicNullableInt
+import com.charleskorn.kaml.testobjects.PolymorphicShort
+import com.charleskorn.kaml.testobjects.PolymorphicString
 import com.charleskorn.kaml.testobjects.SimpleStructure
-import com.charleskorn.kaml.testobjects.SimpleUnit
-import com.charleskorn.kaml.testobjects.SimpleWrapper
+import com.charleskorn.kaml.testobjects.PolymorphicUnit
+import com.charleskorn.kaml.testobjects.PolymorphicWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
-import com.charleskorn.kaml.testobjects.simpleModule
+import com.charleskorn.kaml.testobjects.polymorphicModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
@@ -949,7 +949,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(SimpleWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
                             line { toBe(1) }
                             column { toBe(7) }
@@ -989,7 +989,7 @@ object YamlReadingTest : Spek({
                 }
             }
 
-            val simpleYaml = Yaml(context = simpleModule)
+            val simpleYaml = Yaml(context = polymorphicModule)
 
             context("given some simple int input representing an object") {
                 val input = """
@@ -997,10 +997,10 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = simpleYaml.parse(SimpleWrapper.serializer(), input)
+                    val result = simpleYaml.parse(PolymorphicWrapper.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
-                        expect(result).toBe(SimpleWrapper(SimpleInt(42)))
+                        expect(result).toBe(PolymorphicWrapper(PolymorphicInt(42)))
                     }
                 }
             }
@@ -1027,26 +1027,26 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = simpleYaml.parse(SimpleWrapper.serializer().list, input)
+                    val result = simpleYaml.parse(PolymorphicWrapper.serializer().list, input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(
                             listOf(
-                                SimpleWrapper(SimpleNull),
-                                SimpleWrapper(SimpleUnit(Unit)),
-                                SimpleWrapper(SimpleBoolean(false)),
-                                SimpleWrapper(SimpleByte(42)),
-                                SimpleWrapper(SimpleShort(43)),
-                                SimpleWrapper(SimpleInt(44)),
-                                SimpleWrapper(SimpleLong(45L)),
-                                SimpleWrapper(SimpleFloat(4.2f)),
-                                SimpleWrapper(SimpleDouble(4.2)),
-                                SimpleWrapper(SimpleChar('4')),
-                                SimpleWrapper(SimpleString("42")),
-                                SimpleWrapper(SimpleEnum.TEST2),
-                                SimpleWrapper(SimpleNullableInt(4)),
-                                SimpleWrapper(SimpleNullableInt(null)),
-                                SimpleWrapper(SimpleClass("thing", "otherThing"))
+                                PolymorphicWrapper(PolymorphicNull),
+                                PolymorphicWrapper(PolymorphicUnit(Unit)),
+                                PolymorphicWrapper(PolymorphicBoolean(false)),
+                                PolymorphicWrapper(PolymorphicByte(42)),
+                                PolymorphicWrapper(PolymorphicShort(43)),
+                                PolymorphicWrapper(PolymorphicInt(44)),
+                                PolymorphicWrapper(PolymorphicLong(45L)),
+                                PolymorphicWrapper(PolymorphicFloat(4.2f)),
+                                PolymorphicWrapper(PolymorphicDouble(4.2)),
+                                PolymorphicWrapper(PolymorphicChar('4')),
+                                PolymorphicWrapper(PolymorphicString("42")),
+                                PolymorphicWrapper(PolymorphicEnum.TEST2),
+                                PolymorphicWrapper(PolymorphicNullableInt(4)),
+                                PolymorphicWrapper(PolymorphicNullableInt(null)),
+                                PolymorphicWrapper(PolymorphicClass("thing", "otherThing"))
                             )
                         )
                     }
