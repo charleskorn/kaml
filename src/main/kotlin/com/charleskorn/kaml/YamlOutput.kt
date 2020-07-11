@@ -47,8 +47,8 @@ internal class YamlOutput(
 ) : AbstractEncoder() {
     private val settings = DumpSettings.builder().build()
     private val emitter = Emitter(settings, writer)
-    private var readTag = false
-    private var currentTag: String? = null
+    private var shouldReadTypeName = false
+    private var currentTypeName: String? = null
 
     init {
         emitter.emit(StreamStartEvent())
@@ -66,9 +66,9 @@ internal class YamlOutput(
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
     override fun encodeString(value: String) {
-        if (readTag) {
-            currentTag = value
-            readTag = false
+        if (shouldReadTypeName) {
+            currentTypeName = value
+            shouldReadTypeName = false
         } else {
             emitQuotedScalar(value)
         }
@@ -88,12 +88,12 @@ internal class YamlOutput(
     }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeSerializers: KSerializer<*>): CompositeEncoder {
-        val tag = getAndClearTag()
-        val implicit = !tag.isPresent
+        val typeName = getAndClearTypeName()
+        val implicit = !typeName.isPresent
         when (descriptor.kind) {
-            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
-            StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingStartEvent(Optional.empty(), tag, implicit, FlowStyle.BLOCK))
-            is PolymorphicKind -> readTag = true
+            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), typeName, implicit, FlowStyle.BLOCK))
+            StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingStartEvent(Optional.empty(), typeName, implicit, FlowStyle.BLOCK))
+            is PolymorphicKind -> shouldReadTypeName = true
         }
 
         return super.beginStructure(descriptor, *typeSerializers)
@@ -107,15 +107,15 @@ internal class YamlOutput(
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) {
-        val tag = getAndClearTag()
+        val tag = getAndClearTypeName()
         val implicit = if (tag.isPresent) ALL_EXPLICIT else ALL_IMPLICIT
         emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, value, style))
     }
 
-    private fun getAndClearTag(): Optional<String> {
-        val tag = Optional.ofNullable(currentTag)
-        currentTag = null
-        return tag
+    private fun getAndClearTypeName(): Optional<String> {
+        val typeName = Optional.ofNullable(currentTypeName)
+        currentTypeName = null
+        return typeName
     }
 
     companion object {
