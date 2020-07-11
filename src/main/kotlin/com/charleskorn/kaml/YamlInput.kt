@@ -31,12 +31,16 @@ import kotlinx.serialization.modules.SerialModule
 
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : AbstractDecoder() {
     companion object {
-        fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration): YamlInput = when (node) {
+        fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
             is YamlScalar -> YamlScalarInput(node, context, configuration)
             is YamlNull -> YamlNullInput(node, context, configuration)
             is YamlList -> YamlListInput(node, context, configuration)
             is YamlMap -> YamlMapInput(node, context, configuration)
-            is YamlTaggedNode -> YamlTaggedInput(node, context, configuration)
+            is YamlTaggedNode -> if (descriptor.kind is PolymorphicKind) {
+                YamlTaggedInput(node, context, configuration, descriptor)
+            } else {
+                createFor(node.node, context, configuration, descriptor)
+            }
         }
     }
 
@@ -109,7 +113,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
             return READ_DONE
         }
 
-        currentElementDecoder = createFor(list.items[nextElementIndex], context, configuration)
+        currentElementDecoder = createFor(list.items[nextElementIndex], context, configuration, descriptor.getElementDescriptor(0))
 
         return nextElementIndex++
     }
@@ -175,7 +179,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = when (readMode) {
         MapReadMode.Object -> decodeElementIndexForObject(descriptor)
-        MapReadMode.Map -> decodeElementIndexForMap()
+        MapReadMode.Map -> decodeElementIndexForMap(descriptor)
     }
 
     private fun decodeElementIndexForObject(desc: SerialDescriptor): Int {
@@ -198,7 +202,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
                 }
             }
 
-            currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration)
+            currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration, desc.getElementDescriptor(fieldDescriptorIndex))
             currentlyReadingValue = true
             nextIndex++
 
@@ -206,7 +210,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         }
     }
 
-    private fun decodeElementIndexForMap(): Int {
+    private fun decodeElementIndexForMap(descriptor: SerialDescriptor): Int {
         if (nextIndex == entriesList.size * 2) {
             return READ_DONE
         }
@@ -216,8 +220,8 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         currentlyReadingValue = nextIndex % 2 != 0
 
         currentValueDecoder = when (currentlyReadingValue) {
-            true -> createFor(currentEntry.value, context, configuration)
-            false -> createFor(currentEntry.key, context, configuration)
+            true -> createFor(currentEntry.value, context, configuration, descriptor.getElementDescriptor(1))
+            false -> createFor(currentEntry.key, context, configuration, descriptor.getElementDescriptor(0))
         }
 
         return nextIndex++
@@ -307,14 +311,14 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     }
 }
 
-private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(taggedNode, context, configuration) {
+private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor) : YamlInput(taggedNode, context, configuration) {
     /**
      * index 0 -> tag
      * index 1 -> child node
      */
     private var currentIndex = -1
     private var isPolymorphic = false
-    private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration)
+    private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration, descriptor.getElementDescriptor(1))
 
     override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = taggedNode::location, blockOnChild = YamlInput::getCurrentLocation)
 

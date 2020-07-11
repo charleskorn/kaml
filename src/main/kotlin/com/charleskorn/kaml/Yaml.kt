@@ -39,7 +39,7 @@ class Yaml(
         val rootNode = reader.read()
         parser.ensureEndOfStreamReached()
 
-        val input = YamlInput.createFor(rootNode, context, configuration)
+        val input = YamlInput.createFor(rootNode, context, configuration, deserializer.descriptor)
         return input.decode(deserializer)
     }
 
