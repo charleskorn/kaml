@@ -49,7 +49,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
 
             is YamlMap -> when (descriptor.kind) {
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
-                is StructureKind.MAP -> YamlMapInput(node, context, configuration, descriptor)
+                is StructureKind.MAP -> YamlMapInput(node, context, configuration)
                 is UnionKind.CONTEXTUAL -> throw YamlException("Cannot use contextual serializer on YAML map", node.location)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
             }
@@ -59,26 +59,6 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 else -> createFor(node.node, context, configuration, descriptor)
             }
         }
-
-        private val SerialKind.friendlyDescription: String
-            get() {
-                return when (this) {
-                    is StructureKind.MAP -> "a map"
-                    is StructureKind.CLASS -> "an object"
-                    is StructureKind.LIST -> "a list"
-                    is PrimitiveKind.STRING -> "a string"
-                    is PrimitiveKind.BOOLEAN -> "a boolean"
-                    is PrimitiveKind.BYTE -> "a byte"
-                    is PrimitiveKind.CHAR -> "a character"
-                    is PrimitiveKind.DOUBLE -> "a double"
-                    is PrimitiveKind.FLOAT -> "a float"
-                    is PrimitiveKind.INT -> "an integer"
-                    is PrimitiveKind.SHORT -> "a short"
-                    is PrimitiveKind.LONG -> "a long"
-                    is UnionKind.ENUM_KIND -> "an enumeration value"
-                    else -> "a $this"
-                }
-            }
     }
 
     override val updateMode: UpdateMode = UpdateMode.BANNED
@@ -153,31 +133,27 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
         return currentElementDecoder.decodeNotNullMark()
     }
 
-    override fun decodeString(): String = checkTypeAndDecodeFromCurrentValue("a string") { decodeString() }
-    override fun decodeInt(): Int = checkTypeAndDecodeFromCurrentValue("an integer") { decodeInt() }
-    override fun decodeLong(): Long = checkTypeAndDecodeFromCurrentValue("a long") { decodeLong() }
-    override fun decodeShort(): Short = checkTypeAndDecodeFromCurrentValue("a short") { decodeShort() }
-    override fun decodeByte(): Byte = checkTypeAndDecodeFromCurrentValue("a byte") { decodeByte() }
-    override fun decodeDouble(): Double = checkTypeAndDecodeFromCurrentValue("a double") { decodeDouble() }
-    override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
-    override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
-    override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescriptor) }
-
-    private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
-        if (!haveStartedReadingElements) {
-            throw IncorrectTypeException("Expected $expectedTypeDescription, but got a list", list.location)
-        }
-
-        return action(currentElementDecoder)
-    }
+    override fun decodeString(): String = currentElementDecoder.decodeString()
+    override fun decodeInt(): Int = currentElementDecoder.decodeInt()
+    override fun decodeLong(): Long = currentElementDecoder.decodeLong()
+    override fun decodeShort(): Short = currentElementDecoder.decodeShort()
+    override fun decodeByte(): Byte = currentElementDecoder.decodeByte()
+    override fun decodeDouble(): Double = currentElementDecoder.decodeDouble()
+    override fun decodeFloat(): Float = currentElementDecoder.decodeFloat()
+    override fun decodeBoolean(): Boolean = currentElementDecoder.decodeBoolean()
+    override fun decodeChar(): Char = currentElementDecoder.decodeChar()
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = currentElementDecoder.decodeEnum(enumDescriptor)
 
     private val haveStartedReadingElements: Boolean
         get() = nextElementIndex > 0
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         if (haveStartedReadingElements) {
-            return currentElementDecoder.beginStructure(descriptor, *typeParams)
+            return currentElementDecoder
+        }
+
+        if (descriptor.kind !is StructureKind.LIST) {
+            throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.location)
         }
 
         return super.beginStructure(descriptor, *typeParams)
@@ -245,7 +221,7 @@ private sealed class YamlMapLikeInputBase(node: YamlNode, context: SerialModule,
     }
 }
 
-private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration, val mapDescriptor: SerialDescriptor) : YamlMapLikeInputBase(map, context, configuration) {
+private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
@@ -402,3 +378,23 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
         Content
     }
 }
+
+private val SerialKind.friendlyDescription: String
+    get() {
+        return when (this) {
+            is StructureKind.MAP -> "a map"
+            is StructureKind.CLASS -> "an object"
+            is StructureKind.LIST -> "a list"
+            is PrimitiveKind.STRING -> "a string"
+            is PrimitiveKind.BOOLEAN -> "a boolean"
+            is PrimitiveKind.BYTE -> "a byte"
+            is PrimitiveKind.CHAR -> "a character"
+            is PrimitiveKind.DOUBLE -> "a double"
+            is PrimitiveKind.FLOAT -> "a float"
+            is PrimitiveKind.INT -> "an integer"
+            is PrimitiveKind.SHORT -> "a short"
+            is PrimitiveKind.LONG -> "a long"
+            is UnionKind.ENUM_KIND -> "an enumeration value"
+            else -> "a $this value"
+        }
+    }
