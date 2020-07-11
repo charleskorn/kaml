@@ -144,7 +144,7 @@ data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: 
         "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
 }
 
-data class YamlTaggedNode(val tag: String, val node: YamlNode) : YamlNode(node.location) {
+data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : YamlNode(innerNode.location) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlTaggedNode) {
             return false
@@ -154,8 +154,8 @@ data class YamlTaggedNode(val tag: String, val node: YamlNode) : YamlNode(node.l
             return false
         }
 
-        return node.equivalentContentTo(other.node)
+        return innerNode.equivalentContentTo(other.innerNode)
     }
 
-    override fun contentToString(): String = "!$tag ${node.contentToString()}"
+    override fun contentToString(): String = "!$tag ${innerNode.contentToString()}"
 }

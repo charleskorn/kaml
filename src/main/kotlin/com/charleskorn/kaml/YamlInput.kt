@@ -67,8 +67,8 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
             }
 
             is YamlTaggedNode -> when (descriptor.kind) {
-                is PolymorphicKind -> YamlTaggedInput(node, context, configuration)
-                else -> createFor(node.node, context, configuration, descriptor)
+                is PolymorphicKind -> YamlPolymorphicInput(node.tag, node.innerNode, context, configuration)
+                else -> createFor(node.innerNode, context, configuration, descriptor)
             }
         }
     }
@@ -393,11 +393,11 @@ private class YamlObjectInput(map: YamlMap, context: SerialModule, configuration
     }
 }
 
-private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(taggedNode, context, configuration) {
+private class YamlPolymorphicInput(private val typeName: String, private val contentNode: YamlNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(contentNode, context, configuration) {
     private var currentField = CurrentField.NotStarted
     private lateinit var contentDecoder: YamlInput
 
-    override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnType = taggedNode::location, blockOnContent = YamlInput::getCurrentLocation)
+    override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnType = contentNode::location, blockOnContent = YamlInput::getCurrentLocation)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         return when (currentField) {
@@ -406,9 +406,9 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
                 0
             }
             CurrentField.Type -> {
-                when (taggedNode.node) {
-                    is YamlScalar -> contentDecoder = YamlScalarInput(taggedNode.node, context, configuration)
-                    is YamlNull -> contentDecoder = YamlNullInput(taggedNode.node, context, configuration)
+                when (contentNode) {
+                    is YamlScalar -> contentDecoder = YamlScalarInput(contentNode, context, configuration)
+                    is YamlNull -> contentDecoder = YamlNullInput(contentNode, context, configuration)
                 }
 
                 currentField = CurrentField.Content
@@ -429,14 +429,14 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     override fun decodeFloat(): Float = maybeCallOnContent("decodeFloat", blockOnContent = YamlInput::decodeFloat)
     override fun decodeDouble(): Double = maybeCallOnContent("decodeDouble", blockOnContent = YamlInput::decodeDouble)
     override fun decodeChar(): Char = maybeCallOnContent("decodeChar", blockOnContent = YamlInput::decodeChar)
-    override fun decodeString(): String = maybeCallOnContent(blockOnType = taggedNode::tag, blockOnContent = YamlInput::decodeString)
+    override fun decodeString(): String = maybeCallOnContent(blockOnType = { typeName }, blockOnContent = YamlInput::decodeString)
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnContent("decodeEnum") { decodeEnum(enumDescriptor) }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         return when (currentField) {
             CurrentField.NotStarted, CurrentField.Type -> super.beginStructure(descriptor, *typeParams)
             CurrentField.Content -> {
-                contentDecoder = createFor(taggedNode.node, context, configuration, descriptor)
+                contentDecoder = createFor(contentNode, context, configuration, descriptor)
 
                 return contentDecoder
             }
