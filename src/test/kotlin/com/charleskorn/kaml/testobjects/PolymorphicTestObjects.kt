@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml.testobjects
 
+import com.charleskorn.kaml.Yaml
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
@@ -164,3 +165,5 @@ val polymorphicModule = SerializersModule {
         PolymorphicClass::class with PolymorphicClass.serializer()
     }
 }
+
+val polymorphicTestYaml = Yaml(context = polymorphicModule)

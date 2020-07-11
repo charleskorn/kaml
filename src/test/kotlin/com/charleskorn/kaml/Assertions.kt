@@ -22,43 +22,51 @@ import ch.tutteli.atrium.api.fluent.en_GB.feature
 import ch.tutteli.atrium.creating.Expect
 
 fun <T : YamlException> Expect<T>.line(assertionCreator: Expect<Int>.() -> Unit) {
-    feature { f(it::line) }.addAssertionsCreatedBy(assertionCreator)
+    feature(YamlException::line).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun <T : YamlException> Expect<T>.column(assertionCreator: Expect<Int>.() -> Unit) {
-    feature { f(it::column) }.addAssertionsCreatedBy(assertionCreator)
+    feature(YamlException::column).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.originalLocation(assertionCreator: Expect<Location>.() -> Unit) {
-    feature { f(it::originalLocation) }.addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::originalLocation).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.duplicateLocation(assertionCreator: Expect<Location>.() -> Unit) {
-    feature { f(it::duplicateLocation) }.addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::duplicateLocation).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.key(assertionCreator: Expect<String>.() -> Unit) {
-    feature { f(it::key) }.addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::key).addAssertionsCreatedBy(assertionCreator)
 }
 
 @JvmName("InvalidPropertyValueExceptionPropertyName")
 fun Expect<InvalidPropertyValueException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
-    feature { f(it::propertyName) }.addAssertionsCreatedBy(assertionCreator)
+    feature(InvalidPropertyValueException::propertyName).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun Expect<InvalidPropertyValueException>.reason(assertionCreator: Expect<String>.() -> Unit) {
-    feature { f(it::reason) }.addAssertionsCreatedBy(assertionCreator)
+    feature(InvalidPropertyValueException::reason).addAssertionsCreatedBy(assertionCreator)
 }
 
 @JvmName("UnknownPropertyExceptionPropertyName")
 fun Expect<UnknownPropertyException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
-    feature { f(it::propertyName) }.addAssertionsCreatedBy(assertionCreator)
+    feature(UnknownPropertyException::propertyName).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun Expect<UnknownPropertyException>.validPropertyNames(assertionCreator: Expect<Set<String>>.() -> Unit) {
-    feature { f(it::validPropertyNames) }.addAssertionsCreatedBy(assertionCreator)
+    feature(UnknownPropertyException::validPropertyNames).addAssertionsCreatedBy(assertionCreator)
 }
 
 fun Expect<YamlScalarFormatException>.originalValue(assertionCreator: Expect<String>.() -> Unit) {
-    feature { f(it::originalValue) }.addAssertionsCreatedBy(assertionCreator)
+    feature(YamlScalarFormatException::originalValue).addAssertionsCreatedBy(assertionCreator)
+}
+
+fun Expect<UnknownPolymorphicTypeException>.typeName(assertionCreator: Expect<String>.() -> Unit) {
+    feature(UnknownPolymorphicTypeException::typeName).addAssertionsCreatedBy(assertionCreator)
+}
+
+fun Expect<UnknownPolymorphicTypeException>.validTypeNames(assertionCreator: Expect<Set<String>>.() -> Unit) {
+    feature(UnknownPolymorphicTypeException::validTypeNames).addAssertionsCreatedBy(assertionCreator)
 }

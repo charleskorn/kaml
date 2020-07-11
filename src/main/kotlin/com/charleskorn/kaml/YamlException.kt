@@ -45,6 +45,9 @@ class UnexpectedNullValueException(location: Location) : YamlException("Unexpect
 class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)
 
+class UnknownPolymorphicTypeException(val typeName: String, val validTypeNames: Set<String>, location: Location, cause: Throwable? = null) :
+    YamlException("Unknown type '$typeName'. Known types are: ${validTypeNames.sorted().joinToString(", ")}", location, cause)
+
 class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
 
 open class IncorrectTypeException(message: String, location: Location) : YamlException(message, location)

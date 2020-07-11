@@ -21,19 +21,26 @@ package com.charleskorn.kaml
 import kotlinx.serialization.CompositeDecoder
 import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicKind
 import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerialKind
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UnionKind
 import kotlinx.serialization.UpdateMode
 import kotlinx.serialization.builtins.AbstractDecoder
+import kotlinx.serialization.elementNames
 import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.modules.SerialModuleCollector
+import kotlin.reflect.KClass
 
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : AbstractDecoder() {
     companion object {
+        private val unknownPolymorphicTypeExceptionMessage: Regex = """^(.*) is not registered for polymorphic serialization in the scope of class (.*)$""".toRegex()
+
         fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
             is YamlNull -> when {
                 descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.location)
@@ -64,6 +71,55 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 else -> createFor(node.node, context, configuration, descriptor)
             }
         }
+    }
+
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
+        try {
+            return super.decodeSerializableValue(deserializer)
+        } catch (e: SerializationException) {
+            throwIfUnknownPolymorphicTypeException(e, deserializer)
+
+            throw e
+        }
+    }
+
+    private fun throwIfUnknownPolymorphicTypeException(e: Exception, deserializer: DeserializationStrategy<*>) {
+        val message = e.message ?: return
+        val match = unknownPolymorphicTypeExceptionMessage.matchEntire(message) ?: return
+        val unknownType = match.groupValues[1]
+        val className = match.groupValues[2]
+
+        val knownTypes = when (deserializer.descriptor.kind) {
+            PolymorphicKind.SEALED -> getKnownTypesForSealedType(deserializer)
+            PolymorphicKind.OPEN -> getKnownTypesForOpenType(className)
+            else -> throw IllegalArgumentException("Can't get known types for descriptor of kind ${deserializer.descriptor.kind}")
+        }
+
+        throw UnknownPolymorphicTypeException(unknownType, knownTypes, getCurrentLocation(), e)
+    }
+
+    private fun getKnownTypesForSealedType(deserializer: DeserializationStrategy<*>): Set<String> {
+        val typesDescriptor = deserializer.descriptor.getElementDescriptor(1)
+
+        return typesDescriptor.elementNames().toSet()
+    }
+
+    private fun getKnownTypesForOpenType(className: String): Set<String> {
+        val knownTypes = mutableSetOf<String>()
+
+        context.dumpTo(object : SerialModuleCollector {
+            override fun <T : Any> contextual(kClass: KClass<T>, serializer: KSerializer<T>) {}
+
+            // FIXME: ideally we'd be able to get the name as used by the SerialModule (eg. the values in 'polyBase2NamedSerializers' in SerialModuleImpl, but these aren't exposed.
+            // The serializer's descriptor's name seems to be the same value.
+            override fun <Base : Any, Sub : Base> polymorphic(baseClass: KClass<Base>, actualClass: KClass<Sub>, actualSerializer: KSerializer<Sub>) {
+                if (baseClass.qualifiedName == className) {
+                    knownTypes.add(actualSerializer.descriptor.serialName)
+                }
+            }
+        })
+
+        return knownTypes
     }
 
     override val updateMode: UpdateMode = UpdateMode.BANNED
