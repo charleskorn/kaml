@@ -397,15 +397,15 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     private var currentField = CurrentField.NotStarted
     private lateinit var contentDecoder: YamlInput
 
-    override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnTag = taggedNode::location, blockOnContent = YamlInput::getCurrentLocation)
+    override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnType = taggedNode::location, blockOnContent = YamlInput::getCurrentLocation)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         return when (currentField) {
             CurrentField.NotStarted -> {
-                currentField = CurrentField.Tag
+                currentField = CurrentField.Type
                 0
             }
-            CurrentField.Tag -> {
+            CurrentField.Type -> {
                 when (taggedNode.node) {
                     is YamlScalar -> contentDecoder = YamlScalarInput(taggedNode.node, context, configuration)
                     is YamlNull -> contentDecoder = YamlNullInput(taggedNode.node, context, configuration)
@@ -418,7 +418,7 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
         }
     }
 
-    override fun decodeNotNullMark(): Boolean = maybeCallOnContent(blockOnTag = { true }, blockOnContent = YamlInput::decodeNotNullMark)
+    override fun decodeNotNullMark(): Boolean = maybeCallOnContent(blockOnType = { true }, blockOnContent = YamlInput::decodeNotNullMark)
     override fun decodeNull(): Nothing? = maybeCallOnContent("decodeNull", blockOnContent = YamlInput::decodeNull)
     override fun decodeUnit(): Unit = maybeCallOnContent("decodeUnit", blockOnContent = YamlInput::decodeUnit)
     override fun decodeBoolean(): Boolean = maybeCallOnContent("decodeBoolean", blockOnContent = YamlInput::decodeBoolean)
@@ -429,12 +429,12 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     override fun decodeFloat(): Float = maybeCallOnContent("decodeFloat", blockOnContent = YamlInput::decodeFloat)
     override fun decodeDouble(): Double = maybeCallOnContent("decodeDouble", blockOnContent = YamlInput::decodeDouble)
     override fun decodeChar(): Char = maybeCallOnContent("decodeChar", blockOnContent = YamlInput::decodeChar)
-    override fun decodeString(): String = maybeCallOnContent(blockOnTag = taggedNode::tag, blockOnContent = YamlInput::decodeString)
+    override fun decodeString(): String = maybeCallOnContent(blockOnType = taggedNode::tag, blockOnContent = YamlInput::decodeString)
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnContent("decodeEnum") { decodeEnum(enumDescriptor) }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         return when (currentField) {
-            CurrentField.NotStarted, CurrentField.Tag -> super.beginStructure(descriptor, *typeParams)
+            CurrentField.NotStarted, CurrentField.Type -> super.beginStructure(descriptor, *typeParams)
             CurrentField.Content -> {
                 contentDecoder = createFor(taggedNode.node, context, configuration, descriptor)
 
@@ -444,18 +444,18 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     }
 
     private inline fun <T> maybeCallOnContent(functionName: String, blockOnContent: YamlInput.() -> T): T =
-        maybeCallOnContent(blockOnTag = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnContent = blockOnContent)
+        maybeCallOnContent(blockOnType = { throw UnsupportedOperationException("Can't call $functionName() on type field") }, blockOnContent = blockOnContent)
 
-    private inline fun <T> maybeCallOnContent(blockOnTag: () -> T, blockOnContent: YamlInput.() -> T): T {
+    private inline fun <T> maybeCallOnContent(blockOnType: () -> T, blockOnContent: YamlInput.() -> T): T {
         return when (currentField) {
-            CurrentField.NotStarted, CurrentField.Tag -> blockOnTag()
+            CurrentField.NotStarted, CurrentField.Type -> blockOnType()
             CurrentField.Content -> contentDecoder.blockOnContent()
         }
     }
 
     private enum class CurrentField {
         NotStarted,
-        Tag,
+        Type,
         Content
     }
 }
