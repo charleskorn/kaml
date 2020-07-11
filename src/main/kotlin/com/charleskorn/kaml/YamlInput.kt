@@ -50,7 +50,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
             is YamlMap -> when (descriptor.kind) {
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
                 is StructureKind.MAP -> YamlMapInput(node, context, configuration)
-                is UnionKind.CONTEXTUAL -> throw YamlException("Cannot use contextual serializer on YAML map", node.location)
+                is UnionKind.CONTEXTUAL -> YamlMapLikeContextualDecoder(node, context, configuration)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
             }
 
@@ -168,7 +168,27 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     }
 }
 
-private sealed class YamlMapLikeInputBase(node: YamlNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(node, context, configuration) {
+private class YamlMapLikeContextualDecoder(private val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        throw IllegalStateException("Must call beginStructure() and use returned Decoder")
+    }
+
+    override fun decodeValue(): Any {
+        throw IllegalStateException("Must call beginStructure() and use returned Decoder")
+    }
+
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        return when (descriptor.kind) {
+            is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(map, context, configuration)
+            is StructureKind.MAP -> YamlMapInput(map, context, configuration)
+            else -> throw YamlException("Can't decode YAML map into ${descriptor.kind}", map.location)
+        }
+    }
+
+    override fun getCurrentLocation(): Location = node.location
+}
+
+private sealed class YamlMapLikeInputBase(map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
     protected lateinit var currentValueDecoder: YamlInput
     protected lateinit var currentKey: YamlNode
     protected var currentlyReadingValue = false
@@ -221,7 +241,7 @@ private sealed class YamlMapLikeInputBase(node: YamlNode, context: SerialModule,
     }
 }
 
-private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
+private class YamlMapInput(map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
@@ -258,7 +278,7 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     }
 }
 
-private class YamlObjectInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
+private class YamlObjectInput(map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
 

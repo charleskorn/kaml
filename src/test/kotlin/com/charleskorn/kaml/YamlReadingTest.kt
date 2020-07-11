@@ -50,6 +50,7 @@ import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UnionKind
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.list
@@ -1322,23 +1323,23 @@ object YamlReadingTest : Spek({
         }
 
         describe("parsing values with a dynamically installed serializer") {
-            data class Inner(val name: String)
+            describe("parsing a literal with a contextual serializer") {
+                data class Inner(val name: String)
 
-            @Serializable
-            data class Container(@ContextualSerialization val inner: Inner)
+                @Serializable
+                data class Container(@ContextualSerialization val inner: Inner)
 
-            val contextSerializer = object : KSerializer<Inner> {
-                override val descriptor: SerialDescriptor
-                    get() = String.serializer().descriptor
+                val contextSerializer = object : KSerializer<Inner> {
+                    override val descriptor: SerialDescriptor
+                        get() = String.serializer().descriptor
 
-                override fun deserialize(decoder: Decoder): Inner = Inner("from context serializer")
-                override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
-            }
+                    override fun deserialize(decoder: Decoder): Inner = Inner("from context serializer")
+                    override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
+                }
 
-            val module = serializersModuleOf(Inner::class, contextSerializer)
-            val parser = Yaml(context = module)
+                val module = serializersModuleOf(Inner::class, contextSerializer)
+                val parser = Yaml(context = module)
 
-            context("given some input that should be parsed with a dynamically installed serializer") {
                 val input = """
                     inner: this is the input
                 """.trimIndent()
@@ -1347,6 +1348,88 @@ object YamlReadingTest : Spek({
 
                 it("deserializes it using the dynamically installed serializer") {
                     expect(result).toBe(Container(Inner("from context serializer")))
+                }
+            }
+
+            listOf(StructureKind.CLASS, StructureKind.OBJECT).forEach { kind ->
+                describe("parsing a ${kind.toString().toLowerCase()} with a contextual serializer") {
+                    data class Inner(val name: String)
+
+                    @Serializable
+                    data class Container(@ContextualSerialization val inner: Inner)
+
+                    val contextSerializer = object : KSerializer<Inner> {
+                        override val descriptor = SerialDescriptor("Inner", kind) {
+                            element("thing", String.serializer().descriptor)
+                        }
+
+                        override fun deserialize(decoder: Decoder): Inner {
+                            val objectDecoder = decoder.beginStructure(descriptor)
+                            val index = objectDecoder.decodeElementIndex(descriptor)
+                            val name = objectDecoder.decodeStringElement(descriptor, index)
+                            objectDecoder.endStructure(descriptor)
+
+                            return Inner("$name, from context serializer")
+                        }
+
+                        override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
+                    }
+
+                    val module = serializersModuleOf(Inner::class, contextSerializer)
+                    val parser = Yaml(context = module)
+
+                    val input = """
+                        inner:
+                            thing: this is the input
+                    """.trimIndent()
+
+                    val result = parser.parse(Container.serializer(), input)
+
+                    it("deserializes it using the dynamically installed serializer") {
+                        expect(result).toBe(Container(Inner("this is the input, from context serializer")))
+                    }
+                }
+            }
+
+            describe("parsing a map with a contextual serializer") {
+                data class Inner(val name: String)
+
+                @Serializable
+                data class Container(@ContextualSerialization val inner: Inner)
+
+                val contextSerializer = object : KSerializer<Inner> {
+                    override val descriptor = SerialDescriptor("Inner", StructureKind.MAP) {
+                        element("key", String.serializer().descriptor)
+                        element("value", String.serializer().descriptor)
+                    }
+
+                    override fun deserialize(decoder: Decoder): Inner {
+                        val objectDecoder = decoder.beginStructure(descriptor)
+                        val keyIndex = objectDecoder.decodeElementIndex(descriptor)
+                        val key = objectDecoder.decodeStringElement(descriptor, keyIndex)
+                        val valueIndex = objectDecoder.decodeElementIndex(descriptor)
+                        val value = objectDecoder.decodeStringElement(descriptor, valueIndex)
+
+                        objectDecoder.endStructure(descriptor)
+
+                        return Inner("$key: $value, from context serializer")
+                    }
+
+                    override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
+                }
+
+                val module = serializersModuleOf(Inner::class, contextSerializer)
+                val parser = Yaml(context = module)
+
+                val input = """
+                    inner:
+                        thing: this is the input
+                """.trimIndent()
+
+                val result = parser.parse(Container.serializer(), input)
+
+                it("deserializes it using the dynamically installed serializer") {
+                    expect(result).toBe(Container(Inner("thing: this is the input, from context serializer")))
                 }
             }
         }
