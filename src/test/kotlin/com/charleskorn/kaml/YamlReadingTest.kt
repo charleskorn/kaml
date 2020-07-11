@@ -49,7 +49,7 @@ import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
+import kotlinx.serialization.UnionKind
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.list
 import kotlinx.serialization.builtins.nullable
@@ -1577,18 +1577,16 @@ private data class StructureWithLocationThrowingSerializer(
 
 private data class CustomSerializedValue(val thing: String)
 
-@Serializer(forClass = CustomSerializedValue::class)
-private object LocationThrowingSerializer : KSerializer<CustomSerializedValue> {
-    override val descriptor: SerialDescriptor
-        get() = String.serializer().descriptor
+private object LocationThrowingSerializer : KSerializer<Any> {
+    override val descriptor = SerialDescriptor(LocationThrowingSerializer::class.qualifiedName!!, UnionKind.CONTEXTUAL)
 
-    override fun deserialize(decoder: Decoder): CustomSerializedValue {
+    override fun deserialize(decoder: Decoder): Any {
         val location = (decoder as YamlInput).getCurrentLocation()
 
         throw LocationInformationException("Serializer called with location: ${location.line}, ${location.column}")
     }
 
-    override fun serialize(encoder: Encoder, value: CustomSerializedValue) = throw UnsupportedOperationException()
+    override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
 }
 
 private class LocationInformationException(message: String) : RuntimeException(message)

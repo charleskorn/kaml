@@ -23,8 +23,11 @@ import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicKind
+import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.SerialKind
 import kotlinx.serialization.StructureKind
+import kotlinx.serialization.UnionKind
 import kotlinx.serialization.UpdateMode
 import kotlinx.serialization.builtins.AbstractDecoder
 import kotlinx.serialization.modules.SerialModule
@@ -32,9 +35,18 @@ import kotlinx.serialization.modules.SerialModule
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : AbstractDecoder() {
     companion object {
         fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
-            is YamlScalar -> YamlScalarInput(node, context, configuration)
             is YamlNull -> YamlNullInput(node, context, configuration)
-            is YamlList -> YamlListInput(node, context, configuration)
+
+            is YamlScalar -> when (descriptor.kind) {
+                is PrimitiveKind, UnionKind.ENUM_KIND, UnionKind.CONTEXTUAL -> YamlScalarInput(node, context, configuration)
+                else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.location)
+            }
+
+            is YamlList -> when (descriptor.kind) {
+                is StructureKind.LIST, UnionKind.CONTEXTUAL -> YamlListInput(node, context, configuration)
+                else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.location)
+            }
+
             is YamlMap -> YamlMapInput(node, context, configuration)
             is YamlTaggedNode -> if (descriptor.kind is PolymorphicKind) {
                 YamlTaggedInput(node, context, configuration, descriptor)
@@ -42,6 +54,26 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 createFor(node.node, context, configuration, descriptor)
             }
         }
+
+        private val SerialKind.friendlyDescription: String
+            get() {
+                return when (this) {
+                    is StructureKind.MAP -> "a map"
+                    is StructureKind.CLASS -> "an object"
+                    is StructureKind.LIST -> "a list"
+                    is PrimitiveKind.STRING -> "a string"
+                    is PrimitiveKind.BOOLEAN -> "a boolean"
+                    is PrimitiveKind.BYTE -> "a byte"
+                    is PrimitiveKind.CHAR -> "a character"
+                    is PrimitiveKind.DOUBLE -> "a double"
+                    is PrimitiveKind.FLOAT -> "a float"
+                    is PrimitiveKind.INT -> "an integer"
+                    is PrimitiveKind.SHORT -> "a short"
+                    is PrimitiveKind.LONG -> "a long"
+                    is UnionKind.ENUM_KIND -> "an enumeration value"
+                    else -> "a $this"
+                }
+            }
     }
 
     override val updateMode: UpdateMode = UpdateMode.BANNED
@@ -73,16 +105,6 @@ private class YamlScalarInput(val scalar: YamlScalar, context: SerialModule, con
             .joinToString(", ")
 
         throw YamlScalarFormatException("Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices", scalar.location, scalar.content)
-    }
-
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        when (descriptor.kind) {
-            is StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a scalar value", scalar.location)
-            is StructureKind.CLASS -> throw IncorrectTypeException("Expected an object, but got a scalar value", scalar.location)
-            is StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a scalar value", scalar.location)
-        }
-
-        return super.beginStructure(descriptor, *typeParams)
     }
 
     override fun getCurrentLocation(): Location = scalar.location
@@ -153,11 +175,7 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
             return currentElementDecoder.beginStructure(descriptor, *typeParams)
         }
 
-        when (descriptor.kind) {
-            is StructureKind.MAP -> throw IncorrectTypeException("Expected a map, but got a list", list.location)
-            is StructureKind.CLASS -> throw IncorrectTypeException("Expected an object, but got a list", list.location)
-            else -> return super.beginStructure(descriptor, *typeParams)
-        }
+        return super.beginStructure(descriptor, *typeParams)
     }
 
     override fun getCurrentLocation(): Location {
@@ -202,7 +220,12 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
                 }
             }
 
-            currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration, desc.getElementDescriptor(fieldDescriptorIndex))
+            try {
+                currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration, desc.getElementDescriptor(fieldDescriptorIndex))
+            } catch (e: IncorrectTypeException) {
+                throw InvalidPropertyValueException(getPropertyName(key), e.message, e.location, e)
+            }
+
             currentlyReadingValue = true
             nextIndex++
 
@@ -220,7 +243,12 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         currentlyReadingValue = nextIndex % 2 != 0
 
         currentValueDecoder = when (currentlyReadingValue) {
-            true -> createFor(currentEntry.value, context, configuration, descriptor.getElementDescriptor(1))
+            true -> try {
+                createFor(currentEntry.value, context, configuration, descriptor.getElementDescriptor(1))
+            } catch (e: IncorrectTypeException) {
+                throw InvalidPropertyValueException(getPropertyName(currentEntry.key), e.message, e.location, e)
+            }
+
             false -> createFor(currentEntry.key, context, configuration, descriptor.getElementDescriptor(0))
         }
 
@@ -317,13 +345,11 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
      * index 1 -> child node
      */
     private var currentIndex = -1
-    private var isPolymorphic = false
     private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration, descriptor.getElementDescriptor(1))
 
     override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = taggedNode::location, blockOnChild = YamlInput::getCurrentLocation)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        descriptor.calculatePolymorphic()
         return when (++currentIndex) {
             0, 1 -> currentIndex
             else -> READ_DONE
@@ -345,19 +371,14 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescriptor) }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        descriptor.calculatePolymorphic()
         return maybeCallOnChild(blockOnTag = { super.beginStructure(descriptor, *typeParams) }) { beginStructure(descriptor, *typeParams) }
-    }
-
-    private fun SerialDescriptor.calculatePolymorphic() {
-        isPolymorphic = kind is PolymorphicKind
     }
 
     private inline fun <T> maybeCallOnChild(functionName: String, blockOnChild: YamlInput.() -> T): T =
         maybeCallOnChild(blockOnTag = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnChild = blockOnChild)
 
     private inline fun <T> maybeCallOnChild(blockOnTag: () -> T, blockOnChild: YamlInput.() -> T): T {
-        return if (isPolymorphic && currentIndex != 1) {
+        return if (currentIndex != 1) {
             blockOnTag()
         } else {
             childDecoder.blockOnChild()
