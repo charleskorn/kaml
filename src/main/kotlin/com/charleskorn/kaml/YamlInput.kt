@@ -340,48 +340,56 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
 }
 
 private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor) : YamlInput(taggedNode, context, configuration) {
-    /**
-     * index 0 -> tag
-     * index 1 -> child node
-     */
-    private var currentIndex = -1
-    private val childDecoder: YamlInput = createFor(taggedNode.node, context, configuration, descriptor.getElementDescriptor(1))
+    private var currentField = CurrentField.NotStarted
+    private val contentDecoder: YamlInput = createFor(taggedNode.node, context, configuration, descriptor.getElementDescriptor(1))
 
-    override fun getCurrentLocation(): Location = maybeCallOnChild(blockOnTag = taggedNode::location, blockOnChild = YamlInput::getCurrentLocation)
+    override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnTag = taggedNode::location, blockOnContent = YamlInput::getCurrentLocation)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        return when (++currentIndex) {
-            0, 1 -> currentIndex
-            else -> READ_DONE
+        return when (currentField) {
+            CurrentField.NotStarted -> {
+                currentField = CurrentField.Tag
+                0
+            }
+            CurrentField.Tag -> {
+                currentField = CurrentField.Content
+                1
+            }
+            CurrentField.Content -> READ_DONE
         }
     }
 
-    override fun decodeNotNullMark(): Boolean = maybeCallOnChild(blockOnTag = { true }, blockOnChild = YamlInput::decodeNotNullMark)
-    override fun decodeNull(): Nothing? = maybeCallOnChild("decodeNull", blockOnChild = YamlInput::decodeNull)
-    override fun decodeUnit(): Unit = maybeCallOnChild("decodeUnit", blockOnChild = YamlInput::decodeUnit)
-    override fun decodeBoolean(): Boolean = maybeCallOnChild("decodeBoolean", blockOnChild = YamlInput::decodeBoolean)
-    override fun decodeByte(): Byte = maybeCallOnChild("decodeByte", blockOnChild = YamlInput::decodeByte)
-    override fun decodeShort(): Short = maybeCallOnChild("decodeShort", blockOnChild = YamlInput::decodeShort)
-    override fun decodeInt(): Int = maybeCallOnChild("decodeInt", blockOnChild = YamlInput::decodeInt)
-    override fun decodeLong(): Long = maybeCallOnChild("decodeLong", blockOnChild = YamlInput::decodeLong)
-    override fun decodeFloat(): Float = maybeCallOnChild("decodeFloat", blockOnChild = YamlInput::decodeFloat)
-    override fun decodeDouble(): Double = maybeCallOnChild("decodeDouble", blockOnChild = YamlInput::decodeDouble)
-    override fun decodeChar(): Char = maybeCallOnChild("decodeChar", blockOnChild = YamlInput::decodeChar)
-    override fun decodeString(): String = maybeCallOnChild(blockOnTag = taggedNode::tag, blockOnChild = YamlInput::decodeString)
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnChild("decodeEnum") { decodeEnum(enumDescriptor) }
+    override fun decodeNotNullMark(): Boolean = maybeCallOnContent(blockOnTag = { true }, blockOnContent = YamlInput::decodeNotNullMark)
+    override fun decodeNull(): Nothing? = maybeCallOnContent("decodeNull", blockOnContent = YamlInput::decodeNull)
+    override fun decodeUnit(): Unit = maybeCallOnContent("decodeUnit", blockOnContent = YamlInput::decodeUnit)
+    override fun decodeBoolean(): Boolean = maybeCallOnContent("decodeBoolean", blockOnContent = YamlInput::decodeBoolean)
+    override fun decodeByte(): Byte = maybeCallOnContent("decodeByte", blockOnContent = YamlInput::decodeByte)
+    override fun decodeShort(): Short = maybeCallOnContent("decodeShort", blockOnContent = YamlInput::decodeShort)
+    override fun decodeInt(): Int = maybeCallOnContent("decodeInt", blockOnContent = YamlInput::decodeInt)
+    override fun decodeLong(): Long = maybeCallOnContent("decodeLong", blockOnContent = YamlInput::decodeLong)
+    override fun decodeFloat(): Float = maybeCallOnContent("decodeFloat", blockOnContent = YamlInput::decodeFloat)
+    override fun decodeDouble(): Double = maybeCallOnContent("decodeDouble", blockOnContent = YamlInput::decodeDouble)
+    override fun decodeChar(): Char = maybeCallOnContent("decodeChar", blockOnContent = YamlInput::decodeChar)
+    override fun decodeString(): String = maybeCallOnContent(blockOnTag = taggedNode::tag, blockOnContent = YamlInput::decodeString)
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnContent("decodeEnum") { decodeEnum(enumDescriptor) }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        return maybeCallOnChild(blockOnTag = { super.beginStructure(descriptor, *typeParams) }) { beginStructure(descriptor, *typeParams) }
+        return maybeCallOnContent(blockOnTag = { super.beginStructure(descriptor, *typeParams) }) { beginStructure(descriptor, *typeParams) }
     }
 
-    private inline fun <T> maybeCallOnChild(functionName: String, blockOnChild: YamlInput.() -> T): T =
-        maybeCallOnChild(blockOnTag = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnChild = blockOnChild)
+    private inline fun <T> maybeCallOnContent(functionName: String, blockOnContent: YamlInput.() -> T): T =
+        maybeCallOnContent(blockOnTag = { throw IllegalArgumentException("can't call $functionName on tag") }, blockOnContent = blockOnContent)
 
-    private inline fun <T> maybeCallOnChild(blockOnTag: () -> T, blockOnChild: YamlInput.() -> T): T {
-        return if (currentIndex != 1) {
-            blockOnTag()
-        } else {
-            childDecoder.blockOnChild()
+    private inline fun <T> maybeCallOnContent(blockOnTag: () -> T, blockOnContent: YamlInput.() -> T): T {
+        return when (currentField) {
+            CurrentField.NotStarted, CurrentField.Tag -> blockOnTag()
+            CurrentField.Content -> contentDecoder.blockOnContent()
         }
+    }
+
+    private enum class CurrentField {
+        NotStarted,
+        Tag,
+        Content
     }
 }
