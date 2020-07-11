@@ -47,7 +47,11 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.location)
             }
 
-            is YamlMap -> YamlMapInput(node, context, configuration)
+            is YamlMap -> when (descriptor.kind) {
+                is StructureKind.MAP, StructureKind.OBJECT, StructureKind.CLASS, UnionKind.CONTEXTUAL -> YamlMapInput(node, context, configuration)
+                else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
+            }
+
             is YamlTaggedNode -> if (descriptor.kind is PolymorphicKind) {
                 YamlTaggedInput(node, context, configuration, descriptor)
             } else {
@@ -276,24 +280,16 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         return fromCurrentValue { decodeNotNullMark() }
     }
 
-    override fun decodeString(): String = checkTypeAndDecodeFromCurrentValue("a string") { decodeString() }
-    override fun decodeInt(): Int = checkTypeAndDecodeFromCurrentValue("an integer") { decodeInt() }
-    override fun decodeLong(): Long = checkTypeAndDecodeFromCurrentValue("a long") { decodeLong() }
-    override fun decodeShort(): Short = checkTypeAndDecodeFromCurrentValue("a short") { decodeShort() }
-    override fun decodeByte(): Byte = checkTypeAndDecodeFromCurrentValue("a byte") { decodeByte() }
-    override fun decodeDouble(): Double = checkTypeAndDecodeFromCurrentValue("a double") { decodeDouble() }
-    override fun decodeFloat(): Float = checkTypeAndDecodeFromCurrentValue("a float") { decodeFloat() }
-    override fun decodeBoolean(): Boolean = checkTypeAndDecodeFromCurrentValue("a boolean") { decodeBoolean() }
-    override fun decodeChar(): Char = checkTypeAndDecodeFromCurrentValue("a character") { decodeChar() }
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = checkTypeAndDecodeFromCurrentValue("an enumeration value") { decodeEnum(enumDescriptor) }
-
-    private fun <T> checkTypeAndDecodeFromCurrentValue(expectedTypeDescription: String, action: YamlInput.() -> T): T {
-        if (!haveStartedReadingEntries) {
-            throw IncorrectTypeException("Expected $expectedTypeDescription, but got a map", map.location)
-        }
-
-        return fromCurrentValue(action)
-    }
+    override fun decodeString(): String = fromCurrentValue { decodeString() }
+    override fun decodeInt(): Int = fromCurrentValue { decodeInt() }
+    override fun decodeLong(): Long = fromCurrentValue { decodeLong() }
+    override fun decodeShort(): Short = fromCurrentValue { decodeShort() }
+    override fun decodeByte(): Byte = fromCurrentValue { decodeByte() }
+    override fun decodeDouble(): Double = fromCurrentValue { decodeDouble() }
+    override fun decodeFloat(): Float = fromCurrentValue { decodeFloat() }
+    override fun decodeBoolean(): Boolean = fromCurrentValue { decodeBoolean() }
+    override fun decodeChar(): Char = fromCurrentValue { decodeChar() }
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = fromCurrentValue { decodeEnum(enumDescriptor) }
 
     private fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
         try {
@@ -318,7 +314,6 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
         readMode = when (descriptor.kind) {
             StructureKind.MAP -> MapReadMode.Map
             StructureKind.CLASS, StructureKind.OBJECT -> MapReadMode.Object
-            StructureKind.LIST -> throw IncorrectTypeException("Expected a list, but got a map", map.location)
             else -> throw YamlException("Can't decode into ${descriptor.kind}", map.location)
         }
 
