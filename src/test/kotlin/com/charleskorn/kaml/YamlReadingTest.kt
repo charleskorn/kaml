@@ -959,6 +959,23 @@ object YamlReadingTest : Spek({
                 }
             }
 
+            context("given some untagged null input for a polymorphic value") {
+                val input = """
+                    test: null
+                """.trimIndent()
+
+                context("parsing that input") {
+                    it("throws an exception with the correct location information") {
+                        expect({ Yaml.default.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
+                            line { toBe(1) }
+                            column { toBe(7) }
+                            cause<MissingTypeTagException>()
+                        }
+                    }
+                }
+            }
+
             context("given some tagged input representing a list of objects where the resulting type should be a sealed class") {
                 val input = """
                     - element: !<sealedString>

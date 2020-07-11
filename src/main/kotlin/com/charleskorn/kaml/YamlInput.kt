@@ -35,7 +35,10 @@ import kotlinx.serialization.modules.SerialModule
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : AbstractDecoder() {
     companion object {
         fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
-            is YamlNull -> YamlNullInput(node, context, configuration)
+            is YamlNull -> when {
+                descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.location)
+                else -> YamlNullInput(node, context, configuration)
+            }
 
             is YamlScalar -> when (descriptor.kind) {
                 is PrimitiveKind, UnionKind.ENUM_KIND, UnionKind.CONTEXTUAL -> YamlScalarInput(node, context, configuration)
