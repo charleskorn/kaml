@@ -51,7 +51,7 @@ val result = Yaml.default.stringify(Team.serializer(), input)
 println(result)
 ```
 
-## Supported YAML features
+## Supported features
 
 * Scalars, including strings, booleans, integers and floats
 * [Sequences (lists)](https://yaml.org/type/seq.html)
@@ -59,6 +59,7 @@ println(result)
 * [Nulls](https://yaml.org/type/null.html)
 * [Aliases and anchors](https://yaml.org/spec/1.2/spec.html#id2765878)
 * [Merging aliases to form one map](https://yaml.org/type/merge.html)
+* [Polymorphism](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/polymorphism.md)
 * [Docker Compose-style extension fields](https://medium.com/@kinghuang/docker-compose-anchors-aliases-extensions-a1e4105d70bd)
 
   Specify the extension prefix by setting `extensionDefinitionPrefix` when creating an instance of `Yaml`.
