@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import ch.tutteli.atrium.api.fluent.en_GB.cause
 import ch.tutteli.atrium.api.fluent.en_GB.message
 import ch.tutteli.atrium.api.fluent.en_GB.toBe
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
@@ -908,7 +909,7 @@ object YamlReadingTest : Spek({
                 }
             }
 
-            context("given some tagged input representing an object where the resulting type should be a sealed class (string)") {
+            context("given some tagged input representing an object where the resulting type should be a sealed class") {
                 val input = """
                     element: !<sealedString>
                         value: "asdfg"
@@ -919,6 +920,41 @@ object YamlReadingTest : Spek({
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
+                    }
+                }
+            }
+
+            context("given some untagged input for a polymorphic class") {
+                val input = """
+                    element:
+                        value: "asdfg"
+                """.trimIndent()
+
+                context("parsing that input") {
+                    it("throws an exception with the correct location information") {
+                        expect({ Yaml.default.parse(SealedWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            message { toBe("Value for 'element' is invalid: Value is missing a type tag (eg. !<type>)") }
+                            line { toBe(2) }
+                            column { toBe(5) }
+                            cause<MissingTypeTagException>()
+                        }
+                    }
+                }
+            }
+
+            context("given some untagged input for a polymorphic value") {
+                val input = """
+                    test: "asdfg"
+                """.trimIndent()
+
+                context("parsing that input") {
+                    it("throws an exception with the correct location information") {
+                        expect({ Yaml.default.parse(SimpleWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
+                            line { toBe(1) }
+                            column { toBe(7) }
+                            cause<MissingTypeTagException>()
+                        }
                     }
                 }
             }

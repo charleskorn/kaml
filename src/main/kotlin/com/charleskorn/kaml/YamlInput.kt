@@ -39,6 +39,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
 
             is YamlScalar -> when (descriptor.kind) {
                 is PrimitiveKind, UnionKind.ENUM_KIND, UnionKind.CONTEXTUAL -> YamlScalarInput(node, context, configuration)
+                is PolymorphicKind -> throw MissingTypeTagException(node.location)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.location)
             }
 
@@ -51,6 +52,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
                 is StructureKind.MAP -> YamlMapInput(node, context, configuration)
                 is UnionKind.CONTEXTUAL -> YamlMapLikeContextualDecoder(node, context, configuration)
+                is PolymorphicKind -> throw MissingTypeTagException(node.location)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
             }
 

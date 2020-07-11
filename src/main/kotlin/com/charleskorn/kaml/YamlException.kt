@@ -47,7 +47,9 @@ class UnknownPropertyException(val propertyName: String, val validPropertyNames:
 
 class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
 
-class IncorrectTypeException(message: String, location: Location) : YamlException(message, location)
+open class IncorrectTypeException(message: String, location: Location) : YamlException(message, location)
+
+class MissingTypeTagException(location: Location) : IncorrectTypeException("Value is missing a type tag (eg. !<type>)", location)
 
 class UnknownAnchorException(val anchorName: String, location: Location) :
     YamlException("Unknown anchor '$anchorName'.", location)
