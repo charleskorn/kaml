@@ -1008,7 +1008,7 @@ object YamlReadingTest : Spek({
 
             val simpleYaml = Yaml(context = polymorphicModule)
 
-            context("given some simple int input representing an object") {
+            context("given a polymorphic value on an object") {
                 val input = """
                     test: !<simpleInt> 42
                 """.trimIndent()
