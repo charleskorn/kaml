@@ -27,6 +27,7 @@ import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleBoolean
 import com.charleskorn.kaml.testobjects.SimpleByte
 import com.charleskorn.kaml.testobjects.SimpleChar
+import com.charleskorn.kaml.testobjects.SimpleClass
 import com.charleskorn.kaml.testobjects.SimpleDouble
 import com.charleskorn.kaml.testobjects.SimpleEnum
 import com.charleskorn.kaml.testobjects.SimpleFloat
@@ -845,6 +846,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     val result = Yaml.default.parse(SealedWrapper.serializer(), input)
+
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedInt(3)))
                     }
@@ -852,6 +854,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input as map") {
                     val result = Yaml.default.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), Int.serializer())), input)
+
                     it("deserializes it to a Map ignoring the tag") {
                         expect(result).toBe(mapOf("element" to mapOf("value" to 3)))
                     }
@@ -897,7 +900,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.parse(LocationThrowingMapSerializer, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -958,6 +961,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     val result = simpleYaml.parse(SimpleWrapper.serializer(), input)
+
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(SimpleWrapper(SimpleInt(42)))
                     }
@@ -980,10 +984,14 @@ object YamlReadingTest : Spek({
                     - test: !<simpleEnum> TEST2
                     - test: !<simpleNullableInt> 4
                     - test: !<simpleNullableInt> null
+                    - test: !<simpleClass>
+                        value: thing
+                        otherValue: otherThing
                 """.trimIndent()
 
                 context("parsing that input") {
                     val result = simpleYaml.parse(SimpleWrapper.serializer().list, input)
+
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(
                             listOf(
@@ -1000,7 +1008,8 @@ object YamlReadingTest : Spek({
                                 SimpleWrapper(SimpleString("42")),
                                 SimpleWrapper(SimpleEnum.TEST2),
                                 SimpleWrapper(SimpleNullableInt(4)),
-                                SimpleWrapper(SimpleNullableInt(null))
+                                SimpleWrapper(SimpleNullableInt(null)),
+                                SimpleWrapper(SimpleClass("thing", "otherThing"))
                             )
                         )
                     }
@@ -1579,6 +1588,18 @@ private data class CustomSerializedValue(val thing: String)
 
 private object LocationThrowingSerializer : KSerializer<Any> {
     override val descriptor = SerialDescriptor(LocationThrowingSerializer::class.qualifiedName!!, UnionKind.CONTEXTUAL)
+
+    override fun deserialize(decoder: Decoder): Any {
+        val location = (decoder as YamlInput).getCurrentLocation()
+
+        throw LocationInformationException("Serializer called with location: ${location.line}, ${location.column}")
+    }
+
+    override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
+}
+
+private object LocationThrowingMapSerializer : KSerializer<Any> {
+    override val descriptor: SerialDescriptor = MapSerializer(String.serializer(), String.serializer()).descriptor
 
     override fun deserialize(decoder: Decoder): Any {
         val location = (decoder as YamlInput).getCurrentLocation()

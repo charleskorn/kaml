@@ -48,14 +48,15 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
             }
 
             is YamlMap -> when (descriptor.kind) {
-                is StructureKind.MAP, StructureKind.OBJECT, StructureKind.CLASS, UnionKind.CONTEXTUAL -> YamlMapInput(node, context, configuration)
+                is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
+                is StructureKind.MAP -> YamlMapInput(node, context, configuration, descriptor)
+                is UnionKind.CONTEXTUAL -> throw YamlException("Cannot use contextual serializer on YAML map", node.location)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
             }
 
-            is YamlTaggedNode -> if (descriptor.kind is PolymorphicKind) {
-                YamlTaggedInput(node, context, configuration, descriptor)
-            } else {
-                createFor(node.node, context, configuration, descriptor)
+            is YamlTaggedNode -> when (descriptor.kind) {
+                is PolymorphicKind -> YamlTaggedInput(node, context, configuration)
+                else -> createFor(node.node, context, configuration, descriptor)
             }
         }
 
@@ -191,86 +192,10 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     }
 }
 
-private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
-    private val entriesList = map.entries.entries.toList()
-    private var nextIndex = 0
-    private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
-    private lateinit var currentValueDecoder: YamlInput
-    private lateinit var readMode: MapReadMode
-    private var currentlyReadingValue: Boolean = false
-
-    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = when (readMode) {
-        MapReadMode.Object -> decodeElementIndexForObject(descriptor)
-        MapReadMode.Map -> decodeElementIndexForMap(descriptor)
-    }
-
-    private fun decodeElementIndexForObject(desc: SerialDescriptor): Int {
-        while (true) {
-            if (nextIndex == entriesList.size) {
-                return READ_DONE
-            }
-
-            currentEntry = entriesList[nextIndex]
-            val key = currentEntry.key
-            val name = getPropertyName(key)
-            val fieldDescriptorIndex = desc.getElementIndex(name)
-
-            if (fieldDescriptorIndex == UNKNOWN_NAME) {
-                if (configuration.strictMode) {
-                    throwUnknownProperty(name, key.location, desc)
-                } else {
-                    nextIndex++
-                    continue
-                }
-            }
-
-            try {
-                currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration, desc.getElementDescriptor(fieldDescriptorIndex))
-            } catch (e: IncorrectTypeException) {
-                throw InvalidPropertyValueException(getPropertyName(key), e.message, e.location, e)
-            }
-
-            currentlyReadingValue = true
-            nextIndex++
-
-            return fieldDescriptorIndex
-        }
-    }
-
-    private fun decodeElementIndexForMap(descriptor: SerialDescriptor): Int {
-        if (nextIndex == entriesList.size * 2) {
-            return READ_DONE
-        }
-
-        val entryIndex = nextIndex / 2
-        currentEntry = entriesList[entryIndex]
-        currentlyReadingValue = nextIndex % 2 != 0
-
-        currentValueDecoder = when (currentlyReadingValue) {
-            true -> try {
-                createFor(currentEntry.value, context, configuration, descriptor.getElementDescriptor(1))
-            } catch (e: IncorrectTypeException) {
-                throw InvalidPropertyValueException(getPropertyName(currentEntry.key), e.message, e.location, e)
-            }
-
-            false -> createFor(currentEntry.key, context, configuration, descriptor.getElementDescriptor(0))
-        }
-
-        return nextIndex++
-    }
-
-    private fun getPropertyName(key: YamlNode): String = when (key) {
-        is YamlScalar -> key.content
-        is YamlNull, is YamlMap, is YamlList, is YamlTaggedNode -> throw MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", key.location)
-    }
-
-    private fun throwUnknownProperty(name: String, location: Location, desc: SerialDescriptor): Nothing {
-        val knownPropertyNames = (0 until desc.elementsCount)
-            .map { desc.getElementName(it) }
-            .toSet()
-
-        throw UnknownPropertyException(name, knownPropertyNames, location)
-    }
+private sealed class YamlMapLikeInputBase(node: YamlNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(node, context, configuration) {
+    protected lateinit var currentValueDecoder: YamlInput
+    protected lateinit var currentKey: YamlNode
+    protected var currentlyReadingValue = false
 
     override fun decodeNotNullMark(): Boolean {
         if (!haveStartedReadingEntries) {
@@ -291,52 +216,129 @@ private class YamlMapInput(val map: YamlMap, context: SerialModule, configuratio
     override fun decodeChar(): Char = fromCurrentValue { decodeChar() }
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = fromCurrentValue { decodeEnum(enumDescriptor) }
 
-    private fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
+    protected fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
         try {
             return action(currentValueDecoder)
         } catch (e: YamlException) {
             if (currentlyReadingValue) {
-                throw InvalidPropertyValueException(getPropertyName(currentEntry.key), e.message, e.location, e)
+                throw InvalidPropertyValueException(getPropertyName(currentKey), e.message, e.location, e)
             } else {
                 throw e
             }
         }
     }
 
-    private val haveStartedReadingEntries: Boolean
-        get() = nextIndex > 0
+    protected fun getPropertyName(key: YamlNode): String = when (key) {
+        is YamlScalar -> key.content
+        is YamlNull, is YamlMap, is YamlList, is YamlTaggedNode -> throw MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", key.location)
+    }
+
+    protected val haveStartedReadingEntries: Boolean
+        get() = this::currentValueDecoder.isInitialized
+
+    override fun getCurrentLocation(): Location {
+        return if (haveStartedReadingEntries) {
+            currentValueDecoder.node.location
+        } else {
+            node.location
+        }
+    }
+}
+
+private class YamlMapInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration, val mapDescriptor: SerialDescriptor) : YamlMapLikeInputBase(map, context, configuration) {
+    private val entriesList = map.entries.entries.toList()
+    private var nextIndex = 0
+    private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
+
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        if (nextIndex == entriesList.size * 2) {
+            return READ_DONE
+        }
+
+        val entryIndex = nextIndex / 2
+        currentEntry = entriesList[entryIndex]
+        currentKey = currentEntry.key
+        currentlyReadingValue = nextIndex % 2 != 0
+
+        currentValueDecoder = when (currentlyReadingValue) {
+            true -> try {
+                createFor(currentEntry.value, context, configuration, descriptor.getElementDescriptor(1))
+            } catch (e: IncorrectTypeException) {
+                throw InvalidPropertyValueException(getPropertyName(currentKey), e.message, e.location, e)
+            }
+
+            false -> createFor(currentKey, context, configuration, descriptor.getElementDescriptor(0))
+        }
+
+        return nextIndex++
+    }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
         if (haveStartedReadingEntries) {
             return fromCurrentValue { beginStructure(descriptor, *typeParams) }
         }
 
-        readMode = when (descriptor.kind) {
-            StructureKind.MAP -> MapReadMode.Map
-            StructureKind.CLASS, StructureKind.OBJECT -> MapReadMode.Object
-            else -> throw YamlException("Can't decode into ${descriptor.kind}", map.location)
+        return super.beginStructure(descriptor, *typeParams)
+    }
+}
+
+private class YamlObjectInput(val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
+    private val entriesList = map.entries.entries.toList()
+    private var nextIndex = 0
+
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        while (true) {
+            if (nextIndex == entriesList.size) {
+                return READ_DONE
+            }
+
+            val currentEntry = entriesList[nextIndex]
+            currentKey = currentEntry.key
+            val name = getPropertyName(currentKey)
+            val fieldDescriptorIndex = descriptor.getElementIndex(name)
+
+            if (fieldDescriptorIndex == UNKNOWN_NAME) {
+                if (configuration.strictMode) {
+                    throwUnknownProperty(name, currentKey.location, descriptor)
+                } else {
+                    nextIndex++
+                    continue
+                }
+            }
+
+            try {
+                currentValueDecoder = createFor(entriesList[nextIndex].value, context, configuration, descriptor.getElementDescriptor(fieldDescriptorIndex))
+            } catch (e: IncorrectTypeException) {
+                throw InvalidPropertyValueException(getPropertyName(currentKey), e.message, e.location, e)
+            }
+
+            currentlyReadingValue = true
+            nextIndex++
+
+            return fieldDescriptorIndex
+        }
+    }
+
+    private fun throwUnknownProperty(name: String, location: Location, desc: SerialDescriptor): Nothing {
+        val knownPropertyNames = (0 until desc.elementsCount)
+            .map { desc.getElementName(it) }
+            .toSet()
+
+        throw UnknownPropertyException(name, knownPropertyNames, location)
+    }
+
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        if (haveStartedReadingEntries) {
+            return fromCurrentValue { beginStructure(descriptor, *typeParams) }
         }
 
         return super.beginStructure(descriptor, *typeParams)
     }
-
-    private enum class MapReadMode {
-        Object,
-        Map
-    }
-
-    override fun getCurrentLocation(): Location {
-        return if (haveStartedReadingEntries) {
-            currentValueDecoder.node.location
-        } else {
-            map.location
-        }
-    }
 }
 
-private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor) : YamlInput(taggedNode, context, configuration) {
+private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(taggedNode, context, configuration) {
     private var currentField = CurrentField.NotStarted
-    private val contentDecoder: YamlInput = createFor(taggedNode.node, context, configuration, descriptor.getElementDescriptor(1))
+    private lateinit var contentDecoder: YamlInput
 
     override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnTag = taggedNode::location, blockOnContent = YamlInput::getCurrentLocation)
 
@@ -347,6 +349,11 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
                 0
             }
             CurrentField.Tag -> {
+                when (taggedNode.node) {
+                    is YamlScalar -> contentDecoder = YamlScalarInput(taggedNode.node, context, configuration)
+                    is YamlNull -> contentDecoder = YamlNullInput(taggedNode.node, context, configuration)
+                }
+
                 currentField = CurrentField.Content
                 1
             }
@@ -369,7 +376,14 @@ private class YamlTaggedInput(val taggedNode: YamlTaggedNode, context: SerialMod
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = maybeCallOnContent("decodeEnum") { decodeEnum(enumDescriptor) }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        return maybeCallOnContent(blockOnTag = { super.beginStructure(descriptor, *typeParams) }) { beginStructure(descriptor, *typeParams) }
+        return when (currentField) {
+            CurrentField.NotStarted, CurrentField.Tag -> super.beginStructure(descriptor, *typeParams)
+            CurrentField.Content -> {
+                contentDecoder = createFor(taggedNode.node, context, configuration, descriptor)
+
+                return contentDecoder
+            }
+        }
     }
 
     private inline fun <T> maybeCallOnContent(functionName: String, blockOnContent: YamlInput.() -> T): T =
