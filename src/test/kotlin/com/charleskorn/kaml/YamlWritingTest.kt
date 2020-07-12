@@ -18,7 +18,9 @@
 
 package com.charleskorn.kaml
 
+import ch.tutteli.atrium.api.fluent.en_GB.message
 import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
@@ -544,6 +546,88 @@ object YamlWritingTest : Spek({
                         - !<sealedInt>
                           value: -20
                         - !<sealedString>
+                          value: null
+                        - null
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+            }
+
+            describe("given properties are used to store the type information") {
+                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property))
+
+                describe("serializing a sealed type") {
+                    val input = TestSealedStructure.SimpleSealedInt(5)
+                    val output = polymorphicYaml.stringify(TestSealedStructure.serializer(), input)
+                    val expectedYaml = """
+                        type: "sealedInt"
+                        value: 5
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing an unsealed type") {
+                    val input = UnsealedString("blah")
+                    val output = polymorphicYaml.stringify(PolymorphicSerializer(UnsealedClass::class), input)
+                    val expectedYaml = """
+                        type: "unsealedString"
+                        value: "blah"
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing an unwrapped type") {
+                    val input = UnwrappedString("blah")
+
+                    it("throws an appropriate exception") {
+                        expect({ polymorphicYaml.stringify(PolymorphicSerializer(UnwrappedInterface::class), input) }).toThrow<IllegalStateException> {
+                            message { toBe("Cannot serialize a polymorphic value that is not a YAML object when using PolymorphismStyle.Property.") }
+                        }
+                    }
+                }
+
+                describe("serializing a polymorphic value as a property value") {
+                    val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
+                    val output = polymorphicYaml.stringify(SealedWrapper.serializer(), input)
+                    val expectedYaml = """
+                        element:
+                          type: "sealedInt"
+                          value: 5
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing a list of polymorphic values") {
+                    val input = listOf(
+                        TestSealedStructure.SimpleSealedInt(5),
+                        TestSealedStructure.SimpleSealedString("some test"),
+                        TestSealedStructure.SimpleSealedInt(-20),
+                        TestSealedStructure.SimpleSealedString(null),
+                        null
+                    )
+
+                    val output = polymorphicYaml.stringify(TestSealedStructure.serializer().nullable.list, input)
+
+                    val expectedYaml = """
+                        - type: "sealedInt"
+                          value: 5
+                        - type: "sealedString"
+                          value: "some test"
+                        - type: "sealedInt"
+                          value: -20
+                        - type: "sealedString"
                           value: null
                         - null
                     """.trimIndent()

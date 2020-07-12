@@ -88,12 +88,27 @@ internal class YamlOutput(
     }
 
     override fun beginStructure(descriptor: SerialDescriptor, vararg typeSerializers: KSerializer<*>): CompositeEncoder {
-        val typeName = getAndClearTypeName()
-        val implicit = !typeName.isPresent
         when (descriptor.kind) {
-            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), typeName, implicit, FlowStyle.BLOCK))
-            StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingStartEvent(Optional.empty(), typeName, implicit, FlowStyle.BLOCK))
             is PolymorphicKind -> shouldReadTypeName = true
+            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
+            StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> {
+                val typeName = getAndClearTypeName()
+
+                when (configuration.polymorphismStyle) {
+                    PolymorphismStyle.Tags -> {
+                        val implicit = !typeName.isPresent
+                        emitter.emit(MappingStartEvent(Optional.empty(), typeName, implicit, FlowStyle.BLOCK))
+                    }
+                    PolymorphismStyle.Property -> {
+                        emitter.emit(MappingStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
+
+                        if (typeName.isPresent) {
+                            emitPlainScalar("type")
+                            emitQuotedScalar(typeName.get())
+                        }
+                    }
+                }
+            }
         }
 
         return super.beginStructure(descriptor, *typeSerializers)
@@ -108,6 +123,11 @@ internal class YamlOutput(
 
     private fun emitScalar(value: String, style: ScalarStyle) {
         val tag = getAndClearTypeName()
+
+        if (tag.isPresent && configuration.polymorphismStyle != PolymorphismStyle.Tags) {
+            throw IllegalStateException("Cannot serialize a polymorphic value that is not a YAML object when using ${PolymorphismStyle::class.simpleName}.${configuration.polymorphismStyle}.")
+        }
+
         val implicit = if (tag.isPresent) ALL_EXPLICIT else ALL_IMPLICIT
         emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, value, style))
     }
