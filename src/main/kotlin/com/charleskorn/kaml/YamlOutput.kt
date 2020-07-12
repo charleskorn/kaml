@@ -95,7 +95,7 @@ internal class YamlOutput(
                 val typeName = getAndClearTypeName()
 
                 when (configuration.polymorphismStyle) {
-                    PolymorphismStyle.Tags -> {
+                    PolymorphismStyle.Tag -> {
                         val implicit = !typeName.isPresent
                         emitter.emit(MappingStartEvent(Optional.empty(), typeName, implicit, FlowStyle.BLOCK))
                     }
@@ -124,7 +124,7 @@ internal class YamlOutput(
     private fun emitScalar(value: String, style: ScalarStyle) {
         val tag = getAndClearTypeName()
 
-        if (tag.isPresent && configuration.polymorphismStyle != PolymorphismStyle.Tags) {
+        if (tag.isPresent && configuration.polymorphismStyle != PolymorphismStyle.Tag) {
             throw IllegalStateException("Cannot serialize a polymorphic value that is not a YAML object when using ${PolymorphismStyle::class.simpleName}.${configuration.polymorphismStyle}.")
         }
 

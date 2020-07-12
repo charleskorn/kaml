@@ -1210,7 +1210,7 @@ object YamlReadingTest : Spek({
 
         describe("parsing polymorphic values") {
             describe("given tags are used to store the type information") {
-                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tags))
+                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag))
 
                 context("given some input where the value should be a sealed class") {
                     val input = """

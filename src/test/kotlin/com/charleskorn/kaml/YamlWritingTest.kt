@@ -474,7 +474,7 @@ object YamlWritingTest : Spek({
 
         describe("serializing polymorphic values") {
             describe("given tags are used to store the type information") {
-                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tags))
+                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag))
 
                 describe("serializing a sealed type") {
                     val input = TestSealedStructure.SimpleSealedInt(5)
