@@ -44,7 +44,7 @@ import com.charleskorn.kaml.testobjects.PolymorphicWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
-import com.charleskorn.kaml.testobjects.polymorphicTestYaml
+import com.charleskorn.kaml.testobjects.polymorphicModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
@@ -1192,205 +1192,209 @@ object YamlReadingTest : Spek({
         }
 
         describe("parsing polymorphic values") {
-            context("given some tagged input representing an object where the resulting type should be a sealed class") {
-                val input = """
-                    element: !<sealedString>
-                        value: "asdfg"
-                """.trimIndent()
+            describe("given tags are used to store the type information") {
+                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tags))
 
-                context("parsing that input") {
-                    val result = Yaml.default.parse(SealedWrapper.serializer(), input)
+                context("given some tagged input representing an object where the resulting type should be a sealed class") {
+                    val input = """
+                        element: !<sealedString>
+                            value: "asdfg"
+                    """.trimIndent()
 
-                    it("deserializes it to a Kotlin object") {
-                        expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(SealedWrapper.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
+                        }
                     }
-                }
 
-                context("parsing that input as map") {
-                    val result = Yaml.default.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
+                    context("parsing that input as map") {
+                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
 
-                    it("deserializes it to a map ignoring the tag") {
-                        expect(result).toBe(mapOf("element" to mapOf("value" to "asdfg")))
-                    }
-                }
-            }
-
-            context("given some untagged input for a polymorphic class") {
-                val input = """
-                    element:
-                        value: "asdfg"
-                """.trimIndent()
-
-                context("parsing that input") {
-                    it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(SealedWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                            message { toBe("Value for 'element' is invalid: Value is missing a type tag (eg. !<type>)") }
-                            line { toBe(2) }
-                            column { toBe(5) }
-                            cause<MissingTypeTagException>()
+                        it("deserializes it to a map ignoring the tag") {
+                            expect(result).toBe(mapOf("element" to mapOf("value" to "asdfg")))
                         }
                     }
                 }
-            }
 
-            context("given some untagged input for a polymorphic value") {
-                val input = """
-                    test: "asdfg"
-                """.trimIndent()
+                context("given a polymorphic value on an object") {
+                    val input = """
+                        test: !<simpleInt> 42
+                    """.trimIndent()
 
-                context("parsing that input") {
-                    it("throws an exception with the correct location information") {
-                        expect({ polymorphicTestYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                            message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
-                            line { toBe(1) }
-                            column { toBe(7) }
-                            cause<MissingTypeTagException>()
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(PolymorphicWrapper.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(PolymorphicWrapper(PolymorphicInt(42)))
                         }
                     }
                 }
-            }
 
-            context("given some untagged null input for a polymorphic value") {
-                val input = """
-                    test: null
-                """.trimIndent()
+                context("given some tagged input representing a list of polymorphic objects from a sealed type") {
+                    val input = """
+                        - element: !<sealedString>
+                            value: null
+                        - element: !<sealedInt>
+                            value: -987
+                        - element: !<sealedInt>
+                            value: 654
+                        - element: !<sealedString>
+                            value: "tests"
+                        - element: null
+                    """.trimIndent()
 
-                context("parsing that input") {
-                    it("throws an exception with the correct location information") {
-                        expect({ polymorphicTestYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
-                            message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
-                            line { toBe(1) }
-                            column { toBe(7) }
-                            cause<MissingTypeTagException>()
-                        }
-                    }
-                }
-            }
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(SealedWrapper.serializer().list, input)
 
-            context("given a polymorphic value from an unsealed type with an unknown type tag") {
-                val input = """
-                    test: !<someOtherType> 42
-                """.trimIndent()
-
-                context("parsing that input") {
-                    it("throws an exception with the correct location information") {
-                        expect({ polymorphicTestYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
-                            message { toBe("Unknown type 'someOtherType'. Known types are: simpleBoolean, simpleByte, simpleChar, simpleClass, simpleDouble, simpleEnum, simpleFloat, simpleInt, simpleLong, simpleNull, simpleNullableInt, simpleShort, simpleString, simpleUnit") }
-                            line { toBe(1) }
-                            column { toBe(7) }
-                            typeName { toBe("someOtherType") }
-                            validTypeNames { toBe(setOf("simpleBoolean", "simpleByte", "simpleChar", "simpleClass", "simpleDouble", "simpleEnum", "simpleFloat", "simpleInt", "simpleLong", "simpleNull", "simpleNullableInt", "simpleShort", "simpleString", "simpleUnit")) }
-                        }
-                    }
-                }
-            }
-
-            context("given a polymorphic value from a sealed type with an unknown type tag") {
-                val input = """
-                    !<someOtherType> 42
-                """.trimIndent()
-
-                context("parsing that input") {
-                    it("throws an exception with the correct location information") {
-                        expect({ polymorphicTestYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
-                            message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
-                            line { toBe(1) }
-                            column { toBe(1) }
-                            typeName { toBe("someOtherType") }
-                            validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
-                        }
-                    }
-                }
-            }
-
-            context("given some tagged input representing a list of polymorphic objects from a sealed type") {
-                val input = """
-                    - element: !<sealedString>
-                        value: null
-                    - element: !<sealedInt>
-                        value: -987
-                    - element: !<sealedInt>
-                        value: 654
-                    - element: !<sealedString>
-                        value: "tests"
-                    - element: null
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = Yaml.default.parse(SealedWrapper.serializer().list, input)
-
-                    it("deserializes it to a Kotlin object") {
-                        expect(result).toBe(
-                            listOf(
-                                SealedWrapper(TestSealedStructure.SimpleSealedString(null)),
-                                SealedWrapper(TestSealedStructure.SimpleSealedInt(-987)),
-                                SealedWrapper(TestSealedStructure.SimpleSealedInt(654)),
-                                SealedWrapper(TestSealedStructure.SimpleSealedString("tests")),
-                                SealedWrapper(null)
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(
+                                listOf(
+                                    SealedWrapper(TestSealedStructure.SimpleSealedString(null)),
+                                    SealedWrapper(TestSealedStructure.SimpleSealedInt(-987)),
+                                    SealedWrapper(TestSealedStructure.SimpleSealedInt(654)),
+                                    SealedWrapper(TestSealedStructure.SimpleSealedString("tests")),
+                                    SealedWrapper(null)
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
 
-            context("given a polymorphic value on an object") {
-                val input = """
-                    test: !<simpleInt> 42
-                """.trimIndent()
+                context("given some tagged input representing a list of polymorphic objects from an unsealed type") {
+                    val input = """
+                        - test: !<simpleNull> null
+                        - test: !<simpleUnit> {}
+                        - test: !<simpleBoolean> 'false'
+                        - test: !<simpleByte> 42
+                        - test: !<simpleShort> 43
+                        - test: !<simpleInt> 44
+                        - test: !<simpleLong> 45
+                        - test: !<simpleFloat> 4.2
+                        - test: !<simpleDouble> 4.2
+                        - test: !<simpleChar> 4
+                        - test: !<simpleString> 42
+                        - test: !<simpleEnum> TEST2
+                        - test: !<simpleNullableInt> 4
+                        - test: !<simpleNullableInt> null
+                        - test: !<simpleClass>
+                            value: thing
+                            otherValue: otherThing
+                    """.trimIndent()
 
-                context("parsing that input") {
-                    val result = polymorphicTestYaml.parse(PolymorphicWrapper.serializer(), input)
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(PolymorphicWrapper.serializer().list, input)
 
-                    it("deserializes it to a Kotlin object") {
-                        expect(result).toBe(PolymorphicWrapper(PolymorphicInt(42)))
-                    }
-                }
-            }
-
-            context("given some tagged input representing a list of polymorphic objects from an unsealed type") {
-                val input = """
-                    - test: !<simpleNull> null
-                    - test: !<simpleUnit> {}
-                    - test: !<simpleBoolean> 'false'
-                    - test: !<simpleByte> 42
-                    - test: !<simpleShort> 43
-                    - test: !<simpleInt> 44
-                    - test: !<simpleLong> 45
-                    - test: !<simpleFloat> 4.2
-                    - test: !<simpleDouble> 4.2
-                    - test: !<simpleChar> 4
-                    - test: !<simpleString> 42
-                    - test: !<simpleEnum> TEST2
-                    - test: !<simpleNullableInt> 4
-                    - test: !<simpleNullableInt> null
-                    - test: !<simpleClass>
-                        value: thing
-                        otherValue: otherThing
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = polymorphicTestYaml.parse(PolymorphicWrapper.serializer().list, input)
-
-                    it("deserializes it to a Kotlin object") {
-                        expect(result).toBe(
-                            listOf(
-                                PolymorphicWrapper(PolymorphicNull),
-                                PolymorphicWrapper(PolymorphicUnit(Unit)),
-                                PolymorphicWrapper(PolymorphicBoolean(false)),
-                                PolymorphicWrapper(PolymorphicByte(42)),
-                                PolymorphicWrapper(PolymorphicShort(43)),
-                                PolymorphicWrapper(PolymorphicInt(44)),
-                                PolymorphicWrapper(PolymorphicLong(45L)),
-                                PolymorphicWrapper(PolymorphicFloat(4.2f)),
-                                PolymorphicWrapper(PolymorphicDouble(4.2)),
-                                PolymorphicWrapper(PolymorphicChar('4')),
-                                PolymorphicWrapper(PolymorphicString("42")),
-                                PolymorphicWrapper(PolymorphicEnum.TEST2),
-                                PolymorphicWrapper(PolymorphicNullableInt(4)),
-                                PolymorphicWrapper(PolymorphicNullableInt(null)),
-                                PolymorphicWrapper(PolymorphicClass("thing", "otherThing"))
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(
+                                listOf(
+                                    PolymorphicWrapper(PolymorphicNull),
+                                    PolymorphicWrapper(PolymorphicUnit(Unit)),
+                                    PolymorphicWrapper(PolymorphicBoolean(false)),
+                                    PolymorphicWrapper(PolymorphicByte(42)),
+                                    PolymorphicWrapper(PolymorphicShort(43)),
+                                    PolymorphicWrapper(PolymorphicInt(44)),
+                                    PolymorphicWrapper(PolymorphicLong(45L)),
+                                    PolymorphicWrapper(PolymorphicFloat(4.2f)),
+                                    PolymorphicWrapper(PolymorphicDouble(4.2)),
+                                    PolymorphicWrapper(PolymorphicChar('4')),
+                                    PolymorphicWrapper(PolymorphicString("42")),
+                                    PolymorphicWrapper(PolymorphicEnum.TEST2),
+                                    PolymorphicWrapper(PolymorphicNullableInt(4)),
+                                    PolymorphicWrapper(PolymorphicNullableInt(null)),
+                                    PolymorphicWrapper(PolymorphicClass("thing", "otherThing"))
+                                )
                             )
-                        )
+                        }
+                    }
+                }
+
+                context("given some untagged input for a polymorphic class") {
+                    val input = """
+                        element:
+                            value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.parse(SealedWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'element' is invalid: Value is missing a type tag (eg. !<type>)") }
+                                line { toBe(2) }
+                                column { toBe(5) }
+                                cause<MissingTypeTagException>()
+                            }
+                        }
+                    }
+                }
+
+                context("given some untagged input for a polymorphic value") {
+                    val input = """
+                        test: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
+                                line { toBe(1) }
+                                column { toBe(7) }
+                                cause<MissingTypeTagException>()
+                            }
+                        }
+                    }
+                }
+
+                context("given some untagged null input for a polymorphic value") {
+                    val input = """
+                        test: null
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
+                                line { toBe(1) }
+                                column { toBe(7) }
+                                cause<MissingTypeTagException>()
+                            }
+                        }
+                    }
+                }
+
+                context("given a polymorphic value from an unsealed type with an unknown type tag") {
+                    val input = """
+                        test: !<someOtherType> 42
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                                message { toBe("Unknown type 'someOtherType'. Known types are: simpleBoolean, simpleByte, simpleChar, simpleClass, simpleDouble, simpleEnum, simpleFloat, simpleInt, simpleLong, simpleNull, simpleNullableInt, simpleShort, simpleString, simpleUnit") }
+                                line { toBe(1) }
+                                column { toBe(7) }
+                                typeName { toBe("someOtherType") }
+                                validTypeNames { toBe(setOf("simpleBoolean", "simpleByte", "simpleChar", "simpleClass", "simpleDouble", "simpleEnum", "simpleFloat", "simpleInt", "simpleLong", "simpleNull", "simpleNullableInt", "simpleShort", "simpleString", "simpleUnit")) }
+                            }
+                        }
+                    }
+                }
+
+                context("given a polymorphic value from a sealed type with an unknown type tag") {
+                    val input = """
+                        !<someOtherType> 42
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                                message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                                typeName { toBe("someOtherType") }
+                                validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                            }
+                        }
                     }
                 }
             }
