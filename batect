@@ -8,14 +8,15 @@
     # You should commit this file to version control alongside the rest of your project. It should not be installed globally.
     # For more information, visit https://github.com/batect/batect.
 
-    VERSION="0.50.0"
+    VERSION="0.55.0"
+    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-92a72ccab0574d61a251cefbfa00ed9a4640a95ad4001a383dad1be8bcc95523}"
     DOWNLOAD_URL_ROOT=${BATECT_DOWNLOAD_URL_ROOT:-"https://dl.bintray.com/batect/batect"}
     DOWNLOAD_URL=${BATECT_DOWNLOAD_URL:-"$DOWNLOAD_URL_ROOT/$VERSION/bin/batect-$VERSION.jar"}
     QUIET_DOWNLOAD=${BATECT_QUIET_DOWNLOAD:-false}
 
-    ROOT_CACHE_DIR=${BATECT_CACHE_DIR:-"$HOME/.batect/cache"}
-    CACHE_DIR="$ROOT_CACHE_DIR/$VERSION"
-    JAR_PATH="$CACHE_DIR/batect-$VERSION.jar"
+    BATECT_WRAPPER_CACHE_DIR=${BATECT_CACHE_DIR:-"$HOME/.batect/cache"}
+    VERSION_CACHE_DIR="$BATECT_WRAPPER_CACHE_DIR/$VERSION"
+    JAR_PATH="$VERSION_CACHE_DIR/batect-$VERSION.jar"
 
     SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -24,6 +25,7 @@
             download
         fi
 
+        checkChecksum
         runApplication "$@"
     }
 
@@ -35,7 +37,7 @@
         checkForCurl
 
         echo "Downloading batect version $VERSION from $DOWNLOAD_URL..."
-        mkdir -p "$CACHE_DIR"
+        mkdir -p "$VERSION_CACHE_DIR"
         temp_file=$(mktemp)
 
         if [[ $QUIET_DOWNLOAD == 'true' ]]; then
@@ -45,6 +47,23 @@
         fi
 
         mv "$temp_file" "$JAR_PATH"
+    }
+
+    function checkChecksum() {
+        local_checksum=$(getLocalChecksum)
+
+        if [[ "$local_checksum" != "$CHECKSUM" ]]; then
+            echo "The downloaded version of batect does not have the expected checksum. Delete '$JAR_PATH' and then re-run this script to download it again."
+            exit 1
+        fi
+    }
+
+    function getLocalChecksum() {
+        if [[ "$(uname)" == "Darwin" ]]; then
+            shasum -a 256 "$JAR_PATH" | cut -d' ' -f1
+        else
+            sha256sum "$JAR_PATH" | cut -d' ' -f1
+        fi
     }
 
     function runApplication() {
@@ -60,6 +79,7 @@
         fi
 
         BATECT_WRAPPER_SCRIPT_DIR="$SCRIPT_PATH" \
+        BATECT_WRAPPER_CACHE_DIR="$BATECT_WRAPPER_CACHE_DIR" \
         HOSTNAME="$HOSTNAME" \
         exec \
             java \
@@ -94,7 +114,7 @@
     }
 
     function getJavaVersion() {
-        java -version 2>&1 | head -n1 | sed -En ';s/.* version "([0-9]+)(\.([0-9]+))?.*".*/\1.\3/p;'
+        java -version 2>&1 | grep version | sed -En ';s/.* version "([0-9]+)(\.([0-9]+))?.*".*/\1.\3/p;'
     }
 
     function extractJavaMajorVersion() {
