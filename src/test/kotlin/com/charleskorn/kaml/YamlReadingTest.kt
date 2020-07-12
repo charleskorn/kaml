@@ -1633,6 +1633,22 @@ object YamlReadingTest : Spek({
                         }
                     }
                 }
+
+                context("given some input with a tag and a type property") {
+                    val input = """
+                        !<sealedInt>
+                        type: sealedString
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(TestSealedStructure.serializer(), input)
+
+                        it("uses the type from the property and ignores the tag") {
+                            expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
+                        }
+                    }
+                }
             }
         }
 

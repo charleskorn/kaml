@@ -71,8 +71,8 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
             }
 
-            is YamlTaggedNode -> when (descriptor.kind) {
-                is PolymorphicKind -> YamlPolymorphicInput(node.tag, node.innerNode, context, configuration)
+            is YamlTaggedNode -> when {
+                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tags -> YamlPolymorphicInput(node.tag, node.innerNode, context, configuration)
                 else -> createFor(node.innerNode, context, configuration, descriptor)
             }
         }
