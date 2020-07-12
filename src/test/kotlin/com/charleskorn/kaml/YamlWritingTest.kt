@@ -22,30 +22,21 @@ import ch.tutteli.atrium.api.fluent.en_GB.toBe
 import ch.tutteli.atrium.api.verbs.expect
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
-import com.charleskorn.kaml.testobjects.UnwrappedBoolean
-import com.charleskorn.kaml.testobjects.UnwrappedByte
-import com.charleskorn.kaml.testobjects.UnwrappedChar
-import com.charleskorn.kaml.testobjects.UnwrappedDouble
-import com.charleskorn.kaml.testobjects.UnwrappedEnum
-import com.charleskorn.kaml.testobjects.UnwrappedFloat
-import com.charleskorn.kaml.testobjects.UnwrappedInt
-import com.charleskorn.kaml.testobjects.UnwrappedLong
-import com.charleskorn.kaml.testobjects.UnwrappedNull
-import com.charleskorn.kaml.testobjects.UnwrappedNullableInt
-import com.charleskorn.kaml.testobjects.UnwrappedShort
-import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.SimpleStructure
-import com.charleskorn.kaml.testobjects.UnwrappedUnit
-import com.charleskorn.kaml.testobjects.PolymorphicWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
+import com.charleskorn.kaml.testobjects.UnsealedClass
+import com.charleskorn.kaml.testobjects.UnsealedString
+import com.charleskorn.kaml.testobjects.UnwrappedInterface
+import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.builtins.list
 import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -479,117 +470,87 @@ object YamlWritingTest : Spek({
             }
         }
 
-        describe("handling sealed classes") {
-            context("serializing int sealed class") {
-                val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
-                val output = Yaml.default.stringify(SealedWrapper.serializer(), input)
+        describe("serializing polymorphic values") {
+            describe("given tags are used to store the type information") {
+                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tags))
 
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
+                describe("serializing a sealed type") {
+                    val input = TestSealedStructure.SimpleSealedInt(5)
+                    val output = polymorphicYaml.stringify(TestSealedStructure.serializer(), input)
+                    val expectedYaml = """
+                        !<sealedInt>
+                        value: 5
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing an unsealed type") {
+                    val input = UnsealedString("blah")
+                    val output = polymorphicYaml.stringify(PolymorphicSerializer(UnsealedClass::class), input)
+                    val expectedYaml = """
+                        !<unsealedString>
+                        value: "blah"
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing an unwrapped type") {
+                    val input = UnwrappedString("blah")
+                    val output = polymorphicYaml.stringify(PolymorphicSerializer(UnwrappedInterface::class), input)
+                    val expectedYaml = """
+                        !<simpleString> "blah"
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing a polymorphic value as a property value") {
+                    val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
+                    val output = polymorphicYaml.stringify(SealedWrapper.serializer(), input)
+                    val expectedYaml = """
                         element: !<sealedInt>
                           value: 5
                     """.trimIndent()
-                    )
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
                 }
-            }
 
-            context("serializing string sealed class") {
-                val input = SealedWrapper(TestSealedStructure.SimpleSealedString("5"))
-                val output = Yaml.default.stringify(SealedWrapper.serializer(), input)
+                describe("serializing a list of polymorphic values") {
+                    val input = listOf(
+                        TestSealedStructure.SimpleSealedInt(5),
+                        TestSealedStructure.SimpleSealedString("some test"),
+                        TestSealedStructure.SimpleSealedInt(-20),
+                        TestSealedStructure.SimpleSealedString(null),
+                        null
+                    )
 
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
-                        element: !<sealedString>
-                          value: "5"
+                    val output = polymorphicYaml.stringify(TestSealedStructure.serializer().nullable.list, input)
+
+                    val expectedYaml = """
+                        - !<sealedInt>
+                          value: 5
+                        - !<sealedString>
+                          value: "some test"
+                        - !<sealedInt>
+                          value: -20
+                        - !<sealedString>
+                          value: null
+                        - null
                     """.trimIndent()
-                    )
-                }
-            }
 
-            context("serializing list of sealed class structures") {
-                val input = listOf(
-                    TestSealedStructure.SimpleSealedInt(5),
-                    TestSealedStructure.SimpleSealedString("some test"),
-                    TestSealedStructure.SimpleSealedInt(-20),
-                    TestSealedStructure.SimpleSealedString(null),
-                    null
-                ).map(::SealedWrapper)
-
-                val output = Yaml.default.stringify(SealedWrapper.serializer().list, input)
-
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
-                        - element: !<sealedInt>
-                            value: 5
-                        - element: !<sealedString>
-                            value: "some test"
-                        - element: !<sealedInt>
-                            value: -20
-                        - element: !<sealedString>
-                            value: null
-                        - element: null
-                    """.trimIndent()
-                    )
-                }
-            }
-        }
-
-        describe("handling simple polymorphic structures") {
-            val yaml = Yaml(context = polymorphicModule)
-            context("serializing a boolean structure") {
-                val input = PolymorphicWrapper(UnwrappedBoolean(true))
-                val output = yaml.stringify(PolymorphicWrapper.serializer(), input)
-
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
-                        test: !<simpleBoolean> 'true'
-                        """.trimIndent()
-                    )
-                }
-            }
-
-            context("serializing a list of structures") {
-                val input = listOf(
-                    PolymorphicWrapper(UnwrappedNull),
-                    PolymorphicWrapper(UnwrappedUnit(Unit)),
-                    PolymorphicWrapper(UnwrappedBoolean(true)),
-                    PolymorphicWrapper(UnwrappedByte(24)),
-                    PolymorphicWrapper(UnwrappedShort(34)),
-                    PolymorphicWrapper(UnwrappedInt(44)),
-                    PolymorphicWrapper(UnwrappedLong(54L)),
-                    PolymorphicWrapper(UnwrappedFloat(2.4f)),
-                    PolymorphicWrapper(UnwrappedDouble(2.4)),
-                    PolymorphicWrapper(UnwrappedChar('2')),
-                    PolymorphicWrapper(UnwrappedString("24")),
-                    PolymorphicWrapper(UnwrappedEnum.TEST),
-                    PolymorphicWrapper(UnwrappedNullableInt(3)),
-                    PolymorphicWrapper(UnwrappedNullableInt(null))
-                )
-                val output = yaml.stringify(PolymorphicWrapper.serializer().list, input)
-
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
-                        - test: !<simpleNull> 'null'
-                        - test: !<simpleUnit> {}
-                        - test: !<simpleBoolean> 'true'
-                        - test: !<simpleByte> '24'
-                        - test: !<simpleShort> '34'
-                        - test: !<simpleInt> '44'
-                        - test: !<simpleLong> '54'
-                        - test: !<simpleFloat> '2.4'
-                        - test: !<simpleDouble> '2.4'
-                        - test: !<simpleChar> "2"
-                        - test: !<simpleString> "24"
-                        - test: !<simpleEnum> "TEST"
-                        - test: !<simpleNullableInt> '3'
-                        - test: !<simpleNullableInt> 'null'
-                        """.trimIndent()
-                    )
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
                 }
             }
         }
