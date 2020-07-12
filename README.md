@@ -51,20 +51,95 @@ val result = Yaml.default.stringify(Team.serializer(), input)
 println(result)
 ```
 
-## Supported features
+## Features
 
-* Scalars, including strings, booleans, integers and floats
-* [Sequences (lists)](https://yaml.org/type/seq.html)
-* [Maps](https://yaml.org/type/map.html)
-* [Nulls](https://yaml.org/type/null.html)
-* [Aliases and anchors](https://yaml.org/spec/1.2/spec.html#id2765878)
-* [Merging aliases to form one map](https://yaml.org/type/merge.html)
-* [Polymorphism](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/polymorphism.md) using [YAML tags](https://yaml.org/spec/1.2/spec.html#id2761292) to specify the type
-* [Docker Compose-style extension fields](https://medium.com/@kinghuang/docker-compose-anchors-aliases-extensions-a1e4105d70bd)
+* Supports most major YAML features:
+  * Scalars, including strings, booleans, integers and floats
+  * [Sequences (lists)](https://yaml.org/type/seq.html)
+  * [Maps](https://yaml.org/type/map.html)
+  * [Nulls](https://yaml.org/type/null.html)
+  * [Aliases and anchors](https://yaml.org/spec/1.2/spec.html#id2765878), including [merging aliases to form one map](https://yaml.org/type/merge.html)
 
-  Specify the extension prefix by setting `extensionDefinitionPrefix` when creating an instance of `Yaml`.
+* Supports parsing YAML to Kotlin objects (deserializing) and writing Kotlin objects as YAML (serializing)
 
-  Extensions can only be defined at the top level of a document, and only if the top level element is a map or object. Any key starting with the extension prefix must have an anchor defined and will not be included in the deserialised value.
+* Supports [kotlinx.serialization's polymorphism](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/polymorphism.md) for sealed and unsealed types
+
+  Two styles are available (set `YamlConfiguration.polymorphismStyle` when creating an instance of `Yaml`):
+
+  * using [YAML tags](https://yaml.org/spec/1.2/spec.html#id2761292) to specify the type:
+
+    ```yaml
+    servers:
+      - !<frontend>
+        hostname: a.mycompany.com
+      - !<backend>
+        database: db-1
+    ```
+
+  * using a `type` property to specify the type:
+
+    ```yaml
+    servers:
+      - type: frontend
+        hostname: a.mycompany.com
+      - type: backend
+        database: db-1
+    ```
+
+  The fragments above could be generated with:
+
+  ```kotlin
+  @Serializable
+  sealed class Server {
+    @SerialName("frontend")
+    @Serializable
+    data class Frontend(val hostname: String)
+
+    @SerialName("backend")
+    data class Backend(val database: String)
+  }
+
+  @Serializable
+  data class Config(val servers: List<Server>)
+
+  val config = Config(listOf(
+    Frontend("a.mycompany.com"),
+    Backend("db-1")
+  ))
+
+  val result = Yaml.default.stringify(Config.serializer(), config)
+
+  println(result)
+  ```
+
+* Supports [Docker Compose-style extension fields](https://medium.com/@kinghuang/docker-compose-anchors-aliases-extensions-a1e4105d70bd)
+
+  ```yaml
+  x-common-labels: &common-labels
+    labels:
+      owned-by: myteam@mycompany.com
+      cost-centre: myteam
+
+  servers:
+    server-a:
+      <<: *common-labels
+      kind: frontend
+
+    server-b:
+      <<: *common-labels
+      kind: backend
+
+    # server-b and server-c are equivalent
+    server-c:
+      labels:
+        owned-by: myteam@mycompany.com
+        cost-centre: myteam
+      kind: backend
+  ```
+
+  Specify the extension prefix by setting `YamlConfiguration.extensionDefinitionPrefix` when creating an instance of `Yaml` (eg. `"x-"` for the example above).
+
+  Extensions can only be defined at the top level of a document, and only if the top level element is a map or object. Any key starting with the extension prefix must have an anchor defined (`&...`) and will not be included in the deserialised value.
 
 ## Referencing kaml
 
