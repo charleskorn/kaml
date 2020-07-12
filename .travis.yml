@@ -53,9 +53,18 @@ deploy:
 before_cache:
   - rm -f  .batect/caches/gradle-cache/caches/modules-2/modules-2.lock
   - rm -fr .batect/caches/gradle-cache/caches/*/plugin-resolution/
-  - rm -f  .batect/caches/gradle-cache/caches/*/fileHashes/fileHashes.bin
-  - rm -f  .batect/caches/gradle-cache/caches/*/fileHashes/fileHashes.lock
-  - rm -f  .batect/caches/gradle-cache/caches/*/javaCompile/javaCompile.lock
+  - rm -fr .batect/caches/gradle-cache/caches/*/scripts/
+  - rm -fr .batect/caches/gradle-cache/caches/*/scripts-remapped/
+  - rm -fr .batect/caches/gradle-cache/caches/*/fileHashes/
+  - rm -f  .batect/caches/gradle-cache/caches/*/fileContent/*.lock
+  - rm -f  .batect/caches/gradle-cache/caches/*/javaCompile/*.lock
+  - rm -f  .batect/caches/gradle-cache/caches/*/executionHistory/*.lock
+  - rm -f  .batect/caches/gradle-cache/caches/*/generated-gradle-jars/*.lock
+  - rm -f  .batect/caches/gradle-cache/caches/jars-3/*.lock
+  - rm -f  .batect/caches/gradle-cache/caches/transforms-1/transforms-1.lock
+  - rm -f  .batect/caches/gradle-cache/caches/journal-1/file-access.bin
+  - rm -f  .batect/caches/gradle-cache/caches/journal-1/*.lock
+  - rm -f  .batect/caches/gradle-cache/kotlin-profile/*
 
 cache:
   directories:
