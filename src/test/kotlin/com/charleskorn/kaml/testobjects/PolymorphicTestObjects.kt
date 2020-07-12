@@ -43,85 +43,95 @@ sealed class TestSealedStructure {
 @Serializable
 data class SealedWrapper(val element: TestSealedStructure?)
 
-interface PolymorphicInterface
+open class UnsealedClass
 
-object PolymorphicNull : PolymorphicInterface {
-    val kSerializer: KSerializer<PolymorphicNull> = UnwrappedValueSerializer(UnitSerializer().nullable, "simpleNull", { PolymorphicNull }, { null })
+@Serializable
+@SerialName("unsealedBoolean")
+data class UnsealedBoolean(val value: Boolean) : UnsealedClass()
+
+@Serializable
+@SerialName("unsealedString")
+data class UnsealedString(val value: String) : UnsealedClass()
+
+interface UnwrappedInterface
+
+object UnwrappedNull : UnwrappedInterface {
+    val kSerializer: KSerializer<UnwrappedNull> = UnwrappedValueSerializer(UnitSerializer().nullable, "simpleNull", { UnwrappedNull }, { null })
 }
 
-data class PolymorphicUnit(val data: Unit) : PolymorphicInterface {
+data class UnwrappedUnit(val data: Unit) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(UnitSerializer(), "simpleUnit", ::PolymorphicUnit, PolymorphicUnit::data)
+        val kSerializer = UnwrappedValueSerializer(UnitSerializer(), "simpleUnit", ::UnwrappedUnit, UnwrappedUnit::data)
     }
 }
 
-data class PolymorphicBoolean(val data: Boolean) : PolymorphicInterface {
+data class UnwrappedBoolean(val data: Boolean) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Boolean.serializer(), "simpleBoolean", ::PolymorphicBoolean, PolymorphicBoolean::data)
+        val kSerializer = UnwrappedValueSerializer(Boolean.serializer(), "simpleBoolean", ::UnwrappedBoolean, UnwrappedBoolean::data)
     }
 }
 
-data class PolymorphicByte(val data: Byte) : PolymorphicInterface {
+data class UnwrappedByte(val data: Byte) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Byte.serializer(), "simpleByte", ::PolymorphicByte, PolymorphicByte::data)
+        val kSerializer = UnwrappedValueSerializer(Byte.serializer(), "simpleByte", ::UnwrappedByte, UnwrappedByte::data)
     }
 }
 
-data class PolymorphicShort(val data: Short) : PolymorphicInterface {
+data class UnwrappedShort(val data: Short) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Short.serializer(), "simpleShort", ::PolymorphicShort, PolymorphicShort::data)
+        val kSerializer = UnwrappedValueSerializer(Short.serializer(), "simpleShort", ::UnwrappedShort, UnwrappedShort::data)
     }
 }
 
-data class PolymorphicInt(val data: Int) : PolymorphicInterface {
+data class UnwrappedInt(val data: Int) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Int.serializer(), "simpleInt", ::PolymorphicInt, PolymorphicInt::data)
+        val kSerializer = UnwrappedValueSerializer(Int.serializer(), "simpleInt", ::UnwrappedInt, UnwrappedInt::data)
     }
 }
 
-data class PolymorphicNullableInt(val data: Int?) : PolymorphicInterface {
+data class UnwrappedNullableInt(val data: Int?) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Int.serializer().nullable, "simpleNullableInt", ::PolymorphicNullableInt, PolymorphicNullableInt::data)
+        val kSerializer = UnwrappedValueSerializer(Int.serializer().nullable, "simpleNullableInt", ::UnwrappedNullableInt, UnwrappedNullableInt::data)
     }
 }
 
-data class PolymorphicLong(val data: Long) : PolymorphicInterface {
+data class UnwrappedLong(val data: Long) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Long.serializer(), "simpleLong", ::PolymorphicLong, PolymorphicLong::data)
+        val kSerializer = UnwrappedValueSerializer(Long.serializer(), "simpleLong", ::UnwrappedLong, UnwrappedLong::data)
     }
 }
 
-data class PolymorphicFloat(val data: Float) : PolymorphicInterface {
+data class UnwrappedFloat(val data: Float) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Float.serializer(), "simpleFloat", ::PolymorphicFloat, PolymorphicFloat::data)
+        val kSerializer = UnwrappedValueSerializer(Float.serializer(), "simpleFloat", ::UnwrappedFloat, UnwrappedFloat::data)
     }
 }
 
-data class PolymorphicDouble(val data: Double) : PolymorphicInterface {
+data class UnwrappedDouble(val data: Double) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Double.serializer(), "simpleDouble", ::PolymorphicDouble, PolymorphicDouble::data)
+        val kSerializer = UnwrappedValueSerializer(Double.serializer(), "simpleDouble", ::UnwrappedDouble, UnwrappedDouble::data)
     }
 }
 
-data class PolymorphicChar(val data: Char) : PolymorphicInterface {
+data class UnwrappedChar(val data: Char) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(Char.serializer(), "simpleChar", ::PolymorphicChar, PolymorphicChar::data)
+        val kSerializer = UnwrappedValueSerializer(Char.serializer(), "simpleChar", ::UnwrappedChar, UnwrappedChar::data)
     }
 }
 
-data class PolymorphicString(val data: String) : PolymorphicInterface {
+data class UnwrappedString(val data: String) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(String.serializer(), "simpleString", ::PolymorphicString, PolymorphicString::data)
+        val kSerializer = UnwrappedValueSerializer(String.serializer(), "simpleString", ::UnwrappedString, UnwrappedString::data)
     }
 }
 
 @Serializable
 @SerialName("simpleClass")
-data class PolymorphicClass(val value: String, val otherValue: String) : PolymorphicInterface
+data class UnwrappedClass(val value: String, val otherValue: String) : UnwrappedInterface
 
 @Serializable
 @SerialName("simpleEnum")
-enum class PolymorphicEnum : PolymorphicInterface {
+enum class UnwrappedEnum : UnwrappedInterface {
     TEST, TEST2;
 }
 
@@ -144,23 +154,28 @@ class UnwrappedValueSerializer<S, T>(private val valueSerializer: KSerializer<S>
 }
 
 @Serializable
-data class PolymorphicWrapper(val test: PolymorphicInterface)
+data class PolymorphicWrapper(val test: UnwrappedInterface)
 
 val polymorphicModule = SerializersModule {
-    polymorphic(PolymorphicInterface::class) {
-        PolymorphicNull::class with PolymorphicNull.kSerializer
-        PolymorphicUnit::class with PolymorphicUnit.kSerializer
-        PolymorphicBoolean::class with PolymorphicBoolean.kSerializer
-        PolymorphicByte::class with PolymorphicByte.kSerializer
-        PolymorphicShort::class with PolymorphicShort.kSerializer
-        PolymorphicInt::class with PolymorphicInt.kSerializer
-        PolymorphicLong::class with PolymorphicLong.kSerializer
-        PolymorphicFloat::class with PolymorphicFloat.kSerializer
-        PolymorphicDouble::class with PolymorphicDouble.kSerializer
-        PolymorphicChar::class with PolymorphicChar.kSerializer
-        PolymorphicString::class with PolymorphicString.kSerializer
-        PolymorphicEnum::class with PolymorphicEnum.serializer()
-        PolymorphicNullableInt::class with PolymorphicNullableInt.kSerializer
-        PolymorphicClass::class with PolymorphicClass.serializer()
+    polymorphic(UnwrappedInterface::class) {
+        UnwrappedNull::class with UnwrappedNull.kSerializer
+        UnwrappedUnit::class with UnwrappedUnit.kSerializer
+        UnwrappedBoolean::class with UnwrappedBoolean.kSerializer
+        UnwrappedByte::class with UnwrappedByte.kSerializer
+        UnwrappedShort::class with UnwrappedShort.kSerializer
+        UnwrappedInt::class with UnwrappedInt.kSerializer
+        UnwrappedLong::class with UnwrappedLong.kSerializer
+        UnwrappedFloat::class with UnwrappedFloat.kSerializer
+        UnwrappedDouble::class with UnwrappedDouble.kSerializer
+        UnwrappedChar::class with UnwrappedChar.kSerializer
+        UnwrappedString::class with UnwrappedString.kSerializer
+        UnwrappedEnum::class with UnwrappedEnum.serializer()
+        UnwrappedNullableInt::class with UnwrappedNullableInt.kSerializer
+        UnwrappedClass::class with UnwrappedClass.serializer()
+    }
+
+    polymorphic(UnsealedClass::class) {
+        UnsealedBoolean::class with UnsealedBoolean.serializer()
+        UnsealedString::class with UnsealedString.serializer()
     }
 }

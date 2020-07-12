@@ -397,7 +397,7 @@ private class YamlPolymorphicInput(private val typeName: String, private val con
     private var currentField = CurrentField.NotStarted
     private lateinit var contentDecoder: YamlInput
 
-    override fun getCurrentLocation(): Location = maybeCallOnContent(blockOnType = contentNode::location, blockOnContent = YamlInput::getCurrentLocation)
+    override fun getCurrentLocation(): Location = contentNode.location
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         return when (currentField) {

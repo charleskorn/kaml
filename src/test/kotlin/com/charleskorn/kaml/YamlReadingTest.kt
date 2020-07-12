@@ -25,26 +25,28 @@ import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
-import com.charleskorn.kaml.testobjects.PolymorphicBoolean
-import com.charleskorn.kaml.testobjects.PolymorphicByte
-import com.charleskorn.kaml.testobjects.PolymorphicChar
-import com.charleskorn.kaml.testobjects.PolymorphicClass
-import com.charleskorn.kaml.testobjects.PolymorphicDouble
-import com.charleskorn.kaml.testobjects.PolymorphicEnum
-import com.charleskorn.kaml.testobjects.PolymorphicFloat
-import com.charleskorn.kaml.testobjects.PolymorphicInt
-import com.charleskorn.kaml.testobjects.PolymorphicInterface
-import com.charleskorn.kaml.testobjects.PolymorphicLong
-import com.charleskorn.kaml.testobjects.PolymorphicNull
-import com.charleskorn.kaml.testobjects.PolymorphicNullableInt
-import com.charleskorn.kaml.testobjects.PolymorphicShort
-import com.charleskorn.kaml.testobjects.PolymorphicString
+import com.charleskorn.kaml.testobjects.UnwrappedBoolean
+import com.charleskorn.kaml.testobjects.UnwrappedByte
+import com.charleskorn.kaml.testobjects.UnwrappedChar
+import com.charleskorn.kaml.testobjects.UnwrappedClass
+import com.charleskorn.kaml.testobjects.UnwrappedDouble
+import com.charleskorn.kaml.testobjects.UnwrappedEnum
+import com.charleskorn.kaml.testobjects.UnwrappedFloat
+import com.charleskorn.kaml.testobjects.UnwrappedInt
+import com.charleskorn.kaml.testobjects.UnwrappedInterface
+import com.charleskorn.kaml.testobjects.UnwrappedLong
+import com.charleskorn.kaml.testobjects.UnwrappedNull
+import com.charleskorn.kaml.testobjects.UnwrappedNullableInt
+import com.charleskorn.kaml.testobjects.UnwrappedShort
+import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.SimpleStructure
-import com.charleskorn.kaml.testobjects.PolymorphicUnit
+import com.charleskorn.kaml.testobjects.UnwrappedUnit
 import com.charleskorn.kaml.testobjects.PolymorphicWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
+import com.charleskorn.kaml.testobjects.UnsealedClass
+import com.charleskorn.kaml.testobjects.UnsealedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
 import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
@@ -1220,16 +1222,16 @@ object YamlReadingTest : Spek({
                     }
                 }
 
-                context("given some input where the value should be an unsealed class") {
+                context("given some input where the value is a literal") {
                     val input = """
                         !<simpleString> "asdfg"
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(PolymorphicSerializer(PolymorphicInterface::class), input)
+                        val result = polymorphicYaml.parse(PolymorphicSerializer(UnwrappedInterface::class), input)
 
                         it("deserializes it to a Kotlin object") {
-                            expect(result).toBe(PolymorphicString("asdfg"))
+                            expect(result).toBe(UnwrappedString("asdfg"))
                         }
                     }
 
@@ -1238,6 +1240,29 @@ object YamlReadingTest : Spek({
 
                         it("deserializes it to a string ignoring the tag") {
                             expect(result).toBe("asdfg")
+                        }
+                    }
+                }
+
+                context("given some input where the value should be an unsealed class") {
+                    val input = """
+                        !<unsealedString>
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(PolymorphicSerializer(UnsealedClass::class), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(UnsealedString("asdfg"))
+                        }
+                    }
+
+                    context("parsing that input as map") {
+                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), String.serializer()), input)
+
+                        it("deserializes it to a map ignoring the tag") {
+                            expect(result).toBe(mapOf("value" to "asdfg"))
                         }
                     }
                 }
@@ -1265,7 +1290,7 @@ object YamlReadingTest : Spek({
                     }
                 }
 
-                context("given some input for an object where the property value is an unsealed type") {
+                context("given some input for an object where the property value is a literal") {
                     val input = """
                         test: !<simpleInt> 42
                     """.trimIndent()
@@ -1274,7 +1299,7 @@ object YamlReadingTest : Spek({
                         val result = polymorphicYaml.parse(PolymorphicWrapper.serializer(), input)
 
                         it("deserializes it to a Kotlin object") {
-                            expect(result).toBe(PolymorphicWrapper(PolymorphicInt(42)))
+                            expect(result).toBe(PolymorphicWrapper(UnwrappedInt(42)))
                         }
                     }
                 }
@@ -1336,21 +1361,21 @@ object YamlReadingTest : Spek({
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(
                                 listOf(
-                                    PolymorphicWrapper(PolymorphicNull),
-                                    PolymorphicWrapper(PolymorphicUnit(Unit)),
-                                    PolymorphicWrapper(PolymorphicBoolean(false)),
-                                    PolymorphicWrapper(PolymorphicByte(42)),
-                                    PolymorphicWrapper(PolymorphicShort(43)),
-                                    PolymorphicWrapper(PolymorphicInt(44)),
-                                    PolymorphicWrapper(PolymorphicLong(45L)),
-                                    PolymorphicWrapper(PolymorphicFloat(4.2f)),
-                                    PolymorphicWrapper(PolymorphicDouble(4.2)),
-                                    PolymorphicWrapper(PolymorphicChar('4')),
-                                    PolymorphicWrapper(PolymorphicString("42")),
-                                    PolymorphicWrapper(PolymorphicEnum.TEST2),
-                                    PolymorphicWrapper(PolymorphicNullableInt(4)),
-                                    PolymorphicWrapper(PolymorphicNullableInt(null)),
-                                    PolymorphicWrapper(PolymorphicClass("thing", "otherThing"))
+                                    PolymorphicWrapper(UnwrappedNull),
+                                    PolymorphicWrapper(UnwrappedUnit(Unit)),
+                                    PolymorphicWrapper(UnwrappedBoolean(false)),
+                                    PolymorphicWrapper(UnwrappedByte(42)),
+                                    PolymorphicWrapper(UnwrappedShort(43)),
+                                    PolymorphicWrapper(UnwrappedInt(44)),
+                                    PolymorphicWrapper(UnwrappedLong(45L)),
+                                    PolymorphicWrapper(UnwrappedFloat(4.2f)),
+                                    PolymorphicWrapper(UnwrappedDouble(4.2)),
+                                    PolymorphicWrapper(UnwrappedChar('4')),
+                                    PolymorphicWrapper(UnwrappedString("42")),
+                                    PolymorphicWrapper(UnwrappedEnum.TEST2),
+                                    PolymorphicWrapper(UnwrappedNullableInt(4)),
+                                    PolymorphicWrapper(UnwrappedNullableInt(null)),
+                                    PolymorphicWrapper(UnwrappedClass("thing", "otherThing"))
                                 )
                             )
                         }
@@ -1409,7 +1434,7 @@ object YamlReadingTest : Spek({
                     }
                 }
 
-                context("given a polymorphic value from an unsealed type with an unknown type tag") {
+                context("given a polymorphic value for a property from an unsealed type with an unknown type tag") {
                     val input = """
                         test: !<someOtherType> 42
                     """.trimIndent()
@@ -1427,7 +1452,25 @@ object YamlReadingTest : Spek({
                     }
                 }
 
-                context("given a polymorphic value from a sealed type with an unknown type tag") {
+                context("given a polymorphic value for a property from a sealed type with an unknown type tag") {
+                    val input = """
+                        element: !<someOtherType> 42
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.parse(SealedWrapper.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                                message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
+                                line { toBe(1) }
+                                column { toBe(10) }
+                                typeName { toBe("someOtherType") }
+                                validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                            }
+                        }
+                    }
+                }
+
+                context("given a polymorphic value from a literal with an unknown type tag") {
                     val input = """
                         !<someOtherType> 42
                     """.trimIndent()

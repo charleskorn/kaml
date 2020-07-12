@@ -22,20 +22,20 @@ import ch.tutteli.atrium.api.fluent.en_GB.toBe
 import ch.tutteli.atrium.api.verbs.expect
 import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
-import com.charleskorn.kaml.testobjects.PolymorphicBoolean
-import com.charleskorn.kaml.testobjects.PolymorphicByte
-import com.charleskorn.kaml.testobjects.PolymorphicChar
-import com.charleskorn.kaml.testobjects.PolymorphicDouble
-import com.charleskorn.kaml.testobjects.PolymorphicEnum
-import com.charleskorn.kaml.testobjects.PolymorphicFloat
-import com.charleskorn.kaml.testobjects.PolymorphicInt
-import com.charleskorn.kaml.testobjects.PolymorphicLong
-import com.charleskorn.kaml.testobjects.PolymorphicNull
-import com.charleskorn.kaml.testobjects.PolymorphicNullableInt
-import com.charleskorn.kaml.testobjects.PolymorphicShort
-import com.charleskorn.kaml.testobjects.PolymorphicString
+import com.charleskorn.kaml.testobjects.UnwrappedBoolean
+import com.charleskorn.kaml.testobjects.UnwrappedByte
+import com.charleskorn.kaml.testobjects.UnwrappedChar
+import com.charleskorn.kaml.testobjects.UnwrappedDouble
+import com.charleskorn.kaml.testobjects.UnwrappedEnum
+import com.charleskorn.kaml.testobjects.UnwrappedFloat
+import com.charleskorn.kaml.testobjects.UnwrappedInt
+import com.charleskorn.kaml.testobjects.UnwrappedLong
+import com.charleskorn.kaml.testobjects.UnwrappedNull
+import com.charleskorn.kaml.testobjects.UnwrappedNullableInt
+import com.charleskorn.kaml.testobjects.UnwrappedShort
+import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.SimpleStructure
-import com.charleskorn.kaml.testobjects.PolymorphicUnit
+import com.charleskorn.kaml.testobjects.UnwrappedUnit
 import com.charleskorn.kaml.testobjects.PolymorphicWrapper
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
@@ -540,7 +540,7 @@ object YamlWritingTest : Spek({
         describe("handling simple polymorphic structures") {
             val yaml = Yaml(context = polymorphicModule)
             context("serializing a boolean structure") {
-                val input = PolymorphicWrapper(PolymorphicBoolean(true))
+                val input = PolymorphicWrapper(UnwrappedBoolean(true))
                 val output = yaml.stringify(PolymorphicWrapper.serializer(), input)
 
                 it("returns the value serialized in the expected YAML form") {
@@ -554,20 +554,20 @@ object YamlWritingTest : Spek({
 
             context("serializing a list of structures") {
                 val input = listOf(
-                    PolymorphicWrapper(PolymorphicNull),
-                    PolymorphicWrapper(PolymorphicUnit(Unit)),
-                    PolymorphicWrapper(PolymorphicBoolean(true)),
-                    PolymorphicWrapper(PolymorphicByte(24)),
-                    PolymorphicWrapper(PolymorphicShort(34)),
-                    PolymorphicWrapper(PolymorphicInt(44)),
-                    PolymorphicWrapper(PolymorphicLong(54L)),
-                    PolymorphicWrapper(PolymorphicFloat(2.4f)),
-                    PolymorphicWrapper(PolymorphicDouble(2.4)),
-                    PolymorphicWrapper(PolymorphicChar('2')),
-                    PolymorphicWrapper(PolymorphicString("24")),
-                    PolymorphicWrapper(PolymorphicEnum.TEST),
-                    PolymorphicWrapper(PolymorphicNullableInt(3)),
-                    PolymorphicWrapper(PolymorphicNullableInt(null))
+                    PolymorphicWrapper(UnwrappedNull),
+                    PolymorphicWrapper(UnwrappedUnit(Unit)),
+                    PolymorphicWrapper(UnwrappedBoolean(true)),
+                    PolymorphicWrapper(UnwrappedByte(24)),
+                    PolymorphicWrapper(UnwrappedShort(34)),
+                    PolymorphicWrapper(UnwrappedInt(44)),
+                    PolymorphicWrapper(UnwrappedLong(54L)),
+                    PolymorphicWrapper(UnwrappedFloat(2.4f)),
+                    PolymorphicWrapper(UnwrappedDouble(2.4)),
+                    PolymorphicWrapper(UnwrappedChar('2')),
+                    PolymorphicWrapper(UnwrappedString("24")),
+                    PolymorphicWrapper(UnwrappedEnum.TEST),
+                    PolymorphicWrapper(UnwrappedNullableInt(3)),
+                    PolymorphicWrapper(UnwrappedNullableInt(null))
                 )
                 val output = yaml.stringify(PolymorphicWrapper.serializer().list, input)
 
