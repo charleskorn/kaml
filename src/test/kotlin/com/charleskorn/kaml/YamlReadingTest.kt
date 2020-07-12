@@ -840,29 +840,6 @@ object YamlReadingTest : Spek({
                 }
             }
 
-            context("given some tagged input representing an object where the resulting type should be a sealed class (int)") {
-                val input = """
-                    element: !<sealedInt>
-                        value: 3
-                """.trimIndent()
-
-                context("parsing that input") {
-                    val result = Yaml.default.parse(SealedWrapper.serializer(), input)
-
-                    it("deserializes it to a Kotlin object") {
-                        expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedInt(3)))
-                    }
-                }
-
-                context("parsing that input as map") {
-                    val result = Yaml.default.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), Int.serializer())), input)
-
-                    it("deserializes it to a Map ignoring the tag") {
-                        expect(result).toBe(mapOf("element" to mapOf("value" to 3)))
-                    }
-                }
-            }
-
             context("given some tagged input representing an arbitrary list") {
                 val input = """
                     !!list
@@ -1226,6 +1203,14 @@ object YamlReadingTest : Spek({
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
+                    }
+                }
+
+                context("parsing that input as map") {
+                    val result = Yaml.default.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
+
+                    it("deserializes it to a map ignoring the tag") {
+                        expect(result).toBe(mapOf("element" to mapOf("value" to "asdfg")))
                     }
                 }
             }
