@@ -33,6 +33,7 @@ import com.charleskorn.kaml.testobjects.PolymorphicDouble
 import com.charleskorn.kaml.testobjects.PolymorphicEnum
 import com.charleskorn.kaml.testobjects.PolymorphicFloat
 import com.charleskorn.kaml.testobjects.PolymorphicInt
+import com.charleskorn.kaml.testobjects.PolymorphicInterface
 import com.charleskorn.kaml.testobjects.PolymorphicLong
 import com.charleskorn.kaml.testobjects.PolymorphicNull
 import com.charleskorn.kaml.testobjects.PolymorphicNullableInt
@@ -49,6 +50,7 @@ import kotlinx.serialization.ContextualSerialization
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.StructureKind
@@ -1195,7 +1197,52 @@ object YamlReadingTest : Spek({
             describe("given tags are used to store the type information") {
                 val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tags))
 
-                context("given some tagged input representing an object where the resulting type should be a sealed class") {
+                context("given some input where the value should be a sealed class") {
+                    val input = """
+                        !<sealedString>
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(TestSealedStructure.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
+                        }
+                    }
+
+                    context("parsing that input as map") {
+                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), String.serializer()), input)
+
+                        it("deserializes it to a map ignoring the tag") {
+                            expect(result).toBe(mapOf("value" to "asdfg"))
+                        }
+                    }
+                }
+
+                context("given some input where the value should be an unsealed class") {
+                    val input = """
+                        !<simpleString> "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.parse(PolymorphicSerializer(PolymorphicInterface::class), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(PolymorphicString("asdfg"))
+                        }
+                    }
+
+                    context("parsing that input as a string") {
+                        val result = polymorphicYaml.parse(String.serializer(), input)
+
+                        it("deserializes it to a string ignoring the tag") {
+                            expect(result).toBe("asdfg")
+                        }
+                    }
+                }
+
+                context("given some input for an object where the property value should be a sealed class") {
                     val input = """
                         element: !<sealedString>
                             value: "asdfg"
@@ -1218,7 +1265,7 @@ object YamlReadingTest : Spek({
                     }
                 }
 
-                context("given a polymorphic value on an object") {
+                context("given some input for an object where the property value is an unsealed type") {
                     val input = """
                         test: !<simpleInt> 42
                     """.trimIndent()
