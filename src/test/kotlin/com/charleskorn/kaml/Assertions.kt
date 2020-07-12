@@ -41,6 +41,11 @@ fun Expect<DuplicateKeyException>.key(assertionCreator: Expect<String>.() -> Uni
     feature(DuplicateKeyException::key).addAssertionsCreatedBy(assertionCreator)
 }
 
+@JvmName("MissingRequiredPropertyExceptionPropertyName")
+fun Expect<MissingRequiredPropertyException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
+    feature(MissingRequiredPropertyException::propertyName).addAssertionsCreatedBy(assertionCreator)
+}
+
 @JvmName("InvalidPropertyValueExceptionPropertyName")
 fun Expect<InvalidPropertyValueException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
     feature(InvalidPropertyValueException::propertyName).addAssertionsCreatedBy(assertionCreator)

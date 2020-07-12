@@ -36,11 +36,14 @@ class DuplicateKeyException(val originalLocation: Location, val duplicateLocatio
 
 class EmptyYamlDocumentException(message: String, location: Location) : YamlException(message, location)
 
-class InvalidPropertyValueException(val propertyName: String, val reason: String, location: Location, cause: Throwable?) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
+class InvalidPropertyValueException(val propertyName: String, val reason: String, location: Location, cause: Throwable? = null) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
 
 class MalformedYamlException(message: String, location: Location) : YamlException(message, location)
 
 class UnexpectedNullValueException(location: Location) : YamlException("Unexpected null or empty value for non-null field.", location)
+
+class MissingRequiredPropertyException(val propertyName: String, location: Location, cause: Throwable? = null) :
+    YamlException("Property '$propertyName' is required but it is missing.", location, cause)
 
 class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)

@@ -23,6 +23,7 @@ import kotlinx.serialization.CompositeDecoder.Companion.READ_DONE
 import kotlinx.serialization.CompositeDecoder.Companion.UNKNOWN_NAME
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.PolymorphicKind
 import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
@@ -40,6 +41,7 @@ import kotlin.reflect.KClass
 sealed class YamlInput(val node: YamlNode, override var context: SerialModule, val configuration: YamlConfiguration) : AbstractDecoder() {
     companion object {
         private val unknownPolymorphicTypeExceptionMessage: Regex = """^(.*) is not registered for polymorphic serialization in the scope of class (.*)$""".toRegex()
+        private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required, but it was missing$""".toRegex()
 
         fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
             is YamlNull -> when {
@@ -62,7 +64,10 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
                 is StructureKind.MAP -> YamlMapInput(node, context, configuration)
                 is UnionKind.CONTEXTUAL -> YamlMapLikeContextualDecoder(node, context, configuration)
-                is PolymorphicKind -> throw MissingTypeTagException(node.location)
+                is PolymorphicKind -> when (configuration.polymorphismStyle) {
+                    PolymorphismStyle.Tags -> throw MissingTypeTagException(node.location)
+                    PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, context, configuration)
+                }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.location)
             }
 
@@ -71,16 +76,52 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
                 else -> createFor(node.innerNode, context, configuration, descriptor)
             }
         }
+
+        private fun createPolymorphicMapDeserializer(node: YamlMap, context: SerialModule, configuration: YamlConfiguration): YamlPolymorphicInput {
+            when (val typeName = node.getValue("type")) {
+                is YamlList -> throw InvalidPropertyValueException("type", "expected a string, but got a list", typeName.location)
+                is YamlMap -> throw InvalidPropertyValueException("type", "expected a string, but got a map", typeName.location)
+                is YamlNull -> throw InvalidPropertyValueException("type", "expected a string, but got a null value", typeName.location)
+                is YamlTaggedNode -> throw InvalidPropertyValueException("type", "expected a string, but got a tagged value", typeName.location)
+                is YamlScalar -> {
+                    val remainingProperties = node.withoutKey("type")
+
+                    return YamlPolymorphicInput(typeName.content, remainingProperties, context, configuration)
+                }
+            }
+        }
+
+        private fun YamlMap.getValue(desiredKey: String): YamlNode {
+            this.entries.forEach { (keyNode, valueNode) ->
+                if (keyNode is YamlScalar && keyNode.content == desiredKey) {
+                    return valueNode
+                }
+            }
+
+            throw MissingRequiredPropertyException(desiredKey, this.location)
+        }
+
+        private fun YamlMap.withoutKey(key: String): YamlMap {
+            return this.copy(entries = entries.filterKeys { !(it is YamlScalar && it.content == key) })
+        }
     }
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
         try {
             return super.decodeSerializableValue(deserializer)
+        } catch (e: MissingFieldException) {
+            throwMissingRequiredPropertyException(e)
         } catch (e: SerializationException) {
             throwIfUnknownPolymorphicTypeException(e, deserializer)
 
             throw e
         }
+    }
+
+    private fun throwMissingRequiredPropertyException(e: MissingFieldException): Nothing {
+        val match = missingFieldExceptionMessage.matchEntire(e.message!!) ?: throw e
+
+        throw MissingRequiredPropertyException(match.groupValues[1], node.location, e)
     }
 
     private fun throwIfUnknownPolymorphicTypeException(e: Exception, deserializer: DeserializationStrategy<*>) {
