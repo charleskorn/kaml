@@ -96,6 +96,7 @@ println(result)
     data class Frontend(val hostname: String)
 
     @SerialName("backend")
+    @Serializable
     data class Backend(val database: String)
   }
 
