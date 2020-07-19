@@ -41,6 +41,7 @@ import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.StructureKind
@@ -1974,6 +1975,35 @@ object YamlReadingTest : Spek({
                 }
             }
         }
+
+        describe("parsing values with a contextual serializer") {
+            mapOf(
+                "scalar" to "2",
+                "list" to "[ thing ]",
+                "map" to "{ key: value }"
+            ).forEach { description, input ->
+                context("given some input representing a $description") {
+                    context("parsing that input using a contextual serializer at the top level") {
+                        val result = Yaml.default.parse(ContextualSerializer, input)
+
+                        it("the serializer receives the top-level object") {
+                            expect(result).toBe(description)
+                        }
+                    }
+
+                    context("parsing that input using a contextual serializer nested within an object") {
+                        @Serializable
+                        data class ObjectWithNestedContextualSerializer(@Serializable(with = ContextualSerializer::class) val thing: String)
+
+                        val result = Yaml.default.parse(ObjectWithNestedContextualSerializer.serializer(), "thing: $input")
+
+                        it("the serializer receives the correct object") {
+                            expect(result).toBe(ObjectWithNestedContextualSerializer(description))
+                        }
+                    }
+                }
+            }
+        }
     }
 })
 
@@ -2024,3 +2054,20 @@ private object LocationThrowingMapSerializer : KSerializer<Any> {
 }
 
 private class LocationInformationException(message: String) : RuntimeException(message)
+
+object ContextualSerializer : KSerializer<String> {
+    override val descriptor = SerialDescriptor("ContextualSerializer", UnionKind.CONTEXTUAL) {
+        element("string", SerialDescriptor("value", PrimitiveKind.STRING))
+        element("object", SerialDescriptor("thing", StructureKind.OBJECT))
+    }
+
+    override fun deserialize(decoder: Decoder): String {
+        val input = decoder.beginStructure(descriptor) as YamlInput
+        val type = input.node::class.simpleName!!
+        input.endStructure(descriptor)
+
+        return type.removePrefix("Yaml").toLowerCase()
+    }
+
+    override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
+}

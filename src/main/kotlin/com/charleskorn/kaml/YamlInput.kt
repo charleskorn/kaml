@@ -43,7 +43,7 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
         private val unknownPolymorphicTypeExceptionMessage: Regex = """^(.*) is not registered for polymorphic serialization in the scope of class (.*)$""".toRegex()
         private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required, but it was missing$""".toRegex()
 
-        fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
+        internal fun createFor(node: YamlNode, context: SerialModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
             is YamlNull -> when {
                 descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.location)
                 else -> YamlNullInput(node, context, configuration)
@@ -254,10 +254,6 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
             return currentElementDecoder
         }
 
-        if (descriptor.kind !is StructureKind.LIST) {
-            throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.location)
-        }
-
         return super.beginStructure(descriptor, *typeParams)
     }
 
@@ -283,7 +279,7 @@ private class YamlMapLikeContextualDecoder(private val map: YamlMap, context: Se
         return when (descriptor.kind) {
             is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(map, context, configuration)
             is StructureKind.MAP -> YamlMapInput(map, context, configuration)
-            else -> throw YamlException("Can't decode YAML map into ${descriptor.kind}", map.location)
+            else -> super.beginStructure(descriptor, *typeParams)
         }
     }
 
