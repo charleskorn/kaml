@@ -43,6 +43,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.PrimitiveKind
 import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.SerialKind
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.StructureKind
 import kotlinx.serialization.UnionKind
@@ -2004,6 +2005,69 @@ object YamlReadingTest : Spek({
                 }
             }
         }
+
+        describe("given the contextual serializer attempts to begin a structure that does not match the input") {
+            context("given the input is a map") {
+                val input = "a: b"
+
+                mapOf(
+                    PrimitiveKind.STRING to "a string",
+                    StructureKind.LIST to "a list"
+                ).forEach { kind, description ->
+                    context("attempting to begin $description") {
+                        it("throws an exception with the correct location information") {
+                            expect({ Yaml.default.parse(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                                message { toBe("Expected $description, but got a map") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                            }
+                        }
+                    }
+                }
+            }
+
+            context("given the input is a list") {
+                val input = "- a"
+
+                mapOf(
+                    StructureKind.OBJECT to "an object",
+                    StructureKind.CLASS to "an object",
+                    StructureKind.MAP to "a map",
+                    PrimitiveKind.STRING to "a string"
+                ).forEach { kind, description ->
+                    context("attempting to begin $description") {
+                        it("throws an exception with the correct location information") {
+                            expect({ Yaml.default.parse(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                                message { toBe("Expected $description, but got a list") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                            }
+                        }
+                    }
+                }
+            }
+
+            context("given the input is a scalar") {
+                val input = "2"
+
+                mapOf(
+                    StructureKind.OBJECT to "an object",
+                    StructureKind.CLASS to "an object",
+                    StructureKind.MAP to "a map",
+                    StructureKind.LIST to "a list"
+                ).forEach { kind, description ->
+                    context("attempting to begin $description") {
+                        it("throws an exception with the correct location information") {
+                            expect({ Yaml.default.parse(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                                message { toBe("Expected $description, but got a scalar value") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 })
 
@@ -2067,6 +2131,25 @@ object ContextualSerializer : KSerializer<String> {
         input.endStructure(descriptor)
 
         return type.removePrefix("Yaml").toLowerCase()
+    }
+
+    override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
+}
+
+class ContextualSerializerThatAttemptsToDeserializeIncorrectType(private val kind: SerialKind) : KSerializer<String> {
+    val innerDescriptor = SerialDescriptor("thing", kind)
+
+    override val descriptor = SerialDescriptor("ContextualSerializer", UnionKind.CONTEXTUAL) {
+        element("string", SerialDescriptor("value", PrimitiveKind.STRING))
+        element("object", innerDescriptor)
+    }
+
+    override fun deserialize(decoder: Decoder): String {
+        val input = decoder.beginStructure(descriptor) as YamlInput
+
+        input.beginStructure(innerDescriptor)
+
+        return "Should never get to this point"
     }
 
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()

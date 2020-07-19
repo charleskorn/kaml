@@ -50,20 +50,22 @@ sealed class YamlInput(val node: YamlNode, override var context: SerialModule, v
             }
 
             is YamlScalar -> when (descriptor.kind) {
-                is PrimitiveKind, UnionKind.ENUM_KIND, UnionKind.CONTEXTUAL -> YamlScalarInput(node, context, configuration)
+                is PrimitiveKind, UnionKind.ENUM_KIND -> YamlScalarInput(node, context, configuration)
+                is UnionKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
                 is PolymorphicKind -> throw MissingTypeTagException(node.location)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.location)
             }
 
             is YamlList -> when (descriptor.kind) {
-                is StructureKind.LIST, UnionKind.CONTEXTUAL -> YamlListInput(node, context, configuration)
+                is StructureKind.LIST -> YamlListInput(node, context, configuration)
+                is UnionKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.location)
             }
 
             is YamlMap -> when (descriptor.kind) {
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
                 is StructureKind.MAP -> YamlMapInput(node, context, configuration)
-                is UnionKind.CONTEXTUAL -> YamlMapLikeContextualDecoder(node, context, configuration)
+                is UnionKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
                 is PolymorphicKind -> when (configuration.polymorphismStyle) {
                     PolymorphismStyle.Tag -> throw MissingTypeTagException(node.location)
                     PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, context, configuration)
@@ -266,22 +268,12 @@ private class YamlListInput(val list: YamlList, context: SerialModule, configura
     }
 }
 
-private class YamlMapLikeContextualDecoder(private val map: YamlMap, context: SerialModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
-    override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        throw IllegalStateException("Must call beginStructure() and use returned Decoder")
-    }
+private class YamlContextualInput(node: YamlNode, context: SerialModule, configuration: YamlConfiguration) : YamlInput(node, context, configuration) {
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
+    override fun decodeValue(): Any = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
 
-    override fun decodeValue(): Any {
-        throw IllegalStateException("Must call beginStructure() and use returned Decoder")
-    }
-
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
-        return when (descriptor.kind) {
-            is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(map, context, configuration)
-            is StructureKind.MAP -> YamlMapInput(map, context, configuration)
-            else -> super.beginStructure(descriptor, *typeParams)
-        }
-    }
+    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder =
+        createFor(node, context, configuration, descriptor)
 
     override fun getCurrentLocation(): Location = node.location
 }
@@ -502,6 +494,7 @@ private val SerialKind.friendlyDescription: String
         return when (this) {
             is StructureKind.MAP -> "a map"
             is StructureKind.CLASS -> "an object"
+            is StructureKind.OBJECT -> "an object"
             is StructureKind.LIST -> "a list"
             is PrimitiveKind.STRING -> "a string"
             is PrimitiveKind.BOOLEAN -> "a boolean"
