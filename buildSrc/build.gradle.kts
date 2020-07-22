@@ -19,7 +19,7 @@
 plugins {
     `kotlin-dsl`
 
-    apply { id("com.github.ben-manes.versions") version "0.28.0" }
+    apply { id("com.github.ben-manes.versions") version "0.29.0" }
 }
 
 repositories {
