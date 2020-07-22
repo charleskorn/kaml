@@ -164,7 +164,7 @@ class YamlNodeReader(
         val anchor = event.anchor.get()
 
         return aliases.getOrElse(anchor) {
-            throw UnknownAnchorException(anchor.anchor, event.location)
+            throw UnknownAnchorException(anchor.value, event.location)
         }
     }
 

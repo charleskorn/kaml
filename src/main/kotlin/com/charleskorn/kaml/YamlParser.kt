@@ -34,7 +34,7 @@ class YamlParser(yamlSource: String) {
     init {
         consumeEventOfType(Event.ID.StreamStart)
 
-        if (peekEvent().isEvent(Event.ID.StreamEnd)) {
+        if (peekEvent().eventId == Event.ID.StreamEnd) {
             throw EmptyYamlDocumentException("The YAML document is empty.", Location(1, 1))
         }
 
@@ -52,7 +52,7 @@ class YamlParser(yamlSource: String) {
     fun consumeEventOfType(type: Event.ID) {
         val event = consumeEvent()
 
-        if (!event.isEvent(type)) {
+        if (event.eventId != type) {
             throw MalformedYamlException("Unexpected ${event.eventId}, expected $type", Location(event.startMark.get().line, event.startMark.get().column))
         }
     }
