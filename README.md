@@ -1,6 +1,6 @@
 # kaml
 
-[![Build Status](https://img.shields.io/travis/charleskorn/kaml/master.svg)](https://travis-ci.org/charleskorn/kaml)
+[![Build Status](https://img.shields.io/travis/com/charleskorn/kaml/master.svg)](https://travis-ci.com/charleskorn/kaml)
 [![Coverage](https://img.shields.io/codecov/c/github/charleskorn/kaml.svg)](https://codecov.io/gh/charleskorn/kaml)
 [![License](https://img.shields.io/github/license/charleskorn/kaml.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Maven Central](https://img.shields.io/maven-central/v/com.charleskorn.kaml/kaml.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22com.charleskorn.kaml%22%20AND%20a:%22kaml%22)
