@@ -31,7 +31,6 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
@@ -39,7 +38,6 @@ import org.gradle.kotlin.dsl.register
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
-import java.nio.file.Files
 import java.util.Base64
 
 fun Project.configurePublishing() {
@@ -49,24 +47,35 @@ fun Project.configurePublishing() {
 
     val usernameEnvironmentVariableName = "OSSRH_USERNAME"
     val passwordEnvironmentVariableName = "OSSRH_PASSWORD"
+    val keyIdEnvironmentVariableName = "GPG_KEY_ID"
+    val keyRingEnvironmentVariableName = "GPG_KEY_RING"
+    val keyPassphraseEnvironmentVariableName = "GPG_KEY_PASSPHRASE"
+
     val repoUsername = System.getenv(usernameEnvironmentVariableName)
     val repoPassword = System.getenv(passwordEnvironmentVariableName)
+    val keyId = System.getenv(keyIdEnvironmentVariableName)
+    val keyRing = System.getenv(keyRingEnvironmentVariableName)
+    val keyPassphrase = System.getenv(keyPassphraseEnvironmentVariableName)
 
     val validateCredentialsTask = tasks.register("validateMavenRepositoryCredentials") {
         doFirst {
-            if (repoUsername.isNullOrBlank()) {
-                throw RuntimeException("Environment variable '$usernameEnvironmentVariableName' not set.")
-            }
-
-            if (repoPassword.isNullOrBlank()) {
-                throw RuntimeException("Environment variable '$passwordEnvironmentVariableName' not set.")
+            listOf(
+                usernameEnvironmentVariableName,
+                passwordEnvironmentVariableName,
+                keyIdEnvironmentVariableName,
+                keyRingEnvironmentVariableName,
+                keyPassphraseEnvironmentVariableName
+            ).forEach { name ->
+                if (System.getenv(name).isNullOrBlank()) {
+                    throw RuntimeException("Environment variable '$name' not set.")
+                }
             }
         }
     }
 
     createJarTasks()
     createPublishingTasks(repoUsername, repoPassword, validateCredentialsTask)
-    createSigningTasks()
+    createSigningTasks(keyId, keyRing, keyPassphrase, validateCredentialsTask)
     createReleaseTasks(repoUsername, repoPassword, validateCredentialsTask)
 }
 
@@ -141,15 +150,22 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
     }
 }
 
-private fun Project.createSigningTasks() {
+private fun Project.createSigningTasks(
+    keyId: String?,
+    keyRing: String?,
+    keyPassphrase: String?,
+    validateCredentialsTask: TaskProvider<Task>
+) {
     configure<SigningExtension> {
         sign(publishing.publications["mavenJava"])
 
-        val keyId = getEnvironmentVariableOrThrow("GPG_KEY_ID")
-        val keyRing = getEnvironmentVariableOrThrow("GPG_KEY_RING")
-        val keyPassphrase = getEnvironmentVariableOrThrow("GPG_KEY_PASSPHRASE")
+        if (!keyId.isNullOrEmpty() && !keyPassphrase.isNullOrEmpty() && !keyPassphrase.isNullOrEmpty()) {
+            useInMemoryPgpKeys(keyId, Base64.getDecoder().decode(keyRing).toString(Charsets.UTF_8), keyPassphrase)
+        }
+    }
 
-        useInMemoryPgpKeys(keyId, Base64.getDecoder().decode(keyRing).toString(Charsets.UTF_8), keyPassphrase)
+    tasks.named<Sign>("signMavenJavaPublication").configure {
+        dependsOn(validateCredentialsTask)
     }
 }
 
@@ -198,7 +214,3 @@ private val Project.sourceSets: SourceSetContainer
 
 private val Project.publishing: PublishingExtension
     get() = extensions.getByType<PublishingExtension>()
-
-private fun getEnvironmentVariableOrThrow(name: String): String = System.getenv().getOrElse(name) {
-    throw RuntimeException("Environment variable '$name' not set.")
-}
