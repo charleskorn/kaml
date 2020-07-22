@@ -31,6 +31,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
@@ -38,6 +39,7 @@ import org.gradle.kotlin.dsl.register
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
+import java.nio.file.Files
 import java.util.Base64
 
 fun Project.configurePublishing() {
@@ -52,13 +54,12 @@ fun Project.configurePublishing() {
 
     val validateCredentialsTask = tasks.register("validateMavenRepositoryCredentials") {
         doFirst {
-            listOf(
-                usernameEnvironmentVariableName,
-                passwordEnvironmentVariableName
-            ).forEach { name ->
-                if (System.getenv(name).isNullOrBlank()) {
-                    throw RuntimeException("Environment variable '$name' not set.")
-                }
+            if (repoUsername.isNullOrBlank()) {
+                throw RuntimeException("Environment variable '$usernameEnvironmentVariableName' not set.")
+            }
+
+            if (repoPassword.isNullOrBlank()) {
+                throw RuntimeException("Environment variable '$passwordEnvironmentVariableName' not set.")
             }
         }
     }
@@ -141,38 +142,25 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
 }
 
 private fun Project.createSigningTasks() {
-    val keyIdEnvironmentVariableName = "GPG_KEY_ID"
-    val keyRingEnvironmentVariableName = "GPG_KEY_RING"
-    val keyPassphraseEnvironmentVariableName = "GPG_KEY_PASSPHRASE"
-
-    val keyId = System.getenv(keyIdEnvironmentVariableName)
-    val keyRing = System.getenv(keyRingEnvironmentVariableName)
-    val keyPassphrase = System.getenv(keyPassphraseEnvironmentVariableName)
-
     configure<SigningExtension> {
         sign(publishing.publications["mavenJava"])
-
-        if (!keyId.isNullOrEmpty() && !keyPassphrase.isNullOrEmpty() && !keyPassphrase.isNullOrEmpty()) {
-            useInMemoryPgpKeys(keyId, Base64.getDecoder().decode(keyRing).toString(Charsets.UTF_8), keyPassphrase)
-        }
-    }
-
-    val validateKeyTask = tasks.register("validateGPGKeyConfiguration") {
-        doFirst {
-            listOf(
-                keyIdEnvironmentVariableName,
-                keyRingEnvironmentVariableName,
-                keyPassphraseEnvironmentVariableName
-            ).forEach { name ->
-                if (System.getenv(name).isNullOrBlank()) {
-                    throw RuntimeException("Environment variable '$name' not set.")
-                }
-            }
-        }
     }
 
     tasks.named<Sign>("signMavenJavaPublication").configure {
-        dependsOn(validateKeyTask)
+        doFirst {
+            val keyId = getEnvironmentVariableOrThrow("GPG_KEY_ID")
+            val keyRing = getEnvironmentVariableOrThrow("GPG_KEY_RING")
+            val keyPassphrase = getEnvironmentVariableOrThrow("GPG_KEY_PASSPHRASE")
+
+            val keyRingFilePath = Files.createTempFile("kaml-signing", ".gpg")
+            keyRingFilePath.toFile().deleteOnExit()
+
+            Files.write(keyRingFilePath, Base64.getDecoder().decode(keyRing))
+
+            project.extra["signing.keyId"] = keyId
+            project.extra["signing.secretKeyRingFile"] = keyRingFilePath.toString()
+            project.extra["signing.password"] = keyPassphrase
+        }
     }
 }
 
@@ -221,3 +209,7 @@ private val Project.sourceSets: SourceSetContainer
 
 private val Project.publishing: PublishingExtension
     get() = extensions.getByType<PublishingExtension>()
+
+private fun getEnvironmentVariableOrThrow(name: String): String = System.getenv().getOrElse(name) {
+    throw RuntimeException("Environment variable '$name' not set.")
+}
