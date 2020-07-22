@@ -144,23 +144,12 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
 private fun Project.createSigningTasks() {
     configure<SigningExtension> {
         sign(publishing.publications["mavenJava"])
-    }
 
-    tasks.named<Sign>("signMavenJavaPublication").configure {
-        doFirst {
-            val keyId = getEnvironmentVariableOrThrow("GPG_KEY_ID")
-            val keyRing = getEnvironmentVariableOrThrow("GPG_KEY_RING")
-            val keyPassphrase = getEnvironmentVariableOrThrow("GPG_KEY_PASSPHRASE")
+        val keyId = getEnvironmentVariableOrThrow("GPG_KEY_ID")
+        val keyRing = getEnvironmentVariableOrThrow("GPG_KEY_RING")
+        val keyPassphrase = getEnvironmentVariableOrThrow("GPG_KEY_PASSPHRASE")
 
-            val keyRingFilePath = Files.createTempFile("kaml-signing", ".gpg")
-            keyRingFilePath.toFile().deleteOnExit()
-
-            Files.write(keyRingFilePath, Base64.getDecoder().decode(keyRing))
-
-            project.extra["signing.keyId"] = keyId
-            project.extra["signing.secretKeyRingFile"] = keyRingFilePath.toString()
-            project.extra["signing.password"] = keyPassphrase
-        }
+        useInMemoryPgpKeys(keyId, Base64.getDecoder().decode(keyRing).toString(Charsets.UTF_8), keyPassphrase)
     }
 }
 
