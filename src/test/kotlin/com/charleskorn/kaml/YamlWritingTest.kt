@@ -160,8 +160,9 @@ object YamlWritingTest : Spek({
             context("serializing an empty string") {
                 val output = Yaml.default.stringify(String.serializer(), "")
 
+                // The '---' is necessary as explained here: https://bitbucket.org/asomov/snakeyaml-engine/issues/23/emitting-only-an-empty-string-adds-to
                 it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe("""""""")
+                    expect(output).toBe("""--- """"")
                 }
             }
 
