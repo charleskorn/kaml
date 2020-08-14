@@ -31,7 +31,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.72")
+        classpath("org.jetbrains.kotlin:kotlin-serialization:1.4.0")
     }
 }
 
