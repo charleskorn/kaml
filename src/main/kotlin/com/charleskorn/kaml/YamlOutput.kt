@@ -18,13 +18,13 @@
 
 package com.charleskorn.kaml
 
-import kotlinx.serialization.CompositeEncoder
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicKind
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.StructureKind
-import kotlinx.serialization.builtins.AbstractEncoder
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.AbstractEncoder
+import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.DumpSettings
 import org.snakeyaml.engine.v2.api.StreamDataWriter
 import org.snakeyaml.engine.v2.common.FlowStyle
@@ -40,9 +40,10 @@ import org.snakeyaml.engine.v2.events.SequenceStartEvent
 import org.snakeyaml.engine.v2.events.StreamStartEvent
 import java.util.Optional
 
+@OptIn(ExperimentalSerializationApi::class)
 internal class YamlOutput(
     writer: StreamDataWriter,
-    override val context: SerialModule,
+    override val serializersModule: SerializersModule,
     private val configuration: YamlConfiguration
 ) : AbstractEncoder() {
     private val settings = DumpSettings.builder().build()
@@ -87,7 +88,7 @@ internal class YamlOutput(
         return super.encodeElement(descriptor, index)
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeSerializers: KSerializer<*>): CompositeEncoder {
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         when (descriptor.kind) {
             is PolymorphicKind -> shouldReadTypeName = true
             StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
@@ -111,7 +112,7 @@ internal class YamlOutput(
             }
         }
 
-        return super.beginStructure(descriptor, *typeSerializers)
+        return super.beginStructure(descriptor)
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {

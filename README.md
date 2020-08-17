@@ -30,7 +30,7 @@ val input = """
           - Dan
     """.trimIndent()
 
-val result = Yaml.default.parse(Team.serializer(), input)
+val result = Yaml.default.decodeFromString(Team.serializer(), input)
 
 println(result)
 ```
@@ -46,7 +46,7 @@ data class Team(
 
 val input = Team("Amy", listOf("Bob", "Cindy", "Dan"))
 
-val result = Yaml.default.stringify(Team.serializer(), input)
+val result = Yaml.default.encodeToString(Team.serializer(), input)
 
 println(result)
 ```
@@ -108,7 +108,7 @@ println(result)
     Backend("db-1")
   ))
 
-  val result = Yaml.default.stringify(Config.serializer(), config)
+  val result = Yaml.default.encodeToString(Config.serializer(), config)
 
   println(result)
   ```

@@ -31,12 +31,12 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-serialization:1.3.72")
+        classpath(kotlin("serialization", version = "1.4.0"))
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.0"
 
     apply { id("com.github.ben-manes.versions") version "0.29.0" }
 }
@@ -56,7 +56,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.1")
-    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-runtime", version = "0.20.0")
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.0.0-RC")
 
     val spekVersion = "2.0.12"
 
@@ -68,7 +68,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-Xuse-experimental=kotlin.Experimental")
+    kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
 }
 
 configureAssemble()
