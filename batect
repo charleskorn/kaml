@@ -8,8 +8,8 @@
     # You should commit this file to version control alongside the rest of your project. It should not be installed globally.
     # For more information, visit https://github.com/batect/batect.
 
-    VERSION="0.56.0"
-    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-c909614573381de3f82d23cccb3247f42b1b3abd18e9c546425e5c9cfc7f24e1}"
+    VERSION="0.58.1"
+    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-6c85bdcbfe4f211fde3e29b7fee1eb0eeb523827593da3f4a05e78b2611450d7}"
     DOWNLOAD_URL_ROOT=${BATECT_DOWNLOAD_URL_ROOT:-"https://dl.bintray.com/batect/batect"}
     DOWNLOAD_URL=${BATECT_DOWNLOAD_URL:-"$DOWNLOAD_URL_ROOT/$VERSION/bin/batect-$VERSION.jar"}
     QUIET_DOWNLOAD=${BATECT_QUIET_DOWNLOAD:-false}
@@ -17,12 +17,14 @@
     BATECT_WRAPPER_CACHE_DIR=${BATECT_CACHE_DIR:-"$HOME/.batect/cache"}
     VERSION_CACHE_DIR="$BATECT_WRAPPER_CACHE_DIR/$VERSION"
     JAR_PATH="$VERSION_CACHE_DIR/batect-$VERSION.jar"
+    BATECT_WRAPPER_DID_DOWNLOAD=false
 
     SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     function main() {
         if ! haveVersionCachedLocally; then
             download
+            BATECT_WRAPPER_DID_DOWNLOAD=true
         fi
 
         checkChecksum
@@ -80,6 +82,7 @@
 
         BATECT_WRAPPER_SCRIPT_DIR="$SCRIPT_PATH" \
         BATECT_WRAPPER_CACHE_DIR="$BATECT_WRAPPER_CACHE_DIR" \
+        BATECT_WRAPPER_DID_DOWNLOAD="$BATECT_WRAPPER_DID_DOWNLOAD" \
         HOSTNAME="$HOSTNAME" \
         exec \
             java \
