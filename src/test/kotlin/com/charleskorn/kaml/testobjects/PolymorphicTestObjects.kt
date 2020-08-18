@@ -18,15 +18,15 @@
 
 package com.charleskorn.kaml.testobjects
 
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.UnitSerializer
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
 
 @Serializable
@@ -56,12 +56,12 @@ data class UnsealedString(val value: String) : UnsealedClass()
 interface UnwrappedInterface
 
 object UnwrappedNull : UnwrappedInterface {
-    val kSerializer: KSerializer<UnwrappedNull> = UnwrappedValueSerializer(UnitSerializer().nullable, "simpleNull", { UnwrappedNull }, { null })
+    val kSerializer: KSerializer<UnwrappedNull> = UnwrappedValueSerializer(Unit.serializer().nullable, "simpleNull", { UnwrappedNull }, { null })
 }
 
 data class UnwrappedUnit(val data: Unit) : UnwrappedInterface {
     companion object {
-        val kSerializer = UnwrappedValueSerializer(UnitSerializer(), "simpleUnit", ::UnwrappedUnit, UnwrappedUnit::data)
+        val kSerializer = UnwrappedValueSerializer(Unit.serializer(), "simpleUnit", ::UnwrappedUnit, UnwrappedUnit::data)
     }
 }
 
@@ -135,6 +135,7 @@ enum class UnwrappedEnum : UnwrappedInterface {
     TEST, TEST2;
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 fun SerialDescriptor.withName(newName: String): SerialDescriptor {
     return object : SerialDescriptor by this {
         override val serialName: String = newName
@@ -157,25 +158,21 @@ class UnwrappedValueSerializer<S, T>(private val valueSerializer: KSerializer<S>
 data class PolymorphicWrapper(val test: UnwrappedInterface)
 
 val polymorphicModule = SerializersModule {
-    polymorphic(UnwrappedInterface::class) {
-        UnwrappedNull::class with UnwrappedNull.kSerializer
-        UnwrappedUnit::class with UnwrappedUnit.kSerializer
-        UnwrappedBoolean::class with UnwrappedBoolean.kSerializer
-        UnwrappedByte::class with UnwrappedByte.kSerializer
-        UnwrappedShort::class with UnwrappedShort.kSerializer
-        UnwrappedInt::class with UnwrappedInt.kSerializer
-        UnwrappedLong::class with UnwrappedLong.kSerializer
-        UnwrappedFloat::class with UnwrappedFloat.kSerializer
-        UnwrappedDouble::class with UnwrappedDouble.kSerializer
-        UnwrappedChar::class with UnwrappedChar.kSerializer
-        UnwrappedString::class with UnwrappedString.kSerializer
-        UnwrappedEnum::class with UnwrappedEnum.serializer()
-        UnwrappedNullableInt::class with UnwrappedNullableInt.kSerializer
-        UnwrappedClass::class with UnwrappedClass.serializer()
-    }
+    polymorphic(UnwrappedInterface::class, UnwrappedNull::class, UnwrappedNull.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedUnit::class, UnwrappedUnit.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedBoolean::class, UnwrappedBoolean.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedByte::class, UnwrappedByte.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedShort::class, UnwrappedShort.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedInt::class, UnwrappedInt.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedLong::class, UnwrappedLong.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedFloat::class, UnwrappedFloat.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedDouble::class, UnwrappedDouble.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedChar::class, UnwrappedChar.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedString::class, UnwrappedString.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedEnum::class, UnwrappedEnum.serializer())
+    polymorphic(UnwrappedInterface::class, UnwrappedNullableInt::class, UnwrappedNullableInt.kSerializer)
+    polymorphic(UnwrappedInterface::class, UnwrappedClass::class, UnwrappedClass.serializer())
 
-    polymorphic(UnsealedClass::class) {
-        UnsealedBoolean::class with UnsealedBoolean.serializer()
-        UnsealedString::class with UnsealedString.serializer()
-    }
+    polymorphic(UnsealedClass::class, UnsealedBoolean::class, UnsealedBoolean.serializer())
+    polymorphic(UnsealedClass::class, UnsealedString::class, UnsealedString.serializer())
 }

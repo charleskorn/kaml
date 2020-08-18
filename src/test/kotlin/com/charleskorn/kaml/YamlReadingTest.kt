@@ -16,6 +16,8 @@
 
 */
 
+@file:OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
+
 package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.fluent.en_GB.cause
@@ -36,21 +38,25 @@ import com.charleskorn.kaml.testobjects.UnwrappedInt
 import com.charleskorn.kaml.testobjects.UnwrappedInterface
 import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
-import kotlinx.serialization.ContextualSerialization
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.PrimitiveKind
-import kotlinx.serialization.SerialDescriptor
-import kotlinx.serialization.SerialKind
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.StructureKind
-import kotlinx.serialization.UnionKind
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.list
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.serializersModuleOf
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -62,7 +68,7 @@ object YamlReadingTest : Spek({
                 val input = "hello"
 
                 context("parsing that input as a string") {
-                    val result = Yaml.default.parse(String.serializer(), input)
+                    val result = Yaml.default.decodeFromString(String.serializer(), input)
 
                     it("deserializes it to the expected string value") {
                         expect(result).toBe("hello")
@@ -70,7 +76,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable string") {
-                    val result = Yaml.default.parse(String.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(String.serializer().nullable, input)
 
                     it("deserializes it to the expected string value") {
                         expect(result).toBe("hello")
@@ -79,7 +85,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -90,7 +96,7 @@ object YamlReadingTest : Spek({
                 val input = "123"
 
                 context("parsing that input as an integer") {
-                    val result = Yaml.default.parse(Int.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Int.serializer(), input)
 
                     it("deserializes it to the expected integer") {
                         expect(result).toBe(123)
@@ -98,7 +104,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a long") {
-                    val result = Yaml.default.parse(Long.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Long.serializer(), input)
 
                     it("deserializes it to the expected long") {
                         expect(result).toBe(123)
@@ -106,7 +112,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a short") {
-                    val result = Yaml.default.parse(Short.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Short.serializer(), input)
 
                     it("deserializes it to the expected short") {
                         expect(result).toBe(123)
@@ -114,7 +120,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a byte") {
-                    val result = Yaml.default.parse(Byte.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Byte.serializer(), input)
 
                     it("deserializes it to the expected byte") {
                         expect(result).toBe(123)
@@ -122,7 +128,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a double") {
-                    val result = Yaml.default.parse(Double.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Double.serializer(), input)
 
                     it("deserializes it to the expected double") {
                         expect(result).toBe(123.0)
@@ -130,7 +136,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a float") {
-                    val result = Yaml.default.parse(Float.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Float.serializer(), input)
 
                     it("deserializes it to the expected float") {
                         expect(result).toBe(123.0f)
@@ -138,7 +144,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable integer") {
-                    val result = Yaml.default.parse(Int.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Int.serializer().nullable, input)
 
                     it("deserializes it to the expected integer") {
                         expect(result).toBe(123)
@@ -146,7 +152,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable long") {
-                    val result = Yaml.default.parse(Long.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Long.serializer().nullable, input)
 
                     it("deserializes it to the expected long") {
                         expect(result).toBe(123)
@@ -154,7 +160,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable short") {
-                    val result = Yaml.default.parse(Short.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Short.serializer().nullable, input)
 
                     it("deserializes it to the expected short") {
                         expect(result).toBe(123)
@@ -162,7 +168,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable byte") {
-                    val result = Yaml.default.parse(Byte.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Byte.serializer().nullable, input)
 
                     it("deserializes it to the expected byte") {
                         expect(result).toBe(123)
@@ -170,7 +176,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable double") {
-                    val result = Yaml.default.parse(Double.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Double.serializer().nullable, input)
 
                     it("deserializes it to the expected double") {
                         expect(result).toBe(123.0)
@@ -178,7 +184,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable float") {
-                    val result = Yaml.default.parse(Float.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Float.serializer().nullable, input)
 
                     it("deserializes it to the expected float") {
                         expect(result).toBe(123.0f)
@@ -190,7 +196,7 @@ object YamlReadingTest : Spek({
                 val input = "true"
 
                 context("parsing that input as a boolean") {
-                    val result = Yaml.default.parse(Boolean.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Boolean.serializer(), input)
 
                     it("deserializes it to the expected boolean value") {
                         expect(result).toBe(true)
@@ -198,7 +204,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable boolean") {
-                    val result = Yaml.default.parse(Boolean.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Boolean.serializer().nullable, input)
 
                     it("deserializes it to the expected boolean value") {
                         expect(result).toBe(true)
@@ -210,7 +216,7 @@ object YamlReadingTest : Spek({
                 val input = "c"
 
                 context("parsing that input as a character") {
-                    val result = Yaml.default.parse(Char.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Char.serializer(), input)
 
                     it("deserializes it to the expected character value") {
                         expect(result).toBe('c')
@@ -218,7 +224,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable character") {
-                    val result = Yaml.default.parse(Char.serializer().nullable, input)
+                    val result = Yaml.default.decodeFromString(Char.serializer().nullable, input)
 
                     it("deserializes it to the expected character value") {
                         expect(result).toBe('c')
@@ -229,10 +235,10 @@ object YamlReadingTest : Spek({
             mapOf(
                 "Value1" to TestEnum.Value1,
                 "Value2" to TestEnum.Value2
-            ).forEach { input, expectedValue ->
+            ).forEach { (input, expectedValue) ->
                 context("given the input '$input'") {
                     context("parsing that input as an enumeration value") {
-                        val result = Yaml.default.parse(TestEnum.serializer(), input)
+                        val result = Yaml.default.decodeFromString(TestEnum.serializer(), input)
 
                         it("deserializes it to the expected enumeration value") {
                             expect(result).toBe(expectedValue)
@@ -243,7 +249,7 @@ object YamlReadingTest : Spek({
 
             context("parsing an invalid enumeration value") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(TestEnum.serializer(), "nonsense") }).toThrow<YamlScalarFormatException> {
+                    expect({ Yaml.default.decodeFromString(TestEnum.serializer(), "nonsense") }).toThrow<YamlScalarFormatException> {
                         message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -256,7 +262,7 @@ object YamlReadingTest : Spek({
             val input = "null"
 
             context("parsing a null value as a nullable string") {
-                val result = Yaml.default.parse(String.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(String.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -265,7 +271,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable string") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(String.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(String.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -274,7 +280,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable integer") {
-                val result = Yaml.default.parse(Int.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Int.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -283,7 +289,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable integer") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Int.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Int.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -292,7 +298,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable long") {
-                val result = Yaml.default.parse(Long.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Long.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -301,7 +307,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable long") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Long.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Long.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -310,7 +316,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable short") {
-                val result = Yaml.default.parse(Short.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Short.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -319,7 +325,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable short") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Short.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Short.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -328,7 +334,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable byte") {
-                val result = Yaml.default.parse(Byte.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Byte.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -337,7 +343,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable byte") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Byte.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Byte.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -346,7 +352,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable double") {
-                val result = Yaml.default.parse(Double.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Double.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -355,7 +361,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable double") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Double.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Double.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -364,7 +370,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable float") {
-                val result = Yaml.default.parse(Float.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Float.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -373,7 +379,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable float") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Float.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Float.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -382,7 +388,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable boolean") {
-                val result = Yaml.default.parse(Boolean.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Boolean.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -391,7 +397,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable boolean") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Boolean.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Boolean.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -400,7 +406,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable character") {
-                val result = Yaml.default.parse(Char.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Char.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -409,7 +415,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable character") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(Char.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(Char.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -418,7 +424,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable enum") {
-                val result = Yaml.default.parse(TestEnum.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(TestEnum.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -427,7 +433,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable enum") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(TestEnum.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(TestEnum.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -436,7 +442,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable list") {
-                val result = Yaml.default.parse(String.serializer().list.nullable, input)
+                val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()).nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -445,7 +451,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable list") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(String.serializer().list, input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -454,7 +460,7 @@ object YamlReadingTest : Spek({
             }
 
             context("parsing a null value as a nullable object") {
-                val result = Yaml.default.parse(ComplexStructure.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(ComplexStructure.serializer().nullable, input)
 
                 it("returns a null value") {
                     expect(result).toBe(null)
@@ -463,7 +469,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value as a non-nullable object") {
                 it("throws an appropriate exception") {
-                    expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
+                    expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<UnexpectedNullValueException> {
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
@@ -473,7 +479,7 @@ object YamlReadingTest : Spek({
 
             context("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
                 it("throws an exception with the correct location information") {
-                    expect({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                    expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                         message { toBe("Serializer called with location: 1, 1") }
                     }
                 }
@@ -489,7 +495,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(String.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf("thing1", "thing2", "thing3"))
@@ -497,7 +503,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a nullable list") {
-                    val result = Yaml.default.parse(String.serializer().list.nullable, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()).nullable, input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf("thing1", "thing2", "thing3"))
@@ -506,7 +512,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(LocationThrowingSerializer.list, input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(ListSerializer(LocationThrowingSerializer), input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 3") }
                         }
                     }
@@ -521,7 +527,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list of integers") {
-                    val result = Yaml.default.parse(Int.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Int.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(123, 45, 6))
@@ -529,7 +535,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a list of longs") {
-                    val result = Yaml.default.parse(Long.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Long.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(123L, 45, 6))
@@ -537,7 +543,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a list of shorts") {
-                    val result = Yaml.default.parse(Short.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Short.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(123.toShort(), 45, 6))
@@ -545,7 +551,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a list of bytes") {
-                    val result = Yaml.default.parse(Byte.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Byte.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(123.toByte(), 45, 6))
@@ -553,7 +559,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a list of doubles") {
-                    val result = Yaml.default.parse(Double.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Double.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(123.0, 45.0, 6.0))
@@ -561,7 +567,7 @@ object YamlReadingTest : Spek({
                 }
 
                 context("parsing that input as a list of floats") {
-                    val result = Yaml.default.parse(Float.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Float.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(123.0f, 45.0f, 6.0f))
@@ -576,7 +582,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(Boolean.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Boolean.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(true, false))
@@ -591,7 +597,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(TestEnum.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(TestEnum.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf(TestEnum.Value1, TestEnum.Value2))
@@ -606,7 +612,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(Char.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Char.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf('a', 'b'))
@@ -621,7 +627,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(String.serializer().nullable.list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(String.serializer().nullable), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(listOf("thing1", null))
@@ -636,7 +642,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(String.serializer().list.list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(ListSerializer(String.serializer())), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(
@@ -656,7 +662,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as a list") {
-                    val result = Yaml.default.parse(SimpleStructure.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(SimpleStructure.serializer()), input)
 
                     it("deserializes it to the expected value") {
                         expect(result).toBe(
@@ -687,7 +693,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(ComplexStructure.serializer(), input)
+                    val result = Yaml.default.decodeFromString(ComplexStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(
@@ -725,7 +731,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(ComplexStructure.serializer(), input)
+                    val result = Yaml.default.decodeFromString(ComplexStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(
@@ -762,7 +768,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(ComplexStructure.serializer(), input)
+                    val result = Yaml.default.decodeFromString(ComplexStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(
@@ -792,7 +798,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(Team.serializer(), input)
+                    val result = Yaml.default.decodeFromString(Team.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(Team(listOf("Alex", "Jamie")))
@@ -809,7 +815,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(NestedObjects.serializer(), input)
+                    val result = Yaml.default.decodeFromString(NestedObjects.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
@@ -826,7 +832,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(NestedObjects.serializer(), input)
+                    val result = Yaml.default.decodeFromString(NestedObjects.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie")))
@@ -842,7 +848,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as list") {
-                    val result = Yaml.default.parse(Int.serializer().list, input)
+                    val result = Yaml.default.decodeFromString(ListSerializer(Int.serializer()), input)
                     it("deserializes it to a list ignoring the tag") {
                         expect(result).toBe(listOf(5, 3))
                     }
@@ -850,7 +856,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -864,7 +870,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as map") {
-                    val result = Yaml.default.parse(MapSerializer
+                    val result = Yaml.default.decodeFromString(MapSerializer
                         (String.serializer(), String.serializer()), input)
                     it("deserializes it to a Map ignoring the tag") {
                         expect(result).toBe(mapOf("foo" to "bar"))
@@ -873,7 +879,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(LocationThrowingMapSerializer, input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(LocationThrowingMapSerializer, input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -895,7 +901,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MissingRequiredPropertyException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<MissingRequiredPropertyException> {
                             message { toBe("Property 'string' is required but it is missing.") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -912,7 +918,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
                             message { toBe("Unknown property 'abc123'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -930,7 +936,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
                             message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -946,7 +952,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
                             message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -962,7 +968,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
                             message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -978,7 +984,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<MalformedYamlException> {
                             message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(1) }
                             column { toBe(1) }
@@ -998,13 +1004,13 @@ object YamlReadingTest : Spek({
                     "enum" to "Value 'xxx' is not a valid option, permitted choices are: Value1, Value2",
                     "boolean" to "Value 'xxx' is not a valid boolean, permitted choices are: true or false",
                     "char" to "Value 'xxx' is not a valid character value."
-                ).forEach { fieldName, errorMessage ->
+                ).forEach { (fieldName, errorMessage) ->
                     context("given the invalid field represents a $fieldName") {
                         val input = "$fieldName: xxx"
 
                         context("parsing that input") {
                             it("throws an appropriate exception") {
-                                expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                     message { toBe("Value for '$fieldName' is invalid: $errorMessage") }
                                     line { toBe(1) }
                                     column { toBe(fieldName.length + 3) }
@@ -1022,7 +1028,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(SimpleStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'name' is invalid: Unexpected null or empty value for non-null field.") }
                             line { toBe(1) }
                             column { toBe(7) }
@@ -1038,7 +1044,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(NestedObjects.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'firstPerson' is invalid: Unexpected null or empty value for non-null field.") }
                             line { toBe(1) }
                             column { toBe(14) }
@@ -1056,7 +1062,7 @@ object YamlReadingTest : Spek({
                 val input = "firstPerson: null"
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(NullableNestedObject.serializer(), input)
+                    val result = Yaml.default.decodeFromString(NullableNestedObject.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(NullableNestedObject(null))
@@ -1069,7 +1075,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input") {
                     it("throws an appropriate exception") {
-                        expect({ Yaml.default.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'members' is invalid: Unexpected null or empty value for non-null field.") }
                             line { toBe(1) }
                             column { toBe(10) }
@@ -1087,7 +1093,7 @@ object YamlReadingTest : Spek({
                 val input = "members: null"
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(NullableNestedList.serializer(), input)
+                    val result = Yaml.default.decodeFromString(NullableNestedList.serializer(), input)
 
                     it("deserializes it to a Kotlin object") {
                         expect(result).toBe(NullableNestedList(null))
@@ -1100,7 +1106,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 8") }
                         }
                     }
@@ -1114,7 +1120,7 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    val result = Yaml.default.parse(MapSerializer(String.serializer(), String.serializer()), input)
+                    val result = Yaml.default.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
                     it("deserializes it to a Kotlin map") {
                         expect(result).toBe(
@@ -1128,7 +1134,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(MapSerializer(LocationThrowingSerializer, String.serializer()), input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(MapSerializer(LocationThrowingSerializer, String.serializer()), input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 1") }
                         }
                     }
@@ -1136,7 +1142,7 @@ object YamlReadingTest : Spek({
 
                 context("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(MapSerializer(String.serializer(), LocationThrowingSerializer), input) }).toThrow<LocationInformationException> {
+                        expect({ Yaml.default.decodeFromString(MapSerializer(String.serializer(), LocationThrowingSerializer), input) }).toThrow<LocationInformationException> {
                             message { toBe("Serializer called with location: 1, 15") }
                         }
                     }
@@ -1153,7 +1159,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input") {
                     val configuration = YamlConfiguration(extensionDefinitionPrefix = ".")
                     val yaml = Yaml(configuration = configuration)
-                    val result = yaml.parse(SimpleStructure.serializer(), input)
+                    val result = yaml.decodeFromString(SimpleStructure.serializer(), input)
 
                     it("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
                         expect(result).toBe(SimpleStructure("Jamie"))
@@ -1173,7 +1179,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an appropriate exception") {
-                            expect({ yaml.parse(SimpleStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
+                            expect({ yaml.decodeFromString(SimpleStructure.serializer(), input) }).toThrow<UnknownPropertyException> {
                                 message { toBe("Unknown property 'extra-field'. Known properties are: name") }
                                 line { toBe(2) }
                                 column { toBe(1) }
@@ -1188,7 +1194,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("ignores the extra field and returns a deserialised object") {
-                            expect(yaml.parse(SimpleStructure.serializer(), input)).toBe(SimpleStructure("Blah Blahson"))
+                            expect(yaml.decodeFromString(SimpleStructure.serializer(), input)).toBe(SimpleStructure("Blah Blahson"))
                         }
                     }
                 }
@@ -1202,7 +1208,7 @@ object YamlReadingTest : Spek({
                 @Serializable
                 data class Database(val host: String)
 
-                val result = Yaml.default.parse(Database.serializer().nullable, input)
+                val result = Yaml.default.decodeFromString(Database.serializer().nullable, input)
 
                 it("deserializes it to the expected object") {
                     expect(result).toBe(Database("db.test.com"))
@@ -1212,7 +1218,7 @@ object YamlReadingTest : Spek({
 
         describe("parsing polymorphic values") {
             describe("given tags are used to store the type information") {
-                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag))
+                val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag))
 
                 context("given some input where the value should be a sealed class") {
                     val input = """
@@ -1221,7 +1227,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(TestSealedStructure.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
@@ -1229,7 +1235,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as map") {
-                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), String.serializer()), input)
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
                         it("deserializes it to a map ignoring the tag") {
                             expect(result).toBe(mapOf("value" to "asdfg"))
@@ -1243,7 +1249,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(PolymorphicSerializer(UnwrappedInterface::class), input)
+                        val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnwrappedInterface::class), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(UnwrappedString("asdfg"))
@@ -1251,7 +1257,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as a string") {
-                        val result = polymorphicYaml.parse(String.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(String.serializer(), input)
 
                         it("deserializes it to a string ignoring the tag") {
                             expect(result).toBe("asdfg")
@@ -1266,7 +1272,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(PolymorphicSerializer(UnsealedClass::class), input)
+                        val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(UnsealedString("asdfg"))
@@ -1274,7 +1280,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as map") {
-                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), String.serializer()), input)
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
                         it("deserializes it to a map ignoring the tag") {
                             expect(result).toBe(mapOf("value" to "asdfg"))
@@ -1289,7 +1295,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(SealedWrapper.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
@@ -1297,7 +1303,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as map") {
-                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
 
                         it("deserializes it to a map ignoring the tag") {
                             expect(result).toBe(mapOf("element" to mapOf("value" to "asdfg")))
@@ -1311,7 +1317,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(PolymorphicWrapper.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(PolymorphicWrapper.serializer(), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(PolymorphicWrapper(UnwrappedInt(42)))
@@ -1332,7 +1338,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(TestSealedStructure.serializer().list, input)
+                        val result = polymorphicYaml.decodeFromString(ListSerializer(TestSealedStructure.serializer()), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(
@@ -1355,7 +1361,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(SealedWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            expect({ polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                 message { toBe("Value for 'element' is invalid: Value is missing a type tag (eg. !<type>)") }
                                 line { toBe(2) }
                                 column { toBe(5) }
@@ -1372,7 +1378,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            expect({ polymorphicYaml.decodeFromString(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                 message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
                                 line { toBe(1) }
                                 column { toBe(7) }
@@ -1389,7 +1395,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                            expect({ polymorphicYaml.decodeFromString(PolymorphicWrapper.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                 message { toBe("Value for 'test' is invalid: Value is missing a type tag (eg. !<type>)") }
                                 line { toBe(1) }
                                 column { toBe(7) }
@@ -1406,7 +1412,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
+                            expect({ polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: unsealedBoolean, unsealedString") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1424,7 +1430,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1442,7 +1448,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1455,7 +1461,7 @@ object YamlReadingTest : Spek({
             }
 
             describe("given a property is used to store the type information") {
-                val polymorphicYaml = Yaml(context = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property))
+                val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property))
 
                 context("given some input where the value should be a sealed class") {
                     val input = """
@@ -1464,7 +1470,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(TestSealedStructure.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
@@ -1472,7 +1478,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as map") {
-                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), String.serializer()), input)
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
                         it("deserializes it to a map including the type") {
                             expect(result).toBe(mapOf("type" to "sealedString", "value" to "asdfg"))
@@ -1487,7 +1493,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(PolymorphicSerializer(UnsealedClass::class), input)
+                        val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(UnsealedString("asdfg"))
@@ -1495,7 +1501,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as map") {
-                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), String.serializer()), input)
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
                         it("deserializes it to a map ignoring the tag") {
                             expect(result).toBe(mapOf("type" to "unsealedString", "value" to "asdfg"))
@@ -1511,7 +1517,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(SealedWrapper.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
@@ -1519,7 +1525,7 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input as map") {
-                        val result = polymorphicYaml.parse(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
 
                         it("deserializes it to a map ignoring the tag") {
                             expect(result).toBe(mapOf("element" to mapOf("type" to "sealedString", "value" to "asdfg")))
@@ -1534,7 +1540,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<MissingRequiredPropertyException> {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<MissingRequiredPropertyException> {
                                 message { toBe("Property 'type' is required but it is missing.") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1558,7 +1564,7 @@ object YamlReadingTest : Spek({
 
                         context("parsing that input") {
                             it("throws an exception with the correct location information") {
-                                expect({ polymorphicYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                                     message { toBe("Value for 'type' is invalid: expected a string, but got $description") }
                                     line { toBe(1) }
                                     column { toBe(7) }
@@ -1583,7 +1589,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(TestSealedStructure.serializer().list, input)
+                        val result = polymorphicYaml.decodeFromString(ListSerializer(TestSealedStructure.serializer()), input)
 
                         it("deserializes it to a Kotlin object") {
                             expect(result).toBe(
@@ -1606,7 +1612,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
+                            expect({ polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: unsealedBoolean, unsealedString") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1625,7 +1631,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input") {
                         it("throws an exception with the correct location information") {
-                            expect({ polymorphicYaml.parse(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1644,7 +1650,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        val result = polymorphicYaml.parse(TestSealedStructure.serializer(), input)
+                        val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
                         it("uses the type from the property and ignores the tag") {
                             expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
@@ -1659,7 +1665,7 @@ object YamlReadingTest : Spek({
                 data class Inner(val name: String)
 
                 @Serializable
-                data class Container(@ContextualSerialization val inner: Inner)
+                data class Container(@Contextual val inner: Inner)
 
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor: SerialDescriptor
@@ -1670,56 +1676,54 @@ object YamlReadingTest : Spek({
                 }
 
                 val module = serializersModuleOf(Inner::class, contextSerializer)
-                val parser = Yaml(context = module)
+                val parser = Yaml(serializersModule = module)
 
                 val input = """
                     inner: this is the input
                 """.trimIndent()
 
-                val result = parser.parse(Container.serializer(), input)
+                val result = parser.decodeFromString(Container.serializer(), input)
 
                 it("deserializes it using the dynamically installed serializer") {
                     expect(result).toBe(Container(Inner("from context serializer")))
                 }
             }
 
-            listOf(StructureKind.CLASS, StructureKind.OBJECT).forEach { kind ->
-                describe("parsing a ${kind.toString().toLowerCase()} with a contextual serializer") {
-                    data class Inner(val name: String)
+            describe("parsing a class with a contextual serializer") {
+                data class Inner(val name: String)
 
-                    @Serializable
-                    data class Container(@ContextualSerialization val inner: Inner)
+                @Serializable
+                data class Container(@Contextual val inner: Inner)
 
-                    val contextSerializer = object : KSerializer<Inner> {
-                        override val descriptor = SerialDescriptor("Inner", kind) {
-                            element("thing", String.serializer().descriptor)
-                        }
-
-                        override fun deserialize(decoder: Decoder): Inner {
-                            val objectDecoder = decoder.beginStructure(descriptor)
-                            val index = objectDecoder.decodeElementIndex(descriptor)
-                            val name = objectDecoder.decodeStringElement(descriptor, index)
-                            objectDecoder.endStructure(descriptor)
-
-                            return Inner("$name, from context serializer")
-                        }
-
-                        override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
+                val contextSerializer = object : KSerializer<Inner> {
+                    override val descriptor = buildClassSerialDescriptor("Inner") {
+                        element("thing", String.serializer().descriptor)
                     }
 
-                    val module = serializersModuleOf(Inner::class, contextSerializer)
-                    val parser = Yaml(context = module)
+                    override fun deserialize(decoder: Decoder): Inner {
+                        val objectDecoder = decoder.beginStructure(descriptor)
+                        val index = objectDecoder.decodeElementIndex(descriptor)
+                        val name = objectDecoder.decodeStringElement(descriptor, index)
+                        objectDecoder.endStructure(descriptor)
 
-                    val input = """
-                        inner:
-                            thing: this is the input
-                    """.trimIndent()
-
-                    val result = parser.parse(Container.serializer(), input)
-
-                    it("deserializes it using the dynamically installed serializer") {
-                        expect(result).toBe(Container(Inner("this is the input, from context serializer")))
+                        return Inner("$name, from context serializer")
                     }
+
+                    override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
+                }
+
+                val module = serializersModuleOf(Inner::class, contextSerializer)
+                val parser = Yaml(serializersModule = module)
+
+                val input = """
+                    inner:
+                        thing: this is the input
+                """.trimIndent()
+
+                val result = parser.decodeFromString(Container.serializer(), input)
+
+                it("deserializes it using the dynamically installed serializer") {
+                    expect(result).toBe(Container(Inner("this is the input, from context serializer")))
                 }
             }
 
@@ -1727,10 +1731,10 @@ object YamlReadingTest : Spek({
                 data class Inner(val name: String)
 
                 @Serializable
-                data class Container(@ContextualSerialization val inner: Inner)
+                data class Container(@Contextual val inner: Inner)
 
                 val contextSerializer = object : KSerializer<Inner> {
-                    override val descriptor = SerialDescriptor("Inner", StructureKind.MAP) {
+                    override val descriptor = buildSerialDescriptor("Inner", StructureKind.MAP) {
                         element("key", String.serializer().descriptor)
                         element("value", String.serializer().descriptor)
                     }
@@ -1751,14 +1755,14 @@ object YamlReadingTest : Spek({
                 }
 
                 val module = serializersModuleOf(Inner::class, contextSerializer)
-                val parser = Yaml(context = module)
+                val parser = Yaml(serializersModule = module)
 
                 val input = """
                     inner:
                         thing: this is the input
                 """.trimIndent()
 
-                val result = parser.parse(Container.serializer(), input)
+                val result = parser.decodeFromString(Container.serializer(), input)
 
                 it("deserializes it using the dynamically installed serializer") {
                     expect(result).toBe(Container(Inner("thing: this is the input, from context serializer")))
@@ -1787,7 +1791,7 @@ object YamlReadingTest : Spek({
 
                     context("parsing that input as $description") {
                         it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.parse(serializer, input) }).toThrow<IncorrectTypeException> {
+                            expect({ Yaml.default.decodeFromString(serializer, input) }).toThrow<IncorrectTypeException> {
                                 message { toBe("Expected $description, but got a list") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1803,7 +1807,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(MapSerializer(String.serializer(), String.serializer()), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'key' is invalid: Expected a string, but got a list") }
                             line { toBe(2) }
                             column { toBe(5) }
@@ -1818,7 +1822,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'string' is invalid: Expected a string, but got a list") }
                             line { toBe(2) }
                             column { toBe(5) }
@@ -1832,7 +1836,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(String.serializer().list, input) }).toThrow<IncorrectTypeException> {
+                        expect({ Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }).toThrow<IncorrectTypeException> {
                             message { toBe("Expected a string, but got a list") }
                             line { toBe(1) }
                             column { toBe(3) }
@@ -1853,14 +1857,14 @@ object YamlReadingTest : Spek({
                     "a boolean" to Boolean.serializer(),
                     "a character" to Char.serializer(),
                     "an enumeration value" to TestEnum.serializer(),
-                    "a list" to String.serializer().list,
+                    "a list" to ListSerializer(String.serializer()),
                     "a string" to String.serializer().nullable
                 ).forEach { (description, serializer) ->
                     val input = "key: value"
 
                     context("parsing that input as $description") {
                         it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.parse(serializer, input) }).toThrow<IncorrectTypeException> {
+                            expect({ Yaml.default.decodeFromString(serializer, input) }).toThrow<IncorrectTypeException> {
                                 message { toBe("Expected $description, but got a map") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1876,7 +1880,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(MapSerializer(String.serializer(), String.serializer()), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'key' is invalid: Expected a string, but got a map") }
                             line { toBe(2) }
                             column { toBe(5) }
@@ -1891,7 +1895,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'string' is invalid: Expected a string, but got a map") }
                             line { toBe(2) }
                             column { toBe(5) }
@@ -1905,7 +1909,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(String.serializer().list, input) }).toThrow<IncorrectTypeException> {
+                        expect({ Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }).toThrow<IncorrectTypeException> {
                             message { toBe("Expected a string, but got a map") }
                             line { toBe(1) }
                             column { toBe(3) }
@@ -1916,15 +1920,15 @@ object YamlReadingTest : Spek({
 
             context("given a scalar value") {
                 mapOf(
-                    "a list" to String.serializer().list,
+                    "a list" to ListSerializer(String.serializer()),
                     "a map" to MapSerializer(String.serializer(), String.serializer()),
                     "an object" to ComplexStructure.serializer()
-                ).forEach { description, serializer ->
+                ).forEach { (description, serializer) ->
                     val input = "blah"
 
                     context("parsing that input as $description") {
                         it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.parse(serializer, input) }).toThrow<IncorrectTypeException> {
+                            expect({ Yaml.default.decodeFromString(serializer, input) }).toThrow<IncorrectTypeException> {
                                 message { toBe("Expected $description, but got a scalar value") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -1939,7 +1943,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(MapSerializer(String.serializer(), String.serializer().list), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(MapSerializer(String.serializer(), ListSerializer(String.serializer())), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'key' is invalid: Expected a list, but got a scalar value") }
                             line { toBe(1) }
                             column { toBe(6) }
@@ -1953,7 +1957,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                        expect({ Yaml.default.decodeFromString(Team.serializer(), input) }).toThrow<InvalidPropertyValueException> {
                             message { toBe("Value for 'members' is invalid: Expected a list, but got a scalar value") }
                             line { toBe(1) }
                             column { toBe(10) }
@@ -1967,7 +1971,7 @@ object YamlReadingTest : Spek({
                     """.trimIndent()
 
                     it("throws an exception with the correct location information") {
-                        expect({ Yaml.default.parse((String.serializer().list).list, input) }).toThrow<IncorrectTypeException> {
+                        expect({ Yaml.default.decodeFromString(ListSerializer((ListSerializer(String.serializer()))), input) }).toThrow<IncorrectTypeException> {
                             message { toBe("Expected a list, but got a scalar value") }
                             line { toBe(1) }
                             column { toBe(3) }
@@ -1982,10 +1986,10 @@ object YamlReadingTest : Spek({
                 "scalar" to "2",
                 "list" to "[ thing ]",
                 "map" to "{ key: value }"
-            ).forEach { description, input ->
+            ).forEach { (description, input) ->
                 context("given some input representing a $description") {
                     context("parsing that input using a contextual serializer at the top level") {
-                        val result = Yaml.default.parse(ContextualSerializer, input)
+                        val result = Yaml.default.decodeFromString(ContextualSerializer, input)
 
                         it("the serializer receives the top-level object") {
                             expect(result).toBe(description)
@@ -1996,7 +2000,7 @@ object YamlReadingTest : Spek({
                         @Serializable
                         data class ObjectWithNestedContextualSerializer(@Serializable(with = ContextualSerializer::class) val thing: String)
 
-                        val result = Yaml.default.parse(ObjectWithNestedContextualSerializer.serializer(), "thing: $input")
+                        val result = Yaml.default.decodeFromString(ObjectWithNestedContextualSerializer.serializer(), "thing: $input")
 
                         it("the serializer receives the correct object") {
                             expect(result).toBe(ObjectWithNestedContextualSerializer(description))
@@ -2013,10 +2017,10 @@ object YamlReadingTest : Spek({
                 mapOf(
                     PrimitiveKind.STRING to "a string",
                     StructureKind.LIST to "a list"
-                ).forEach { kind, description ->
+                ).forEach { (kind, description) ->
                     context("attempting to begin $description") {
                         it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.parse(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                            expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
                                 message { toBe("Expected $description, but got a map") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -2034,10 +2038,10 @@ object YamlReadingTest : Spek({
                     StructureKind.CLASS to "an object",
                     StructureKind.MAP to "a map",
                     PrimitiveKind.STRING to "a string"
-                ).forEach { kind, description ->
+                ).forEach { (kind, description) ->
                     context("attempting to begin $description") {
                         it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.parse(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                            expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
                                 message { toBe("Expected $description, but got a list") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -2055,10 +2059,10 @@ object YamlReadingTest : Spek({
                     StructureKind.CLASS to "an object",
                     StructureKind.MAP to "a map",
                     StructureKind.LIST to "a list"
-                ).forEach { kind, description ->
+                ).forEach { (kind, description) ->
                     context("attempting to begin $description") {
                         it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.parse(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                            expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
                                 message { toBe("Expected $description, but got a scalar value") }
                                 line { toBe(1) }
                                 column { toBe(1) }
@@ -2093,8 +2097,9 @@ private data class StructureWithLocationThrowingSerializer(
 
 private data class CustomSerializedValue(val thing: String)
 
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 private object LocationThrowingSerializer : KSerializer<Any> {
-    override val descriptor = SerialDescriptor(LocationThrowingSerializer::class.qualifiedName!!, UnionKind.CONTEXTUAL)
+    override val descriptor = buildSerialDescriptor(LocationThrowingSerializer::class.qualifiedName!!, SerialKind.CONTEXTUAL)
 
     override fun deserialize(decoder: Decoder): Any {
         val location = (decoder as YamlInput).getCurrentLocation()
@@ -2119,10 +2124,11 @@ private object LocationThrowingMapSerializer : KSerializer<Any> {
 
 private class LocationInformationException(message: String) : RuntimeException(message)
 
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 object ContextualSerializer : KSerializer<String> {
-    override val descriptor = SerialDescriptor("ContextualSerializer", UnionKind.CONTEXTUAL) {
-        element("string", SerialDescriptor("value", PrimitiveKind.STRING))
-        element("object", SerialDescriptor("thing", StructureKind.OBJECT))
+    override val descriptor = buildSerialDescriptor("ContextualSerializer", SerialKind.CONTEXTUAL) {
+        element("string", PrimitiveSerialDescriptor("value", PrimitiveKind.STRING))
+        element("object", buildSerialDescriptor("thing", StructureKind.OBJECT))
     }
 
     override fun deserialize(decoder: Decoder): String {
@@ -2136,11 +2142,12 @@ object ContextualSerializer : KSerializer<String> {
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
 }
 
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 class ContextualSerializerThatAttemptsToDeserializeIncorrectType(private val kind: SerialKind) : KSerializer<String> {
-    val innerDescriptor = SerialDescriptor("thing", kind)
+    private val innerDescriptor = if (kind == StructureKind.CLASS) buildClassSerialDescriptor("thing") else buildSerialDescriptor("thing", kind)
 
-    override val descriptor = SerialDescriptor("ContextualSerializer", UnionKind.CONTEXTUAL) {
-        element("string", SerialDescriptor("value", PrimitiveKind.STRING))
+    override val descriptor = buildSerialDescriptor("ContextualSerializer", SerialKind.CONTEXTUAL) {
+        element("string", PrimitiveSerialDescriptor("value", PrimitiveKind.STRING))
         element("object", innerDescriptor)
     }
 
