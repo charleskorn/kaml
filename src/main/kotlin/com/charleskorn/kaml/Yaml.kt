@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import java.io.StringWriter
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
@@ -25,7 +26,6 @@ import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.StreamDataWriter
-import java.io.StringWriter
 
 @OptIn(ExperimentalSerializationApi::class)
 class Yaml(

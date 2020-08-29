@@ -22,6 +22,8 @@ import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import de.marcphilipp.gradle.nexus.NexusPublishPlugin
 import io.codearte.gradle.nexus.NexusStagingExtension
 import io.codearte.gradle.nexus.NexusStagingPlugin
+import java.nio.file.Files
+import java.util.Base64
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
@@ -39,8 +41,6 @@ import org.gradle.kotlin.dsl.register
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
-import java.nio.file.Files
-import java.util.Base64
 
 fun Project.configurePublishing() {
     apply<NexusStagingPlugin>()
