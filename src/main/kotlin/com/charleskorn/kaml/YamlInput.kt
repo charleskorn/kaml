@@ -36,8 +36,12 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleCollector
 
 @OptIn(ExperimentalSerializationApi::class)
-sealed class YamlInput(val node: YamlNode, override var serializersModule: SerializersModule, val configuration: YamlConfiguration) : AbstractDecoder() {
-    companion object {
+public sealed class YamlInput(
+    public val node: YamlNode,
+    override var serializersModule: SerializersModule,
+    public val configuration: YamlConfiguration
+) : AbstractDecoder() {
+    internal companion object {
         private val unknownPolymorphicTypeExceptionMessage: Regex = """^Class '(.*)' is not registered for polymorphic serialization in the scope of '(.*)'.\nMark the base class as 'sealed' or register the serializer explicitly.$""".toRegex()
         private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required, but it was missing$""".toRegex()
 
@@ -166,7 +170,7 @@ sealed class YamlInput(val node: YamlNode, override var serializersModule: Seria
         return knownTypes
     }
 
-    abstract fun getCurrentLocation(): Location
+    public abstract fun getCurrentLocation(): Location
 }
 
 @OptIn(ExperimentalSerializationApi::class)

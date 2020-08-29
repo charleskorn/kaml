@@ -20,48 +20,79 @@ package com.charleskorn.kaml
 
 import org.snakeyaml.engine.v2.events.Event
 
-open class YamlException(
+public open class YamlException(
     override val message: String,
-    val line: Int,
-    val column: Int,
+    public val line: Int,
+    public val column: Int,
     override val cause: Throwable? = null
 ) : RuntimeException(message, cause) {
-    constructor(message: String, location: Location, cause: Throwable? = null) : this(message, location.line, location.column, cause)
+    public constructor(message: String, location: Location, cause: Throwable? = null) : this(message, location.line, location.column, cause)
 
-    val location: Location = Location(line, column)
+    public val location: Location = Location(line, column)
 }
 
-class DuplicateKeyException(val originalLocation: Location, val duplicateLocation: Location, val key: String) :
+public class DuplicateKeyException(
+    public val originalLocation: Location,
+    public val duplicateLocation: Location,
+    public val key: String
+) :
     YamlException("Duplicate key $key. It was previously given at line ${originalLocation.line}, column ${originalLocation.column}.", duplicateLocation)
 
-class EmptyYamlDocumentException(message: String, location: Location) : YamlException(message, location)
+public class EmptyYamlDocumentException(message: String, location: Location) : YamlException(message, location)
 
-class InvalidPropertyValueException(val propertyName: String, val reason: String, location: Location, cause: Throwable? = null) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
+public class InvalidPropertyValueException(
+    public val propertyName: String,
+    public val reason: String,
+    location: Location,
+    cause: Throwable? = null
+) : YamlException("Value for '$propertyName' is invalid: $reason", location, cause)
 
-class MalformedYamlException(message: String, location: Location) : YamlException(message, location)
+public class MalformedYamlException(message: String, location: Location) : YamlException(message, location)
 
-class UnexpectedNullValueException(location: Location) : YamlException("Unexpected null or empty value for non-null field.", location)
+public class UnexpectedNullValueException(location: Location) : YamlException("Unexpected null or empty value for non-null field.", location)
 
-class MissingRequiredPropertyException(val propertyName: String, location: Location, cause: Throwable? = null) :
+public class MissingRequiredPropertyException(
+    public val propertyName: String,
+    location: Location,
+    cause: Throwable? = null
+) :
     YamlException("Property '$propertyName' is required but it is missing.", location, cause)
 
-class UnknownPropertyException(val propertyName: String, val validPropertyNames: Set<String>, location: Location) :
+public class UnknownPropertyException(
+    public val propertyName: String,
+    public val validPropertyNames: Set<String>,
+    location: Location
+) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", location)
 
-class UnknownPolymorphicTypeException(val typeName: String, val validTypeNames: Set<String>, location: Location, cause: Throwable? = null) :
+public class UnknownPolymorphicTypeException(
+    public val typeName: String,
+    public val validTypeNames: Set<String>,
+    location: Location,
+    cause: Throwable? = null
+) :
     YamlException("Unknown type '$typeName'. Known types are: ${validTypeNames.sorted().joinToString(", ")}", location, cause)
 
-class YamlScalarFormatException(message: String, location: Location, val originalValue: String) : YamlException(message, location)
+public class YamlScalarFormatException(
+    message: String,
+    location: Location,
+    public val originalValue: String
+) : YamlException(message, location)
 
-open class IncorrectTypeException(message: String, location: Location) : YamlException(message, location)
+public open class IncorrectTypeException(message: String, location: Location) : YamlException(message, location)
 
-class MissingTypeTagException(location: Location) : IncorrectTypeException("Value is missing a type tag (eg. !<type>)", location)
+public class MissingTypeTagException(location: Location) :
+    IncorrectTypeException("Value is missing a type tag (eg. !<type>)", location)
 
-class UnknownAnchorException(val anchorName: String, location: Location) :
+public class UnknownAnchorException(public val anchorName: String, location: Location) :
     YamlException("Unknown anchor '$anchorName'.", location)
 
-class NoAnchorForExtensionException(val key: String, val extensionDefinitionPrefix: String, location: Location) :
+public class NoAnchorForExtensionException(
+    public val key: String,
+    public val extensionDefinitionPrefix: String,
+    location: Location
+) :
     YamlException("The key $key starts with the extension definition prefix '$extensionDefinitionPrefix' but does not define an anchor.", location)
 
-val Event.location: Location
+internal val Event.location: Location
     get() = Location(startMark.get().line + 1, startMark.get().column + 1)

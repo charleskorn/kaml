@@ -25,7 +25,7 @@ import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v2.parser.ParserImpl
 import org.snakeyaml.engine.v2.scanner.StreamReader
 
-class YamlParser(yamlSource: String) {
+internal class YamlParser(yamlSource: String) {
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
     private val streamReader = StreamReader(StringReader(yamlSource), loadSettings)

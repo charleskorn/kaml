@@ -28,14 +28,14 @@ package com.charleskorn.kaml
  *    * [PolymorphismStyle.Tag]: use a YAML tag (eg. `!<typeOfThing> { property: value }`)
  *    * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
  */
-data class YamlConfiguration constructor(
+public data class YamlConfiguration constructor(
     internal val encodeDefaults: Boolean = true,
     internal val strictMode: Boolean = true,
     internal val extensionDefinitionPrefix: String? = null,
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag
 )
 
-enum class PolymorphismStyle {
+public enum class PolymorphismStyle {
     Tag,
     Property
 }

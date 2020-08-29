@@ -27,7 +27,7 @@ import org.snakeyaml.engine.v2.events.NodeEvent
 import org.snakeyaml.engine.v2.events.ScalarEvent
 import org.snakeyaml.engine.v2.events.SequenceStartEvent
 
-class YamlNodeReader(
+internal class YamlNodeReader(
     private val parser: YamlParser,
     private val extensionDefinitionPrefix: String? = null
 ) {

@@ -28,9 +28,9 @@ import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.StreamDataWriter
 
 @OptIn(ExperimentalSerializationApi::class)
-class Yaml(
+public class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule,
-    val configuration: YamlConfiguration = YamlConfiguration()
+    public val configuration: YamlConfiguration = YamlConfiguration()
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
@@ -53,7 +53,7 @@ class Yaml(
         return writer.toString()
     }
 
-    companion object {
-        val default = Yaml()
+    public companion object {
+        public val default: Yaml = Yaml()
     }
 }

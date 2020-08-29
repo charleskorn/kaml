@@ -71,6 +71,10 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.freeCompilerArgs = listOf("-Xuse-experimental=kotlin.RequiresOptIn")
 }
 
+kotlin {
+    explicitApi()
+}
+
 configureAssemble()
 configureJacoco()
 configurePublishing()

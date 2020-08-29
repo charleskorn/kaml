@@ -18,19 +18,19 @@
 
 package com.charleskorn.kaml
 
-sealed class YamlNode(open val location: Location) {
-    abstract fun equivalentContentTo(other: YamlNode): Boolean
-    abstract fun contentToString(): String
+public sealed class YamlNode(public open val location: Location) {
+    public abstract fun equivalentContentTo(other: YamlNode): Boolean
+    public abstract fun contentToString(): String
 }
 
-data class YamlScalar(val content: String, override val location: Location) : YamlNode(location) {
+public data class YamlScalar(val content: String, override val location: Location) : YamlNode(location) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlScalar && this.content == other.content
     override fun contentToString(): String = "'$content'"
 
-    fun toByte() = convertToIntegerLikeValue(String::toByte, "byte")
-    fun toShort() = convertToIntegerLikeValue(String::toShort, "short")
-    fun toInt() = convertToIntegerLikeValue(String::toInt, "integer")
-    fun toLong() = convertToIntegerLikeValue(String::toLong, "long")
+    public fun toByte(): Byte = convertToIntegerLikeValue(String::toByte, "byte")
+    public fun toShort(): Short = convertToIntegerLikeValue(String::toShort, "short")
+    public fun toInt(): Int = convertToIntegerLikeValue(String::toInt, "integer")
+    public fun toLong(): Long = convertToIntegerLikeValue(String::toLong, "long")
 
     private fun <T> convertToIntegerLikeValue(converter: (String, Int) -> T, description: String): T {
         try {
@@ -46,7 +46,7 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
         }
     }
 
-    fun toFloat(): Float {
+    public fun toFloat(): Float {
         return when (content) {
             ".inf", ".Inf", ".INF" -> Float.POSITIVE_INFINITY
             "-.inf", "-.Inf", "-.INF" -> Float.NEGATIVE_INFINITY
@@ -59,7 +59,7 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
         }
     }
 
-    fun toDouble(): Double {
+    public fun toDouble(): Double {
         return when (content) {
             ".inf", ".Inf", ".INF" -> Double.POSITIVE_INFINITY
             "-.inf", "-.Inf", "-.INF" -> Double.NEGATIVE_INFINITY
@@ -72,7 +72,7 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
         }
     }
 
-    fun toBoolean(): Boolean {
+    public fun toBoolean(): Boolean {
         return when (content) {
             "true", "True", "TRUE" -> true
             "false", "False", "FALSE" -> false
@@ -80,16 +80,16 @@ data class YamlScalar(val content: String, override val location: Location) : Ya
         }
     }
 
-    fun toChar(): Char =
+    public fun toChar(): Char =
         content.singleOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", location, content)
 }
 
-data class YamlNull(override val location: Location) : YamlNode(location) {
+public data class YamlNull(override val location: Location) : YamlNode(location) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlNull
     override fun contentToString(): String = "null"
 }
 
-data class YamlList(val items: List<YamlNode>, override val location: Location) : YamlNode(location) {
+public data class YamlList(val items: List<YamlNode>, override val location: Location) : YamlNode(location) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlList) {
             return false
@@ -105,9 +105,9 @@ data class YamlList(val items: List<YamlNode>, override val location: Location) 
     override fun contentToString(): String = "[" + items.joinToString(", ") { it.contentToString() } + "]"
 }
 
-data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: Location) : YamlNode(location) {
+public data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: Location) : YamlNode(location) {
     init {
-        val keys = entries.keys.sortedWith(Comparator { a, b ->
+        val keys = entries.keys.sortedWith { a, b ->
             val lineComparison = a.location.line.compareTo(b.location.line)
 
             if (lineComparison != 0) {
@@ -115,7 +115,7 @@ data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: 
             } else {
                 a.location.column.compareTo(b.location.column)
             }
-        })
+        }
 
         keys.forEachIndexed { index, key ->
             val duplicate = keys.subList(0, index).firstOrNull { it.equivalentContentTo(key) }
@@ -144,7 +144,7 @@ data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val location: 
         "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
 }
 
-data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : YamlNode(innerNode.location) {
+public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : YamlNode(innerNode.location) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlTaggedNode) {
             return false

@@ -18,4 +18,4 @@
 
 package com.charleskorn.kaml
 
-data class Location(val line: Int, val column: Int)
+public data class Location(val line: Int, val column: Int)
