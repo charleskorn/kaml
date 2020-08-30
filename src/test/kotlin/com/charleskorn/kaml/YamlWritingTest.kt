@@ -44,6 +44,8 @@ import org.spekframework.spek2.style.specification.describe
 
 object YamlWritingTest : Spek({
     describe("a YAML serializer") {
+        val yamlWithCustomisedIndentation = Yaml(configuration = YamlConfiguration(encodingIndentationSize = 3))
+
         describe("serializing null values") {
             val input = null as String?
 
@@ -419,32 +421,66 @@ object YamlWritingTest : Spek({
                     SimpleStructure("name2")
                 )
 
-                val output = Yaml.default.encodeToString(NestedObjects.serializer(), input)
+                context("with default indentation") {
+                    val output = Yaml.default.encodeToString(NestedObjects.serializer(), input)
 
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
-                        firstPerson:
-                          name: "name1"
-                        secondPerson:
-                          name: "name2"
-                    """.trimIndent()
-                    )
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(
+                            """
+                                firstPerson:
+                                  name: "name1"
+                                secondPerson:
+                                  name: "name2"
+                            """.trimIndent()
+                        )
+                    }
+                }
+
+                context("with customised indentation") {
+                    val output = yamlWithCustomisedIndentation.encodeToString(NestedObjects.serializer(), input)
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(
+                            """
+                                firstPerson:
+                                   name: "name1"
+                                secondPerson:
+                                   name: "name2"
+                            """.trimIndent()
+                        )
+                    }
                 }
             }
 
             context("serializing an object with a nested list") {
                 val input = Team(listOf("name1", "name2"))
-                val output = Yaml.default.encodeToString(Team.serializer(), input)
 
-                it("returns the value serialized in the expected YAML form") {
-                    expect(output).toBe(
-                        """
-                        members:
-                        - "name1"
-                        - "name2"
-                    """.trimIndent()
-                    )
+                context("with default indentation") {
+                    val output = Yaml.default.encodeToString(Team.serializer(), input)
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(
+                            """
+                                members:
+                                - "name1"
+                                - "name2"
+                            """.trimIndent()
+                        )
+                    }
+                }
+
+                context("with customised indentation") {
+                    val output = yamlWithCustomisedIndentation.encodeToString(Team.serializer(), input)
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(
+                            """
+                                members:
+                                - "name1"
+                                - "name2"
+                            """.trimIndent()
+                        )
+                    }
                 }
             }
 

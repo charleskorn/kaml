@@ -46,7 +46,10 @@ internal class YamlOutput(
     override val serializersModule: SerializersModule,
     private val configuration: YamlConfiguration
 ) : AbstractEncoder() {
-    private val settings = DumpSettings.builder().build()
+    private val settings = DumpSettings.builder()
+        .setIndent(configuration.encodingIndentationSize)
+        .build()
+
     private val emitter = Emitter(settings, writer)
     private var shouldReadTypeName = false
     private var currentTypeName: String? = null

@@ -27,12 +27,14 @@ package com.charleskorn.kaml
  * * [polymorphismStyle]: how to read or write the type of a polymorphic object:
  *    * [PolymorphismStyle.Tag]: use a YAML tag (eg. `!<typeOfThing> { property: value }`)
  *    * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
+ * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
  */
 public data class YamlConfiguration constructor(
     internal val encodeDefaults: Boolean = true,
     internal val strictMode: Boolean = true,
     internal val extensionDefinitionPrefix: String? = null,
-    internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag
+    internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
+    internal val encodingIndentationSize: Int = 2
 )
 
 public enum class PolymorphismStyle {
