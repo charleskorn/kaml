@@ -182,9 +182,11 @@ object YamlMapTest : Spek({
             }
 
             context("a map with a single entry") {
-                val map = YamlMap(mapOf(
-                    YamlScalar("hello", Location(1, 1)) to YamlScalar("world", Location(2, 1))
-                ), Location(1, 1))
+                val map = YamlMap(
+                    mapOf(
+                        YamlScalar("hello", Location(1, 1)) to YamlScalar("world", Location(2, 1))
+                    ), Location(1, 1)
+                )
 
                 it("returns that item surrounded by curly brackets") {
                     expect(map.contentToString()).toBe("{'hello': 'world'}")
@@ -192,13 +194,67 @@ object YamlMapTest : Spek({
             }
 
             context("a map with multiple entries") {
-                val map = YamlMap(mapOf(
-                    YamlScalar("hello", Location(1, 1)) to YamlScalar("world", Location(2, 1)),
-                    YamlScalar("also", Location(1, 1)) to YamlScalar("thanks", Location(2, 1))
-                ), Location(1, 1))
+                val map = YamlMap(
+                    mapOf(
+                        YamlScalar("hello", Location(1, 1)) to YamlScalar("world", Location(2, 1)),
+                        YamlScalar("also", Location(1, 1)) to YamlScalar("thanks", Location(2, 1))
+                    ), Location(1, 1)
+                )
 
                 it("returns all items separated by commas and surrounded by curly brackets") {
                     expect(map.contentToString()).toBe("{'hello': 'world', 'also': 'thanks'}")
+                }
+            }
+        }
+
+        describe("getting elements of the map") {
+            val map = YamlMap(
+                mapOf(
+                    YamlScalar("hello", Location(1, 1)) to YamlScalar("world", Location(2, 1)),
+                    YamlScalar("also", Location(3, 1)) to YamlScalar("something", Location(4, 1))
+                ), Location(1, 1)
+            )
+
+            context("the key is not in the map") {
+                it("returns null") {
+                    expect(map.get<YamlScalar>("something else")).toBe(null)
+                }
+            }
+
+            context("the key is in the map") {
+                it("returns the value for that key") {
+                    expect(map.get<YamlScalar>("hello")).toBe(YamlScalar("world", Location(2, 1)))
+                }
+            }
+        }
+
+        describe("getting scalar elements of the map") {
+            val map = YamlMap(
+                mapOf(
+                    YamlScalar("hello", Location(1, 1)) to YamlScalar("world", Location(2, 1)),
+                    YamlScalar("also", Location(3, 1)) to YamlList(listOf(YamlScalar("something", Location(5, 1))), Location(4, 1))
+                ), Location(1, 1)
+            )
+
+            context("the key is not in the map") {
+                it("returns null") {
+                    expect(map.getScalar("something else")).toBe(null)
+                }
+            }
+
+            context("the key is in the map and has a scalar value") {
+                it("returns the value for that key") {
+                    expect(map.getScalar("hello")).toBe(YamlScalar("world", Location(2, 1)))
+                }
+            }
+
+            context("the key is in the map but does not have a scalar value") {
+                it("returns the value for that key") {
+                    expect { map.getScalar("also") }.toThrow<IncorrectTypeException> {
+                        message { toBe("Value for 'also' is not a scalar.") }
+                        line { toBe(4) }
+                        column { toBe(1) }
+                    }
                 }
             }
         }

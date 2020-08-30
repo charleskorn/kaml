@@ -142,6 +142,18 @@ public data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val loc
 
     override fun contentToString(): String =
         "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
+
+    @Suppress("UNCHECKED_CAST")
+    public operator fun <T : YamlNode> get(key: String): T? =
+        entries.entries
+            .firstOrNull { it.key is YamlScalar && (it.key as YamlScalar).content == key }
+            ?.value as T?
+
+    public fun getScalar(key: String): YamlScalar? = when (val node = get<YamlNode>(key)) {
+        null -> null
+        is YamlScalar -> node
+        else -> throw IncorrectTypeException("Value for '$key' is not a scalar.", node.location)
+    }
 }
 
 public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : YamlNode(innerNode.location) {
