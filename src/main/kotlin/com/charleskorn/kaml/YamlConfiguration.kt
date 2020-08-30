@@ -28,13 +28,15 @@ package com.charleskorn.kaml
  *    * [PolymorphismStyle.Tag]: use a YAML tag (eg. `!<typeOfThing> { property: value }`)
  *    * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
  * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
+ * * [breakScalarsAt]: maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines)
  */
 public data class YamlConfiguration constructor(
     internal val encodeDefaults: Boolean = true,
     internal val strictMode: Boolean = true,
     internal val extensionDefinitionPrefix: String? = null,
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
-    internal val encodingIndentationSize: Int = 2
+    internal val encodingIndentationSize: Int = 2,
+    internal val breakScalarsAt: Int = 80
 )
 
 public enum class PolymorphismStyle {

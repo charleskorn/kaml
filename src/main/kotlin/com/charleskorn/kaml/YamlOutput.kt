@@ -48,6 +48,7 @@ internal class YamlOutput(
 ) : AbstractEncoder() {
     private val settings = DumpSettings.builder()
         .setIndent(configuration.encodingIndentationSize)
+        .setWidth(configuration.breakScalarsAt)
         .build()
 
     private val emitter = Emitter(settings, writer)

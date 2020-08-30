@@ -191,6 +191,17 @@ object YamlWritingTest : Spek({
                     expect(output).toBe(""""They said \"hello\" to me"""")
                 }
             }
+
+            context("serializing a string longer than the maximum scalar width") {
+                val output = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80)).encodeToString(String.serializer(), "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters")
+
+                it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
+                    expect(output).toBe("""
+                        |"Hello world this is a string that is much, much, much (ok, not that much) longer\
+                        |  \ than 80 characters"
+                    """.trimMargin())
+                }
+            }
         }
 
         describe("serializing enumeration values") {
@@ -240,6 +251,19 @@ object YamlWritingTest : Spek({
                         - "item2"
                     """.trimIndent()
                     )
+                }
+            }
+
+            context("serializing a list of strings with a string longer than the maximum scalar width") {
+                val yamlWithScalarLimit = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80))
+                val output = yamlWithScalarLimit.encodeToString(ListSerializer(String.serializer()), listOf("item1", "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters"))
+
+                it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
+                    expect(output).toBe("""
+                        |- "item1"
+                        |- "Hello world this is a string that is much, much, much (ok, not that much) longer\
+                        |  \ than 80 characters"
+                    """.trimMargin())
                 }
             }
 
