@@ -29,6 +29,8 @@ public open class YamlException(
     public constructor(message: String, location: Location, cause: Throwable? = null) : this(message, location.line, location.column, cause)
 
     public val location: Location = Location(line, column)
+
+    override fun toString(): String = "${this::class.qualifiedName} at line $line, column $column: $message"
 }
 
 public class DuplicateKeyException(
