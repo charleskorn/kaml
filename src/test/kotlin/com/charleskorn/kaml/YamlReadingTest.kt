@@ -2008,64 +2008,64 @@ object YamlReadingTest : Spek({
                     }
                 }
             }
-        }
 
-        describe("given the contextual serializer attempts to begin a structure that does not match the input") {
-            context("given the input is a map") {
-                val input = "a: b"
+            describe("given the contextual serializer attempts to begin a structure that does not match the input") {
+                context("given the input is a map") {
+                    val input = "a: b"
 
-                mapOf(
-                    PrimitiveKind.STRING to "a string",
-                    StructureKind.LIST to "a list"
-                ).forEach { (kind, description) ->
-                    context("attempting to begin $description") {
-                        it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
-                                message { toBe("Expected $description, but got a map") }
-                                line { toBe(1) }
-                                column { toBe(1) }
+                    mapOf(
+                        PrimitiveKind.STRING to "a string",
+                        StructureKind.LIST to "a list"
+                    ).forEach { (kind, description) ->
+                        context("attempting to begin $description") {
+                            it("throws an exception with the correct location information") {
+                                expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                                    message { toBe("Expected $description, but got a map") }
+                                    line { toBe(1) }
+                                    column { toBe(1) }
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            context("given the input is a list") {
-                val input = "- a"
+                context("given the input is a list") {
+                    val input = "- a"
 
-                mapOf(
-                    StructureKind.OBJECT to "an object",
-                    StructureKind.CLASS to "an object",
-                    StructureKind.MAP to "a map",
-                    PrimitiveKind.STRING to "a string"
-                ).forEach { (kind, description) ->
-                    context("attempting to begin $description") {
-                        it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
-                                message { toBe("Expected $description, but got a list") }
-                                line { toBe(1) }
-                                column { toBe(1) }
+                    mapOf(
+                        StructureKind.OBJECT to "an object",
+                        StructureKind.CLASS to "an object",
+                        StructureKind.MAP to "a map",
+                        PrimitiveKind.STRING to "a string"
+                    ).forEach { (kind, description) ->
+                        context("attempting to begin $description") {
+                            it("throws an exception with the correct location information") {
+                                expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                                    message { toBe("Expected $description, but got a list") }
+                                    line { toBe(1) }
+                                    column { toBe(1) }
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            context("given the input is a scalar") {
-                val input = "2"
+                context("given the input is a scalar") {
+                    val input = "2"
 
-                mapOf(
-                    StructureKind.OBJECT to "an object",
-                    StructureKind.CLASS to "an object",
-                    StructureKind.MAP to "a map",
-                    StructureKind.LIST to "a list"
-                ).forEach { (kind, description) ->
-                    context("attempting to begin $description") {
-                        it("throws an exception with the correct location information") {
-                            expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
-                                message { toBe("Expected $description, but got a scalar value") }
-                                line { toBe(1) }
-                                column { toBe(1) }
+                    mapOf(
+                        StructureKind.OBJECT to "an object",
+                        StructureKind.CLASS to "an object",
+                        StructureKind.MAP to "a map",
+                        StructureKind.LIST to "a list"
+                    ).forEach { (kind, description) ->
+                        context("attempting to begin $description") {
+                            it("throws an exception with the correct location information") {
+                                expect({ Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }).toThrow<IncorrectTypeException> {
+                                    message { toBe("Expected $description, but got a scalar value") }
+                                    line { toBe(1) }
+                                    column { toBe(1) }
+                                }
                             }
                         }
                     }
