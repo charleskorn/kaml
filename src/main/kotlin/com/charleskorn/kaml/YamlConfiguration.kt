@@ -18,6 +18,8 @@
 
 package com.charleskorn.kaml
 
+import org.snakeyaml.engine.v2.common.FlowStyle
+
 /**
  * Configuration options for parsing YAML to objects and serialising objects to YAML.
  *
@@ -36,10 +38,16 @@ public data class YamlConfiguration constructor(
     internal val extensionDefinitionPrefix: String? = null,
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
     internal val encodingIndentationSize: Int = 2,
-    internal val breakScalarsAt: Int = 80
+    internal val breakScalarsAt: Int = 80,
+    internal val sequenceStyle: SequenceStyle = SequenceStyle.Block
 )
 
 public enum class PolymorphismStyle {
     Tag,
     Property
+}
+
+public enum class SequenceStyle(internal val flowStyle: FlowStyle) {
+    Block(FlowStyle.BLOCK),
+    Flow(FlowStyle.FLOW)
 }
