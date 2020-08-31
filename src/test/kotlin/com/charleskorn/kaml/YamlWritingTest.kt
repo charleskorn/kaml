@@ -22,7 +22,17 @@ import ch.tutteli.atrium.api.fluent.en_GB.message
 import ch.tutteli.atrium.api.fluent.en_GB.toBe
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
-import com.charleskorn.kaml.testobjects.*
+import com.charleskorn.kaml.testobjects.NestedObjects
+import com.charleskorn.kaml.testobjects.SealedWrapper
+import com.charleskorn.kaml.testobjects.SimpleStructure
+import com.charleskorn.kaml.testobjects.Team
+import com.charleskorn.kaml.testobjects.TestEnum
+import com.charleskorn.kaml.testobjects.TestSealedStructure
+import com.charleskorn.kaml.testobjects.UnsealedClass
+import com.charleskorn.kaml.testobjects.UnsealedString
+import com.charleskorn.kaml.testobjects.UnwrappedInterface
+import com.charleskorn.kaml.testobjects.UnwrappedString
+import com.charleskorn.kaml.testobjects.polymorphicModule
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -183,18 +193,13 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing a string longer than the maximum scalar width") {
-                val output = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80)).encodeToString(
-                    String.serializer(),
-                    "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters"
-                )
+                val output = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80)).encodeToString(String.serializer(), "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters")
 
                 it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
-                    expect(output).toBe(
-                        """
+                    expect(output).toBe("""
                         |"Hello world this is a string that is much, much, much (ok, not that much) longer\
                         |  \ than 80 characters"
-                    """.trimMargin()
-                    )
+                    """.trimMargin())
                 }
             }
         }
