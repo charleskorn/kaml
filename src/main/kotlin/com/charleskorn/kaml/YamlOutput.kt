@@ -95,7 +95,7 @@ internal class YamlOutput(
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         when (descriptor.kind) {
             is PolymorphicKind -> shouldReadTypeName = true
-            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
+            StructureKind.LIST -> emitter.emit(SequenceStartEvent(Optional.empty(), Optional.empty(), true, configuration.sequenceStyle.flowStyle))
             StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> {
                 val typeName = getAndClearTypeName()
 

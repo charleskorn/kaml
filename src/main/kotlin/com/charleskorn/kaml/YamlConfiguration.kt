@@ -18,6 +18,8 @@
 
 package com.charleskorn.kaml
 
+import org.snakeyaml.engine.v2.common.FlowStyle
+
 /**
  * Configuration options for parsing YAML to objects and serialising objects to YAML.
  *
@@ -29,6 +31,7 @@ package com.charleskorn.kaml
  *    * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
  * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
  * * [breakScalarsAt]: maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines)
+ * * [sequenceStyle]: how sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each
  */
 public data class YamlConfiguration constructor(
     internal val encodeDefaults: Boolean = true,
@@ -36,10 +39,31 @@ public data class YamlConfiguration constructor(
     internal val extensionDefinitionPrefix: String? = null,
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
     internal val encodingIndentationSize: Int = 2,
-    internal val breakScalarsAt: Int = 80
+    internal val breakScalarsAt: Int = 80,
+    internal val sequenceStyle: SequenceStyle = SequenceStyle.Block
 )
 
 public enum class PolymorphismStyle {
     Tag,
     Property
+}
+
+public enum class SequenceStyle(internal val flowStyle: FlowStyle) {
+    /**
+     * The block form, eg
+     * ```yaml
+     * - 1
+     * - 2
+     * - 3
+     * ```
+     */
+    Block(FlowStyle.BLOCK),
+
+    /**
+     * The flow form, eg
+     * ```yaml
+     * [1, 2, 3]
+     * ```
+     */
+    Flow(FlowStyle.FLOW)
 }
