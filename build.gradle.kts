@@ -31,12 +31,12 @@ buildscript {
     }
 
     dependencies {
-        classpath(kotlin("serialization", version = "1.4.0"))
+        classpath(kotlin("serialization", version = "1.4.10"))
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.4.0"
+    kotlin("jvm") version "1.4.10"
 
     apply { id("com.github.ben-manes.versions") version "0.31.0" }
 }
