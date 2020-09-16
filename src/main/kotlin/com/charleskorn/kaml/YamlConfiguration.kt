@@ -38,6 +38,7 @@ public data class YamlConfiguration constructor(
     internal val strictMode: Boolean = true,
     internal val extensionDefinitionPrefix: String? = null,
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
+    internal val polymorphismPropertyName: String = "type",
     internal val encodingIndentationSize: Int = 2,
     internal val breakScalarsAt: Int = 80,
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block

@@ -775,6 +775,88 @@ object YamlWritingTest : Spek({
                     }
                 }
             }
+
+            describe("given custom property name are used to store the type information") {
+                val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property, polymorphismPropertyName = "kind"))
+
+                describe("serializing a sealed type") {
+                    val input = TestSealedStructure.SimpleSealedInt(5)
+                    val output = polymorphicYaml.encodeToString(TestSealedStructure.serializer(), input)
+                    val expectedYaml = """
+                        kind: "sealedInt"
+                        value: 5
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing an unsealed type") {
+                    val input = UnsealedString("blah")
+                    val output = polymorphicYaml.encodeToString(PolymorphicSerializer(UnsealedClass::class), input)
+                    val expectedYaml = """
+                        kind: "unsealedString"
+                        value: "blah"
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing an unwrapped type") {
+                    val input = UnwrappedString("blah")
+
+                    it("throws an appropriate exception") {
+                        expect({ polymorphicYaml.encodeToString(PolymorphicSerializer(UnwrappedInterface::class), input) }).toThrow<IllegalStateException> {
+                            message { toBe("Cannot serialize a polymorphic value that is not a YAML object when using PolymorphismStyle.Property.") }
+                        }
+                    }
+                }
+
+                describe("serializing a polymorphic value as a property value") {
+                    val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
+                    val output = polymorphicYaml.encodeToString(SealedWrapper.serializer(), input)
+                    val expectedYaml = """
+                        element:
+                          kind: "sealedInt"
+                          value: 5
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+
+                describe("serializing a list of polymorphic values") {
+                    val input = listOf(
+                        TestSealedStructure.SimpleSealedInt(5),
+                        TestSealedStructure.SimpleSealedString("some test"),
+                        TestSealedStructure.SimpleSealedInt(-20),
+                        TestSealedStructure.SimpleSealedString(null),
+                        null
+                    )
+
+                    val output = polymorphicYaml.encodeToString(ListSerializer(TestSealedStructure.serializer().nullable), input)
+
+                    val expectedYaml = """
+                        - kind: "sealedInt"
+                          value: 5
+                        - kind: "sealedString"
+                          value: "some test"
+                        - kind: "sealedInt"
+                          value: -20
+                        - kind: "sealedString"
+                          value: null
+                        - null
+                    """.trimIndent()
+
+                    it("returns the value serialized in the expected YAML form") {
+                        expect(output).toBe(expectedYaml)
+                    }
+                }
+            }
         }
 
         describe("handling default values") {
