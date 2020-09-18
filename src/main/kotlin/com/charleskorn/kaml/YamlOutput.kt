@@ -108,7 +108,7 @@ internal class YamlOutput(
                         emitter.emit(MappingStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
 
                         if (typeName.isPresent) {
-                            emitPlainScalar("type")
+                            emitPlainScalar(configuration.polymorphismPropertyName)
                             emitQuotedScalar(typeName.get())
                         }
                     }

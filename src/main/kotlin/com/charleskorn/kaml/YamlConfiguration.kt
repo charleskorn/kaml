@@ -29,6 +29,7 @@ import org.snakeyaml.engine.v2.common.FlowStyle
  * * [polymorphismStyle]: how to read or write the type of a polymorphic object:
  *    * [PolymorphismStyle.Tag]: use a YAML tag (eg. `!<typeOfThing> { property: value }`)
  *    * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
+ * * [polymorphismPropertyName]: property name to use when [polymorphismStyle] is [PolymorphismStyle.Property]
  * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
  * * [breakScalarsAt]: maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines)
  * * [sequenceStyle]: how sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each
@@ -38,6 +39,7 @@ public data class YamlConfiguration constructor(
     internal val strictMode: Boolean = true,
     internal val extensionDefinitionPrefix: String? = null,
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
+    internal val polymorphismPropertyName: String = "type",
     internal val encodingIndentationSize: Int = 2,
     internal val breakScalarsAt: Int = 80,
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block

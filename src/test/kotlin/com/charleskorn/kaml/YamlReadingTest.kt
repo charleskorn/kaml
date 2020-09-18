@@ -1658,6 +1658,205 @@ object YamlReadingTest : Spek({
                     }
                 }
             }
+
+            describe("given a custom property name is used to store the type information") {
+                val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property, polymorphismPropertyName = "kind"))
+
+                context("given some input where the value should be a sealed class") {
+                    val input = """
+                        kind: sealedString
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
+                        }
+                    }
+
+                    context("parsing that input as map") {
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
+
+                        it("deserializes it to a map including the type") {
+                            expect(result).toBe(mapOf("kind" to "sealedString", "value" to "asdfg"))
+                        }
+                    }
+                }
+
+                context("given some input where the value should be an unsealed class") {
+                    val input = """
+                        kind: unsealedString
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(UnsealedString("asdfg"))
+                        }
+                    }
+
+                    context("parsing that input as map") {
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
+
+                        it("deserializes it to a map ignoring the tag") {
+                            expect(result).toBe(mapOf("kind" to "unsealedString", "value" to "asdfg"))
+                        }
+                    }
+                }
+
+                context("given some input for an object where the property value should be a sealed class") {
+                    val input = """
+                        element:
+                            kind: sealedString
+                            value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg")))
+                        }
+                    }
+
+                    context("parsing that input as map") {
+                        val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
+
+                        it("deserializes it to a map ignoring the tag") {
+                            expect(result).toBe(mapOf("element" to mapOf("kind" to "sealedString", "value" to "asdfg")))
+                        }
+                    }
+                }
+
+                context("given some input missing a type property") {
+                    val input = """
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<MissingRequiredPropertyException> {
+                                message { toBe("Property 'kind' is required but it is missing.") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                                propertyName { toBe("kind") }
+                            }
+                        }
+                    }
+                }
+
+                mapOf(
+                    "a list" to "[]",
+                    "a map" to "{}",
+                    "a null value" to "null",
+                    "a tagged value" to "!<tag> sealedString"
+                ).forEach { description, value ->
+                    context("given some input with a type property that is $description") {
+                        val input = """
+                            kind: $value
+                            value: "asdfg"
+                        """.trimIndent()
+
+                        context("parsing that input") {
+                            it("throws an exception with the correct location information") {
+                                expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<InvalidPropertyValueException> {
+                                    message { toBe("Value for 'kind' is invalid: expected a string, but got $description") }
+                                    line { toBe(1) }
+                                    column { toBe(7) }
+                                    propertyName { toBe("kind") }
+                                    reason { toBe("expected a string, but got $description") }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                context("given some tagged input representing a list of polymorphic objects") {
+                    val input = """
+                        - kind: sealedString
+                          value: null
+                        - kind: sealedInt
+                          value: -987
+                        - kind: sealedInt
+                          value: 654
+                        - kind: sealedString
+                          value: "tests"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.decodeFromString(ListSerializer(TestSealedStructure.serializer()), input)
+
+                        it("deserializes it to a Kotlin object") {
+                            expect(result).toBe(
+                                listOf(
+                                    TestSealedStructure.SimpleSealedString(null),
+                                    TestSealedStructure.SimpleSealedInt(-987),
+                                    TestSealedStructure.SimpleSealedInt(654),
+                                    TestSealedStructure.SimpleSealedString("tests")
+                                )
+                            )
+                        }
+                    }
+                }
+
+                context("given a polymorphic value for a property from an unsealed type with an unknown type tag") {
+                    val input = """
+                        kind: someOtherType
+                        value: 123
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
+                                message { toBe("Unknown type 'someOtherType'. Known types are: unsealedBoolean, unsealedString") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                                typeName { toBe("someOtherType") }
+                                validTypeNames { toBe(setOf("unsealedBoolean", "unsealedString")) }
+                            }
+                        }
+                    }
+                }
+
+                context("given a polymorphic value for a property from a sealed type with an unknown type tag") {
+                    val input = """
+                        kind: someOtherType
+                        value: 123
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception with the correct location information") {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
+                                message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                                typeName { toBe("someOtherType") }
+                                validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                            }
+                        }
+                    }
+                }
+
+                context("given some input with a tag and a type property") {
+                    val input = """
+                        !<sealedInt>
+                        kind: sealedString
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
+
+                        it("uses the type from the property and ignores the tag") {
+                            expect(result).toBe(TestSealedStructure.SimpleSealedString("asdfg"))
+                        }
+                    }
+                }
+            }
         }
 
         describe("parsing values with a dynamically installed serializer") {
