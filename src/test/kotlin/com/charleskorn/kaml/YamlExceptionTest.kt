@@ -23,7 +23,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-object YamlExceptionSpec : Spek({
+object YamlExceptionTest : Spek({
     describe("a YAML exception") {
         describe("formatting it as a string") {
             val exception = YamlException("Something went wrong", 123, 456)
