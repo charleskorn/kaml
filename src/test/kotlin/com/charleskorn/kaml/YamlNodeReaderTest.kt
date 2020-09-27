@@ -61,129 +61,129 @@ object YamlNodeReaderTest : Spek({
         // https://yaml-multiline.info/
         mapOf(
             """
-                thing: |
-                  line 1
-                  line 2
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "line 1\nline 2\n",
+                |thing: |
+                |  line 1
+                |  line 2
+                |
+            """.trimMargin() to "line 1\nline 2\n",
             """
-                thing: >
-                  some
-                  text
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "some text\n",
+                |thing: >
+                |  some
+                |  text
+                |
+            """.trimMargin() to "some text\n",
 
             // Preserve consecutive blank lines when literal
             """
-                thing: |
-                  some
-
-                  text
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "some\n\ntext\n",
+                |thing: |
+                |  some
+                |
+                |  text
+                |
+            """.trimMargin() to "some\n\ntext\n",
 
             // Don't preserve consecutive blank lines when folded
             """
-                thing: >
-                  some
-
-                  text
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "some\ntext\n",
+                |thing: >
+                |  some
+                |
+                |  text
+                |
+            """.trimMargin() to "some\ntext\n",
 
             // No chomping indicator - default behaviour is to clip, so retain trailing new line but not blank lines
             """
-                thing: |
-                  line 1
-                  line 2
-
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "line 1\nline 2\n",
+                |thing: |
+                |  line 1
+                |  line 2
+                |
+                |
+            """.trimMargin() to "line 1\nline 2\n",
             """
-                thing: >
-                  some
-                  text
-
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "some text\n",
+                |thing: >
+                |  some
+                |  text
+                |
+                |
+            """.trimMargin() to "some text\n",
 
             // Indentation indicator
             """
-                thing: |1
-                  line 1
-                  line 2
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to " line 1\n line 2\n",
+                |thing: |1
+                |  line 1
+                |  line 2
+                |
+            """.trimMargin() to " line 1\n line 2\n",
             """
-                thing: >1
-                  some
-                  text
-                 here
-                 there
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to " some\n text\nhere there\n",
+                |thing: >1
+                |  some
+                |  text
+                | here
+                | there
+                |
+            """.trimMargin() to " some\n text\nhere there\n",
 
             // 'Strip' chomping indicator - remove all trailing new lines
             """
-                thing: |-
-                  line 1
-                  line 2
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "line 1\nline 2",
+                |thing: |-
+                |  line 1
+                |  line 2
+                |
+            """.trimMargin() to "line 1\nline 2",
             """
-                thing: >-
-                  some
-                  text
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "some text",
+                |thing: >-
+                |  some
+                |  text
+                |
+            """.trimMargin() to "some text",
 
             // 'Keep' chomping indicator - keep all trailing new lines
             """
-                thing: |+
-                  line 1
-                  line 2
-
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "line 1\nline 2\n\n",
+                |thing: |+
+                |  line 1
+                |  line 2
+                |
+                |
+            """.trimMargin() to "line 1\nline 2\n\n",
             """
-                thing: >+
-                  some
-                  text
-
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to "some text\n\n",
+                |thing: >+
+                |  some
+                |  text
+                |
+                |
+            """.trimMargin() to "some text\n\n",
 
             // Chomping indicator with indentation indicator
             """
-                thing: |-1
-                  line 1
-                  line 2
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to " line 1\n line 2",
+                |thing: |-1
+                |  line 1
+                |  line 2
+                |
+            """.trimMargin() to " line 1\n line 2",
             """
-                thing: >-1
-                  some
-                  text
-                 here
-                 there
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to " some\n text\nhere there",
+                |thing: >-1
+                |  some
+                |  text
+                | here
+                | there
+                |
+            """.trimMargin() to " some\n text\nhere there",
             """
-                thing: |+1
-                  line 1
-                  line 2
-
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to " line 1\n line 2\n\n",
+                |thing: |+1
+                |  line 1
+                |  line 2
+                |
+                |
+            """.trimMargin() to " line 1\n line 2\n\n",
             """
-                thing: >+1
-                  some
-                  text
-                 here
-                 there
-
-                # This comment is a hack to workaround https://github.com/kareez/dahgan/issues/31
-            """.trimIndent() to " some\n text\nhere there\n\n"
+                |thing: >+1
+                |  some
+                |  text
+                | here
+                | there
+                |
+                |
+            """.trimMargin() to " some\n text\nhere there\n\n"
         ).forEach { input, text ->
             context("given the block scalar '$input'") {
                 describe("parsing that input") {
