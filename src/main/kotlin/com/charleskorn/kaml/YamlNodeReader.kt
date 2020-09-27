@@ -127,7 +127,7 @@ internal class YamlNodeReader(
                 is YamlList -> return doMerges(items, mappingsToMerge.items)
                 else -> return doMerges(items, listOf(mappingsToMerge))
             }
-            else -> throw MalformedYamlException("Cannot perform multiple merges into a map.", mergeEntries.second().key.location)
+            else -> throw MalformedYamlException("Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.", mergeEntries.second().key.location)
         }
     }
 

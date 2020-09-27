@@ -1299,7 +1299,7 @@ object YamlNodeReaderTest : Spek({
                         val parser = YamlParser(input)
                         YamlNodeReader(parser).read()
                     }).toThrow<MalformedYamlException> {
-                        message { toBe("Cannot perform multiple merges into a map.") }
+                        message { toBe("Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.") }
                         line { toBe(2) }
                         column { toBe(3) }
                     }
