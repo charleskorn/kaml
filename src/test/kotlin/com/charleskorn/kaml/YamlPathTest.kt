@@ -19,6 +19,7 @@
 package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.fluent.en_GB.message
+import ch.tutteli.atrium.api.fluent.en_GB.notToThrow
 import ch.tutteli.atrium.api.fluent.en_GB.toBe
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
@@ -37,11 +38,23 @@ object YamlPathTest : Spek({
                 }
             }
 
-            describe("given a list of segments where the root element is not present") {
+            describe("given a list of segments where the first element is the root element") {
+                it("does not throw an exception") {
+                    expect { YamlPath(YamlPathSegment.Root) }.notToThrow()
+                }
+            }
+
+            describe("given a list of segments where the first element is an alias definition") {
+                it("does not throw an exception") {
+                    expect { YamlPath(YamlPathSegment.AliasDefinition("blah", Location(2, 3))) }.notToThrow()
+                }
+            }
+
+            describe("given a list of segments where the first element is not the root element or an alias definition") {
                 it("throws an exception") {
                     expect { YamlPath(YamlPathSegment.Error(Location(1, 2))) }
                         .toThrow<IllegalArgumentException> {
-                            message { toBe("Root segment must be first element of path.") }
+                            message { toBe("First element of path must be root segment or alias definition.") }
                         }
                 }
             }
@@ -50,7 +63,7 @@ object YamlPathTest : Spek({
                 it("throws an exception") {
                     expect { YamlPath(YamlPathSegment.Error(Location(1, 2)), YamlPathSegment.Root) }
                         .toThrow<IllegalArgumentException> {
-                            message { toBe("Root segment must be first element of path.") }
+                            message { toBe("First element of path must be root segment or alias definition.") }
                         }
                 }
             }
@@ -92,7 +105,7 @@ object YamlPathTest : Spek({
                 val path = YamlPath.root
 
                 it("returns a description of the root element") {
-                    expect(path.toString()).toBe("<root>")
+                    expect(path.toHumanReadableString()).toBe("<root>")
                 }
             }
 
@@ -101,7 +114,7 @@ object YamlPathTest : Spek({
                     .withError(Location(2, 3))
 
                 it("returns a description of the root element") {
-                    expect(path.toString()).toBe("<root>")
+                    expect(path.toHumanReadableString()).toBe("<root>")
                 }
             }
 
@@ -111,7 +124,7 @@ object YamlPathTest : Spek({
                     .withError(Location(2, 3))
 
                 it("returns a description of the parent of the error") {
-                    expect(path.toString()).toBe("[2]")
+                    expect(path.toHumanReadableString()).toBe("[2]")
                 }
             }
 
@@ -120,7 +133,7 @@ object YamlPathTest : Spek({
                     .withListEntry(2, Location(2, 3))
 
                 it("returns a description of the list entry") {
-                    expect(path.toString()).toBe("[2]")
+                    expect(path.toHumanReadableString()).toBe("[2]")
                 }
             }
 
@@ -129,7 +142,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("colour", Location(2, 3))
 
                 it("returns a description of the map key") {
-                    expect(path.toString()).toBe("colour")
+                    expect(path.toHumanReadableString()).toBe("colour")
                 }
             }
 
@@ -139,7 +152,7 @@ object YamlPathTest : Spek({
                     .withMapElementValue(Location(2, 11))
 
                 it("returns a description of the map key") {
-                    expect(path.toString()).toBe("colour")
+                    expect(path.toHumanReadableString()).toBe("colour")
                 }
             }
 
@@ -150,7 +163,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("brightness", Location(3, 5))
 
                 it("returns a description of the nested map key") {
-                    expect(path.toString()).toBe("colour.brightness")
+                    expect(path.toHumanReadableString()).toBe("colour.brightness")
                 }
             }
 
@@ -160,7 +173,7 @@ object YamlPathTest : Spek({
                     .withListEntry(4, Location(3, 5))
 
                 it("returns a description of the nested list entry") {
-                    expect(path.toString()).toBe("[1][4]")
+                    expect(path.toHumanReadableString()).toBe("[1][4]")
                 }
             }
 
@@ -170,7 +183,7 @@ object YamlPathTest : Spek({
                     .withListEntry(4, Location(3, 5))
 
                 it("returns a description of the nested list entry") {
-                    expect(path.toString()).toBe("colours[4]")
+                    expect(path.toHumanReadableString()).toBe("colours[4]")
                 }
             }
 
@@ -180,7 +193,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("colour", Location(3, 5))
 
                 it("returns a description of the nested object key") {
-                    expect(path.toString()).toBe("[1].colour")
+                    expect(path.toHumanReadableString()).toBe("[1].colour")
                 }
             }
 
@@ -189,7 +202,7 @@ object YamlPathTest : Spek({
                     .withAliasReference("blue", Location(2, 3))
 
                 it("returns a description of the alias reference") {
-                    expect(path.toString()).toBe("->&blue")
+                    expect(path.toHumanReadableString()).toBe("->&blue")
                 }
             }
 
@@ -199,7 +212,7 @@ object YamlPathTest : Spek({
                     .withAliasReference("blue", Location(3, 7))
 
                 it("returns a description of the nested alias reference") {
-                    expect(path.toString()).toBe("colour->&blue")
+                    expect(path.toHumanReadableString()).toBe("colour->&blue")
                 }
             }
 
@@ -210,82 +223,100 @@ object YamlPathTest : Spek({
                     .withAliasReference("blue", Location(3, 7))
 
                 it("returns a description of the nested alias reference") {
-                    expect(path.toString()).toBe("colours[4]->&blue")
+                    expect(path.toHumanReadableString()).toBe("colours[4]->&blue")
                 }
             }
 
             describe("given a path for a reference to a resolved alias") {
                 val path = YamlPath.root
                     .withAliasReference("blue", Location(2, 3))
-                    .withAliasDefinition(Location(1, 2))
+                    .withAliasDefinition("blue", Location(1, 2))
 
                 it("returns a description of the alias reference") {
-                    expect(path.toString()).toBe("->&blue")
+                    expect(path.toHumanReadableString()).toBe("->&blue")
                 }
             }
 
             describe("given a path for a reference to a resolved alias map's element") {
                 val path = YamlPath.root
                     .withAliasReference("blue", Location(2, 3))
-                    .withAliasDefinition(Location(1, 2))
+                    .withAliasDefinition("blue", Location(1, 2))
                     .withMapElementKey("saturation", Location(1, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toString()).toBe("->&blue.saturation")
+                    expect(path.toHumanReadableString()).toBe("->&blue.saturation")
                 }
             }
 
             describe("given a path for a reference to a resolved alias list's element") {
                 val path = YamlPath.root
                     .withAliasReference("blue", Location(2, 3))
-                    .withAliasDefinition(Location(1, 2))
+                    .withAliasDefinition("blue", Location(1, 2))
                     .withListEntry(3, Location(1, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toString()).toBe("->&blue[3]")
+                    expect(path.toHumanReadableString()).toBe("->&blue[3]")
                 }
             }
 
             describe("given a path for a reference to an inline merged object") {
                 val path = YamlPath.root
                     .withMapElementKey("colour", Location(1, 3))
-                    .withInlineMerge(Location(4, 5))
+                    .withMerge(Location(4, 5))
 
                 it("returns a description of the object") {
-                    expect(path.toString()).toBe("colour(>> merged inline)")
+                    expect(path.toHumanReadableString()).toBe("colour>>(merged)")
+                }
+            }
+
+            describe("given a path for a reference to an inline merged object that was part of a list of objects to merge") {
+                // eg. << : [ { x: 123 }, { y: 456 } ]
+                val path = YamlPath.root
+                    .withMapElementKey("colour", Location(1, 3))
+                    .withMerge(Location(4, 5))
+                    .withListEntry(1, Location(4, 10))
+
+                it("returns a description of the object") {
+                    expect(path.toHumanReadableString()).toBe("colour>>(merged entry 1)")
                 }
             }
 
             describe("given a path for a reference to an inline merged object's key") {
                 val path = YamlPath.root
                     .withMapElementKey("colour", Location(1, 3))
-                    .withInlineMerge(Location(4, 5))
+                    .withMerge(Location(4, 5))
                     .withMapElementKey("saturation", Location(4, 7))
 
                 it("returns a description of the element key") {
-                    expect(path.toString()).toBe("colour(>> merged inline).saturation")
-                }
-            }
-
-            describe("given a path for a reference to a merged object from an alias") {
-                val path = YamlPath.root
-                    .withMapElementKey("colour", Location(1, 3))
-                    .withAliasMerge("blue", Location(4, 5))
-
-                it("returns a description of the object") {
-                    expect(path.toString()).toBe("colour(>> merged &blue)")
+                    expect(path.toHumanReadableString()).toBe("colour>>(merged).saturation")
                 }
             }
 
             describe("given a path for a reference to the key of a merged object from an alias") {
                 val path = YamlPath.root
                     .withMapElementKey("colour", Location(1, 3))
-                    .withAliasMerge("blue", Location(4, 5))
-                    .withAliasDefinition(Location(10, 3))
+                    .withMerge(Location(4, 5))
+                    .withAliasReference("blue", Location(4, 5))
+                    .withAliasDefinition("blue", Location(10, 3))
                     .withMapElementKey("saturation", Location(11, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toString()).toBe("colour(>> merged &blue).saturation")
+                    expect(path.toHumanReadableString()).toBe("colour>>(merged &blue).saturation")
+                }
+            }
+
+            describe("given a path for a reference to the key of a merged object from an alias that was part of a list of objects to merge") {
+                // eg. << : [ &blue, &green ]
+                val path = YamlPath.root
+                    .withMapElementKey("colour", Location(1, 3))
+                    .withMerge(Location(4, 5))
+                    .withListEntry(1, Location(4, 10))
+                    .withAliasReference("green", Location(4, 10))
+                    .withAliasDefinition("green", Location(10, 3))
+                    .withMapElementKey("saturation", Location(11, 5))
+
+                it("returns a description of the element key") {
+                    expect(path.toHumanReadableString()).toBe("colour>>(merged entry 1 &green).saturation")
                 }
             }
         }

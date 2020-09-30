@@ -37,7 +37,7 @@ object YamlScalarTest : Spek({
             "-0o11" to -9
         ).forEach { content, expectedValue ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root)
 
                 context("retrieving the value as an integer") {
                     val result = scalar.toInt()
@@ -85,7 +85,7 @@ object YamlScalarTest : Spek({
             ""
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
                 context("retrieving the value as an integer") {
                     it("throws an appropriate exception") {
@@ -155,7 +155,7 @@ object YamlScalarTest : Spek({
             "-.INF" to Double.NEGATIVE_INFINITY
         ).forEach { content, expectedResult ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
                 context("retrieving the value as a double") {
                     val result = scalar.toDouble()
@@ -189,7 +189,7 @@ object YamlScalarTest : Spek({
             "-.INF" to Float.NEGATIVE_INFINITY
         ).forEach { content, expectedResult ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
                 context("retrieving the value as a float") {
                     val result = scalar.toFloat()
@@ -212,7 +212,7 @@ object YamlScalarTest : Spek({
             ""
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
                 context("retrieving the value as a float") {
                     it("throws an appropriate exception") {
@@ -247,7 +247,7 @@ object YamlScalarTest : Spek({
             "FALSE" to false
         ).forEach { content, expectedValue ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
                 context("retrieving the value as a boolean") {
                     val result = scalar.toBoolean()
@@ -260,7 +260,7 @@ object YamlScalarTest : Spek({
         }
 
         context("given a scalar with the content 'nonsense'") {
-            val scalar = YamlScalar("nonsense", Location(2, 4))
+            val scalar = YamlScalar("nonsense", YamlPath.root.withListEntry(1, Location(2, 4)))
 
             context("retrieving the value as a boolean") {
                 it("throws an appropriate exception") {
@@ -275,7 +275,7 @@ object YamlScalarTest : Spek({
         }
 
         context("given a scalar with the content 'b'") {
-            val scalar = YamlScalar("b", Location(2, 4))
+            val scalar = YamlScalar("b", YamlPath.root.withListEntry(1, Location(2, 4)))
 
             context("retrieving the value as a character value") {
                 val result = scalar.toChar()
@@ -291,7 +291,7 @@ object YamlScalarTest : Spek({
             ""
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, Location(2, 4))
+                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
                 context("retrieving the value as a character value") {
                     it("throws an appropriate exception") {
@@ -307,7 +307,8 @@ object YamlScalarTest : Spek({
         }
 
         describe("testing equivalence") {
-            val scalar = YamlScalar("some content", Location(2, 3))
+            val path = YamlPath.root.withListEntry(1, Location(2, 3))
+            val scalar = YamlScalar("some content", path)
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
@@ -315,46 +316,57 @@ object YamlScalarTest : Spek({
                 }
             }
 
-            context("comparing it to another scalar with the same content and location") {
+            context("comparing it to another scalar with the same content and path") {
                 it("indicates that they are equivalent") {
-                    expect(scalar.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(true)
+                    expect(scalar.equivalentContentTo(YamlScalar("some content", path))).toBe(true)
                 }
             }
 
-            context("comparing it to another scalar with the same content but a different location") {
+            context("comparing it to another scalar with the same content but a different path") {
+                val otherPath = YamlPath.root.withListEntry(1, Location(2, 4))
+
                 it("indicates that they are equivalent") {
-                    expect(scalar.equivalentContentTo(YamlScalar("some content", Location(2, 4)))).toBe(true)
+                    expect(scalar.equivalentContentTo(YamlScalar("some content", otherPath))).toBe(true)
                 }
             }
 
-            context("comparing it to another scalar with the same location but different content") {
+            context("comparing it to another scalar with the same path but different content") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlScalar("some other content", Location(2, 3)))).toBe(false)
+                    expect(scalar.equivalentContentTo(YamlScalar("some other content", path))).toBe(false)
                 }
             }
 
             context("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
+                    expect(scalar.equivalentContentTo(YamlNull(path))).toBe(false)
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
+                    expect(scalar.equivalentContentTo(YamlList(emptyList(), path))).toBe(false)
                 }
             }
 
             context("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
+                    expect(scalar.equivalentContentTo(YamlMap(emptyMap(), path))).toBe(false)
                 }
             }
         }
 
         describe("converting the content to a human-readable string") {
             it("returns the content surrounded by single quotes") {
-                expect(YamlScalar("thing", Location(1, 1)).contentToString()).toBe("'thing'")
+                expect(YamlScalar("thing", YamlPath.root).contentToString()).toBe("'thing'")
+            }
+        }
+
+        describe("replacing its path") {
+            val original = YamlScalar("abc123", YamlPath.root)
+            val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
+
+            it("returns a scalar value with the provided path") {
+                expect(original.withPath(newPath)).toBe(YamlScalar("abc123", newPath))
             }
         }
     }

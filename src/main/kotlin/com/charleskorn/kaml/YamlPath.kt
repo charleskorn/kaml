@@ -26,8 +26,8 @@ public data class YamlPath(val segments: List<YamlPathSegment>) {
             throw IllegalArgumentException("Path must contain at least one segment.")
         }
 
-        if (segments.first() != YamlPathSegment.Root) {
-            throw IllegalArgumentException("Root segment must be first element of path.")
+        if (segments.first() !is YamlPathSegment.Root && segments.first() !is YamlPathSegment.AliasDefinition) {
+            throw IllegalArgumentException("First element of path must be root segment or alias definition.")
         }
 
         if (segments.drop(1).contains(YamlPathSegment.Root)) {
@@ -42,16 +42,20 @@ public data class YamlPath(val segments: List<YamlPathSegment>) {
     public fun withMapElementKey(key: String, location: Location): YamlPath = withSegment(YamlPathSegment.MapElementKey(key, location))
     public fun withMapElementValue(location: Location): YamlPath = withSegment(YamlPathSegment.MapElementValue(location))
     public fun withAliasReference(name: String, location: Location): YamlPath = withSegment(YamlPathSegment.AliasReference(name, location))
-    public fun withAliasDefinition(location: Location): YamlPath = withSegment(YamlPathSegment.AliasDefinition(location))
-    public fun withInlineMerge(location: Location): YamlPath = withSegment(YamlPathSegment.InlineMerge(location))
-    public fun withAliasMerge(name: String, location: Location): YamlPath = withSegment(YamlPathSegment.AliasMerge(name, location))
+    public fun withAliasDefinition(name: String, location: Location): YamlPath = withSegment(YamlPathSegment.AliasDefinition(name, location))
+    public fun withMerge(location: Location): YamlPath = withSegment(YamlPathSegment.Merge(location))
     private fun withSegment(segment: YamlPathSegment): YamlPath = YamlPath(segments + segment)
 
-    override fun toString(): String {
+    public fun toHumanReadableString(): String {
         val builder = StringBuilder()
 
-        segments.drop(1).forEach { segment ->
-            when (segment) {
+        var nextSegmentIndex = 1
+
+        while (nextSegmentIndex <= segments.lastIndex) {
+            val segmentIndex = nextSegmentIndex
+            nextSegmentIndex++
+
+            when (val segment = segments[segmentIndex]) {
                 is YamlPathSegment.ListEntry -> {
                     builder.append('[')
                     builder.append(segment.index)
@@ -68,12 +72,21 @@ public data class YamlPath(val segments: List<YamlPathSegment>) {
                     builder.append("->&")
                     builder.append(segment.name)
                 }
-                is YamlPathSegment.InlineMerge -> {
-                    builder.append("(>> merged inline)")
-                }
-                is YamlPathSegment.AliasMerge -> {
-                    builder.append("(>> merged &")
-                    builder.append(segment.name)
+                is YamlPathSegment.Merge -> {
+                    builder.append(">>(merged")
+
+                    if (nextSegmentIndex <= segments.lastIndex && segments[nextSegmentIndex] is YamlPathSegment.ListEntry) {
+                        builder.append(" entry ")
+                        builder.append((segments[nextSegmentIndex] as YamlPathSegment.ListEntry).index)
+                        nextSegmentIndex++
+                    }
+
+                    if (nextSegmentIndex <= segments.lastIndex && segments[nextSegmentIndex] is YamlPathSegment.AliasReference) {
+                        builder.append(" &")
+                        builder.append((segments[nextSegmentIndex] as YamlPathSegment.AliasReference).name)
+                        nextSegmentIndex++
+                    }
+
                     builder.append(")")
                 }
                 is YamlPathSegment.Root, is YamlPathSegment.Error, is YamlPathSegment.MapElementValue, is YamlPathSegment.AliasDefinition -> {
@@ -91,6 +104,7 @@ public data class YamlPath(val segments: List<YamlPathSegment>) {
 
     public companion object {
         public val root: YamlPath = YamlPath(YamlPathSegment.Root)
+        public fun forAliasDefinition(name: String, location: Location): YamlPath = YamlPath(YamlPathSegment.AliasDefinition(name, location))
     }
 }
 
@@ -100,8 +114,7 @@ public sealed class YamlPathSegment(public open val location: Location) {
     public data class MapElementKey(val key: String, override val location: Location) : YamlPathSegment(location)
     public data class MapElementValue(override val location: Location) : YamlPathSegment(location)
     public data class AliasReference(val name: String, override val location: Location) : YamlPathSegment(location)
-    public data class AliasDefinition(override val location: Location) : YamlPathSegment(location)
-    public data class InlineMerge(override val location: Location) : YamlPathSegment(location)
-    public data class AliasMerge(val name: String, override val location: Location) : YamlPathSegment(location)
+    public data class AliasDefinition(val name: String, override val location: Location) : YamlPathSegment(location)
+    public data class Merge(override val location: Location) : YamlPathSegment(location)
     public data class Error(override val location: Location) : YamlPathSegment(location)
 }

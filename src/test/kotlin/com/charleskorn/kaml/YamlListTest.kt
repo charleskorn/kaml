@@ -28,9 +28,10 @@ object YamlListTest : Spek({
         describe("testing equivalence") {
             val list = YamlList(
                 listOf(
-                    YamlScalar("item 1", Location(4, 5)),
-                    YamlScalar("item 2", Location(6, 7))
-                ), Location(2, 3)
+                    YamlScalar("item 1", YamlPath.root.withListEntry(0, Location(4, 5))),
+                    YamlScalar("item 2", YamlPath.root.withListEntry(1, Location(6, 7)))
+                ),
+                YamlPath.root
             )
 
             describe("comparing it to the same instance") {
@@ -39,46 +40,46 @@ object YamlListTest : Spek({
                 }
             }
 
-            describe("comparing it to another list with the same items in the same order in a different location") {
+            describe("comparing it to another list with the same items in the same order with a different path") {
                 it("indicates that they are equivalent") {
-                    expect(list.equivalentContentTo(YamlList(list.items, Location(5, 6)))).toBe(true)
+                    expect(list.equivalentContentTo(YamlList(list.items, YamlPath.root.withMapElementValue(Location(5, 6))))).toBe(true)
                 }
             }
 
-            describe("comparing it to another list with the same items in a different order in the same location") {
+            describe("comparing it to another list with the same items in a different order with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlList(list.items.reversed(), Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlList(list.items.reversed(), list.path))).toBe(false)
                 }
             }
 
-            describe("comparing it to another list with different items in the same location") {
+            describe("comparing it to another list with different items with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlList(emptyList(), Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlList(emptyList(), list.path))).toBe(false)
                 }
             }
 
             describe("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlScalar("some content", Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlScalar("some content", list.path))).toBe(false)
                 }
             }
 
             describe("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlNull(Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlNull(list.path))).toBe(false)
                 }
             }
 
             describe("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlMap(emptyMap(), Location(2, 3)))).toBe(false)
+                    expect(list.equivalentContentTo(YamlMap(emptyMap(), list.path))).toBe(false)
                 }
             }
         }
 
         describe("converting the content to a human-readable string") {
             context("an empty list") {
-                val list = YamlList(emptyList(), Location(1, 1))
+                val list = YamlList(emptyList(), YamlPath.root)
 
                 it("returns empty square brackets") {
                     expect(list.contentToString()).toBe("[]")
@@ -86,7 +87,7 @@ object YamlListTest : Spek({
             }
 
             context("a list with a single entry") {
-                val list = YamlList(listOf(YamlScalar("hello", Location(1, 1))), Location(1, 1))
+                val list = YamlList(listOf(YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1)))), YamlPath.root)
 
                 it("returns that item surrounded by square brackets") {
                     expect(list.contentToString()).toBe("['hello']")
@@ -95,13 +96,31 @@ object YamlListTest : Spek({
 
             context("a list with multiple entries") {
                 val list = YamlList(listOf(
-                    YamlScalar("hello", Location(1, 1)),
-                    YamlScalar("world", Location(2, 1))
-                ), Location(1, 1))
+                    YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
+                    YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
+                ), YamlPath.root)
 
                 it("returns all items separated by commas and surrounded by square brackets") {
                     expect(list.contentToString()).toBe("['hello', 'world']")
                 }
+            }
+        }
+
+        describe("replacing its path") {
+            val original = YamlList(listOf(
+                YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
+                YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
+            ), YamlPath.root)
+
+            val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
+
+            val expected = YamlList(listOf(
+                YamlScalar("hello", newPath.withListEntry(0, Location(1, 1))),
+                YamlScalar("world", newPath.withListEntry(1, Location(2, 1)))
+            ), newPath)
+
+            it("returns a new list node with the path for the node and its items updated to the new path") {
+                expect(original.withPath(newPath)).toBe(expected)
             }
         }
     }

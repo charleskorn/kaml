@@ -94,7 +94,7 @@ public class NoAnchorForExtensionException(
     public val extensionDefinitionPrefix: String,
     location: Location
 ) :
-    YamlException("The key $key starts with the extension definition prefix '$extensionDefinitionPrefix' but does not define an anchor.", location)
+    YamlException("The key '$key' starts with the extension definition prefix '$extensionDefinitionPrefix' but does not define an anchor.", location)
 
 internal val Event.location: Location
     get() = Location(startMark.get().line + 1, startMark.get().column + 1)

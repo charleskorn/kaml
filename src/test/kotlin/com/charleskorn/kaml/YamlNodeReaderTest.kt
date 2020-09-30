@@ -16,9 +16,12 @@
 
 */
 
+@file:Suppress("MoveLambdaOutsideParentheses")
+
 package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.fluent.en_GB.message
+import ch.tutteli.atrium.api.fluent.en_GB.notToThrow
 import ch.tutteli.atrium.api.fluent.en_GB.toBe
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
@@ -44,14 +47,14 @@ object YamlNodeReaderTest : Spek({
             """""""" to "",
             "'null'" to "null",
             """"null"""" to "null"
-        ).forEach { input, expectedResult ->
+        ).forEach { (input, expectedResult) ->
             context("given the string '$input'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
                     val result = YamlNodeReader(parser).read()
 
                     it("returns the expected scalar value") {
-                        expect(result).toBe(YamlScalar(expectedResult, Location(1, 1)))
+                        expect(result).toBe(YamlScalar(expectedResult, YamlPath.root))
                     }
                 }
             }
@@ -184,18 +187,22 @@ object YamlNodeReaderTest : Spek({
                 |
                 |
             """.trimMargin() to " some\n text\nhere there\n\n"
-        ).forEach { input, text ->
+        ).forEach { (input, text) ->
             context("given the block scalar '$input'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
                     val result = YamlNodeReader(parser).read()
 
+                    val keyPath = YamlPath.root.withMapElementKey("thing", Location(1, 1))
+                    val valuePath = keyPath.withMapElementValue(Location(1, 8))
+
                     it("returns the expected multi-line text value") {
                         expect(result).toBe(
                             YamlMap(
                                 mapOf(
-                                    YamlScalar("thing", Location(1, 1)) to YamlScalar(text, Location(1, 8))
-                                ), Location(1, 1)
+                                    YamlScalar("thing", keyPath) to YamlScalar(text, valuePath)
+                                ),
+                                YamlPath.root
                             )
                         )
                     }
@@ -206,7 +213,7 @@ object YamlNodeReaderTest : Spek({
         mapOf(
             "given a double-quoted string without a trailing double quote" to """"hello""",
             "given a single-quoted string without a trailing single quote" to "'hello"
-        ).forEach { description, input ->
+        ).forEach { (description, input) ->
             context(description) {
                 describe("parsing that input") {
                     it("throws an appropriate exception") {
@@ -283,12 +290,13 @@ object YamlNodeReaderTest : Spek({
                     expect(result).toBe(
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", Location(1, 3)),
-                                YamlScalar("thing2", Location(2, 3)),
-                                YamlScalar("thing3", Location(3, 3)),
-                                YamlScalar("thing4", Location(4, 3)),
-                                YamlScalar("thing\"5", Location(5, 3))
-                            ), Location(1, 1)
+                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
+                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
+                                YamlScalar("thing3", YamlPath.root.withListEntry(2, Location(3, 3))),
+                                YamlScalar("thing4", YamlPath.root.withListEntry(3, Location(4, 3))),
+                                YamlScalar("thing\"5", YamlPath.root.withListEntry(4, Location(5, 3)))
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -310,10 +318,11 @@ object YamlNodeReaderTest : Spek({
                     expect(result).toBe(
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", Location(1, 3)),
-                                YamlScalar("thing2", Location(2, 3)),
-                                YamlScalar("thing1", Location(1, 3))
-                            ), Location(1, 1)
+                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
+                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
+                                YamlScalar("thing1", YamlPath.root.withListEntry(2, Location(3, 3)).withAliasReference("thing", Location(3, 3)).withAliasDefinition("thing", Location(1, 3)))
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -337,12 +346,13 @@ object YamlNodeReaderTest : Spek({
                     expect(result).toBe(
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", Location(1, 3)),
-                                YamlScalar("thing2", Location(2, 3)),
-                                YamlScalar("thing1", Location(1, 3)),
-                                YamlScalar("thing3", Location(4, 3)),
-                                YamlScalar("thing3", Location(4, 3))
-                            ), Location(1, 1)
+                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
+                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
+                                YamlScalar("thing1", YamlPath.root.withListEntry(2, Location(3, 3)).withAliasReference("thing", Location(3, 3)).withAliasDefinition("thing", Location(1, 3))),
+                                YamlScalar("thing3", YamlPath.root.withListEntry(3, Location(4, 3))),
+                                YamlScalar("thing3", YamlPath.root.withListEntry(4, Location(5, 3)).withAliasReference("thing", Location(5, 3)).withAliasDefinition("thing", Location(4, 3)))
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -382,12 +392,13 @@ object YamlNodeReaderTest : Spek({
                     expect(result).toBe(
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", Location(1, 2)),
-                                YamlScalar("thing2", Location(1, 10)),
-                                YamlScalar("thing3", Location(1, 18)),
-                                YamlScalar("thing4", Location(1, 28)),
-                                YamlScalar("thing\"5", Location(1, 38))
-                            ), Location(1, 1)
+                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 2))),
+                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(1, 10))),
+                                YamlScalar("thing3", YamlPath.root.withListEntry(2, Location(1, 18))),
+                                YamlScalar("thing4", YamlPath.root.withListEntry(3, Location(1, 28))),
+                                YamlScalar("thing\"5", YamlPath.root.withListEntry(4, Location(1, 38)))
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -402,7 +413,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns an empty list") {
-                    expect(result).toBe(YamlList(emptyList(), Location(1, 1)))
+                    expect(result).toBe(YamlList(emptyList(), YamlPath.root))
                 }
             }
         }
@@ -418,9 +429,10 @@ object YamlNodeReaderTest : Spek({
                     expect(result).toBe(
                         YamlList(
                             listOf(
-                                YamlList(emptyList(), Location(1, 2)),
-                                YamlList(emptyList(), Location(1, 6))
-                            ), Location(1, 1)
+                                YamlList(emptyList(), YamlPath.root.withListEntry(0, Location(1, 2))),
+                                YamlList(emptyList(), YamlPath.root.withListEntry(1, Location(1, 6)))
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -441,9 +453,10 @@ object YamlNodeReaderTest : Spek({
                     expect(result).toBe(
                         YamlList(
                             listOf(
-                                YamlList(emptyList(), Location(1, 3)),
-                                YamlList(emptyList(), Location(2, 3))
-                            ), Location(1, 1)
+                                YamlList(emptyList(), YamlPath.root.withListEntry(0, Location(1, 3))),
+                                YamlList(emptyList(), YamlPath.root.withListEntry(1, Location(2, 3)))
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -462,23 +475,27 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
 
+                val firstListPath = YamlPath.root.withListEntry(0, Location(1, 3))
+                val secondListPath = YamlPath.root.withListEntry(1, Location(3, 5))
+
                 it("returns the expected list") {
                     expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlList(
                                     listOf(
-                                        YamlScalar("thing1", Location(1, 4)),
-                                        YamlScalar("thing2", Location(1, 12))
-                                    ), Location(1, 3)
+                                        YamlScalar("thing1", firstListPath.withListEntry(0, Location(1, 4))),
+                                        YamlScalar("thing2", firstListPath.withListEntry(1, Location(1, 12)))
+                                    ), firstListPath
                                 ),
                                 YamlList(
                                     listOf(
-                                        YamlScalar("thing3", Location(3, 7)),
-                                        YamlScalar("thing4", Location(4, 7))
-                                    ), Location(3, 5)
+                                        YamlScalar("thing3", secondListPath.withListEntry(0, Location(3, 7))),
+                                        YamlScalar("thing4", secondListPath.withListEntry(1, Location(4, 7)))
+                                    ), secondListPath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -498,8 +515,9 @@ object YamlNodeReaderTest : Spek({
                         expect(result).toBe(
                             YamlList(
                                 listOf(
-                                    YamlNull(Location(1, 2))
-                                ), Location(1, 1)
+                                    YamlNull(YamlPath.root.withListEntry(0, Location(1, 2)))
+                                ),
+                                YamlPath.root
                             )
                         )
                     }
@@ -515,7 +533,7 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns a single null entry") {
-                    expect(result).toBe(YamlNull(Location(1, 1)))
+                    expect(result).toBe(YamlNull(YamlPath.root))
                 }
             }
         }
@@ -526,13 +544,16 @@ object YamlNodeReaderTest : Spek({
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val keyPath = YamlPath.root.withMapElementKey("key", Location(1, 1))
+                val valuePath = keyPath.withMapElementValue(Location(1, 6))
 
                 it("returns a map with a single key-value pair") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key", Location(1, 1)) to YamlScalar("value", Location(1, 6))
-                            ), Location(1, 1)
+                                YamlScalar("key", keyPath) to YamlScalar("value", valuePath)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -545,13 +566,16 @@ object YamlNodeReaderTest : Spek({
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val keyPath = YamlPath.root.withMapElementKey("key", Location(1, 1))
+                val valuePath = keyPath.withMapElementValue(Location(1, 5))
 
                 it("returns a map with a single key-value pair with a null value") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key", Location(1, 1)) to YamlNull(Location(1, 5))
-                            ), Location(1, 1)
+                                YamlScalar("key", keyPath) to YamlNull(valuePath)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -562,19 +586,24 @@ object YamlNodeReaderTest : Spek({
             val input = """
                 key1: value1
                 key2: value2
-                """.trimIndent()
+            """.trimIndent()
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val key1Path = YamlPath.root.withMapElementKey("key1", Location(1, 1))
+                val value1Path = key1Path.withMapElementValue(Location(1, 7))
+                val key2Path = YamlPath.root.withMapElementKey("key2", Location(2, 1))
+                val value2Path = key2Path.withMapElementValue(Location(2, 7))
 
                 it("returns a map with two key-value pairs") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
-                                YamlScalar("key2", Location(2, 1)) to YamlScalar("value2", Location(2, 7))
-                            ), Location(1, 1)
+                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
+                                YamlScalar("key2", key2Path) to YamlScalar("value2", value2Path)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -590,14 +619,19 @@ object YamlNodeReaderTest : Spek({
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val key1Path = YamlPath.root.withMapElementKey("key1", Location(1, 1))
+                val value1Path = key1Path.withMapElementValue(Location(1, 7))
+                val key2Path = YamlPath.root.withMapElementKey("key2", Location(2, 1))
+                val value2Path = key2Path.withMapElementValue(Location(2, 6))
 
                 it("returns a map with two key-value pairs") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
-                                YamlScalar("key2", Location(2, 1)) to YamlNull(Location(2, 6))
-                            ), Location(1, 1)
+                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
+                                YamlScalar("key2", key2Path) to YamlNull(value2Path)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -613,14 +647,19 @@ object YamlNodeReaderTest : Spek({
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val key1Path = YamlPath.root.withMapElementKey("key1", Location(1, 1))
+                val value1Path = key1Path.withMapElementValue(Location(1, 7))
+                val key2Path = YamlPath.root.withMapElementKey("key2", Location(2, 1))
+                val value2Path = key2Path.withMapElementValue(Location(2, 7)).withAliasReference("value", Location(2, 7)).withAliasDefinition("value", Location(1, 7))
 
                 it("returns a map with two key-value pairs") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
-                                YamlScalar("key2", Location(2, 1)) to YamlScalar("value1", Location(1, 7))
-                            ), Location(1, 1)
+                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
+                                YamlScalar("key2", key2Path) to YamlScalar("value1", value2Path)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -644,39 +683,91 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
 
+                val key1Path = YamlPath.root.withMapElementKey("key1", Location(1, 1))
+                val key2Path = YamlPath.root.withMapElementKey("key2", Location(2, 1))
+                val key3Path = YamlPath.root.withMapElementKey("key3", Location(3, 1))
+                val value3Path = key3Path.withMapElementValue(Location(4, 3))
+                val thingPath = value3Path.withListEntry(2, Location(6, 5)).withMapElementKey("thing", Location(6, 5))
+                val key4Path = YamlPath.root.withMapElementKey("key4", Location(7, 1))
+                val value4Path = key4Path.withMapElementValue(Location(7, 7))
+                val key5Path = YamlPath.root.withMapElementKey("key5", Location(8, 1))
+                val value5Path = key5Path.withMapElementValue(Location(9, 3))
+                val innerPath = value5Path.withMapElementKey("inner", Location(9, 3))
+
                 it("returns a map with all expected key-value pairs") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", Location(1, 1)) to YamlScalar("value1", Location(1, 7)),
-                                YamlScalar("key2", Location(2, 1)) to YamlScalar("value2", Location(2, 7)),
-                                YamlScalar("key3", Location(3, 1)) to YamlList(
+                                YamlScalar("key1", key1Path) to YamlScalar("value1", key1Path.withMapElementValue(Location(1, 7))),
+                                YamlScalar("key2", key2Path) to YamlScalar("value2", key2Path.withMapElementValue(Location(2, 7))),
+                                YamlScalar("key3", key3Path) to YamlList(
                                     listOf(
-                                        YamlScalar("listitem1", Location(4, 5)),
-                                        YamlScalar("listitem2", Location(5, 5)),
+                                        YamlScalar("listitem1", value3Path.withListEntry(0, Location(4, 5))),
+                                        YamlScalar("listitem2", value3Path.withListEntry(1, Location(5, 5))),
                                         YamlMap(
                                             mapOf(
-                                                YamlScalar("thing", Location(6, 5)) to YamlScalar(
-                                                    "value",
-                                                    Location(6, 12)
-                                                )
-                                            ), Location(6, 5)
+                                                YamlScalar("thing", thingPath) to YamlScalar("value", thingPath.withMapElementValue(Location(6, 12)))
+                                            ), value3Path.withListEntry(2, Location(6, 5))
                                         )
-                                    ), Location(4, 3)
+                                    ), value3Path
                                 ),
-                                YamlScalar("key4", Location(7, 1)) to YamlList(
+                                YamlScalar("key4", key4Path) to YamlList(
                                     listOf(
-                                        YamlScalar("something", Location(7, 8))
-                                    ), Location(7, 7)
+                                        YamlScalar("something", value4Path.withListEntry(0, Location(7, 8)))
+                                    ), value4Path
                                 ),
-                                YamlScalar("key5", Location(8, 1)) to YamlMap(
+                                YamlScalar("key5", key5Path) to YamlMap(
                                     mapOf(
-                                        YamlScalar("inner", Location(9, 3)) to YamlScalar("othervalue", Location(9, 10))
-                                    ), Location(9, 3)
+                                        YamlScalar("inner", innerPath) to YamlScalar("othervalue", innerPath.withMapElementValue(Location(9, 10)))
+                                    ), value5Path
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
+                }
+            }
+        }
+
+        mapOf(
+            "null" to "null value",
+            "[]" to "list",
+            "{}" to "map",
+            "!thing hello" to "tagged value"
+        ).forEach { value, description ->
+            context("given a map with a $description for a key") {
+                val input = """
+                    key: value
+                    $value: something
+                """.trimIndent()
+
+                describe("parsing that input") {
+                    it("throws an appropriate exception") {
+                        expect({
+                            val parser = YamlParser(input)
+                            YamlNodeReader(parser).read()
+                        }).toThrow<MalformedYamlException> {
+                            message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
+                            line { toBe(2) }
+                            column { toBe(1) }
+                        }
+                    }
+                }
+            }
+        }
+
+        context("given a map with the the word 'null' as a key in quotes") {
+            val input = """
+                key: value
+                "null": something
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("does not throw an exception") {
+                    expect({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).notToThrow()
                 }
             }
         }
@@ -787,7 +878,7 @@ object YamlNodeReaderTest : Spek({
 
                 it("returns an empty map") {
                     expect(result).toBe(
-                        YamlMap(emptyMap(), Location(1, 1))
+                        YamlMap(emptyMap(), YamlPath.root)
                     )
                 }
             }
@@ -829,13 +920,16 @@ object YamlNodeReaderTest : Spek({
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val keyPath = YamlPath.root.withMapElementKey("key", Location(1, 2))
+                val valuePath = keyPath.withMapElementValue(Location(1, 7))
 
                 it("returns a map with a single key-value pair") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key", Location(1, 2)) to YamlScalar("value", Location(1, 7))
-                            ), Location(1, 1)
+                                YamlScalar("key", keyPath) to YamlScalar("value", valuePath)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -878,14 +972,19 @@ object YamlNodeReaderTest : Spek({
             describe("parsing that input") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
+                val key1Path = YamlPath.root.withMapElementKey("key1", Location(1, 2))
+                val value1Path = key1Path.withMapElementValue(Location(1, 8))
+                val key2Path = YamlPath.root.withMapElementKey("key2", Location(1, 16))
+                val value2Path = key2Path.withMapElementValue(Location(1, 22))
 
                 it("returns a map with a single key-value pair") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", Location(1, 2)) to YamlScalar("value1", Location(1, 8)),
-                                YamlScalar("key2", Location(1, 16)) to YamlScalar("value2", Location(1, 22))
-                            ), Location(1, 1)
+                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
+                                YamlScalar("key2", key2Path) to YamlScalar("value2", value2Path)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -903,9 +1002,8 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comment") {
-                    expect(result).toBe(
-                        YamlScalar("somevalue", Location(2, 1))
-                    )
+                    // FIXME: ideally we'd return a path with the location (2, 1)
+                    expect(result).toBe(YamlScalar("somevalue", YamlPath.root))
                 }
             }
         }
@@ -922,7 +1020,7 @@ object YamlNodeReaderTest : Spek({
 
                 it("returns that scalar, ignoring the comment") {
                     expect(result).toBe(
-                        YamlScalar("somevalue", Location(1, 1))
+                        YamlScalar("somevalue", YamlPath.root)
                     )
                 }
             }
@@ -941,9 +1039,8 @@ object YamlNodeReaderTest : Spek({
                 val result = YamlNodeReader(parser).read()
 
                 it("returns that scalar, ignoring the comments") {
-                    expect(result).toBe(
-                        YamlScalar("somevalue", Location(3, 1))
-                    )
+                    // FIXME: ideally we'd return a path with the location (3, 1)
+                    expect(result).toBe(YamlScalar("somevalue", YamlPath.root))
                 }
             }
         }
@@ -959,16 +1056,16 @@ object YamlNodeReaderTest : Spek({
 
                 it("returns that scalar, ignoring the comment") {
                     expect(result).toBe(
-                        YamlScalar("somevalue", Location(1, 1))
+                        YamlScalar("somevalue", YamlPath.root)
                     )
                 }
             }
         }
 
         mapOf(
-            "!thing" to YamlTaggedNode("!thing", YamlNull(Location(1, 1))),
-            "!!str 'some string'" to YamlTaggedNode("tag:yaml.org,2002:str", YamlScalar("some string", Location(1, 1)))
-        ).forEach { input, featureName ->
+            "!thing" to YamlTaggedNode("!thing", YamlNull(YamlPath.root)),
+            "!!str 'some string'" to YamlTaggedNode("tag:yaml.org,2002:str", YamlScalar("some string", YamlPath.root))
+        ).forEach { (input, featureName) ->
             context("given the input '$input' which contains a tagged node") {
                 describe("parsing that input") {
                     it("returns the expected node") {
@@ -1026,25 +1123,36 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
 
+                val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
+                val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 13))
+                val firstYPath = firstItemPath.withMapElementKey("y", Location(1, 19))
+                val secondItemPath = YamlPath.root.withListEntry(1, Location(3, 3))
+                val mergeResolutionPath = secondItemPath.withMerge(Location(3, 8)).withAliasReference("CENTER", Location(3, 8)).withAliasDefinition("CENTER", Location(1, 3))
+                val secondXPath = mergeResolutionPath.withMapElementKey("x", Location(1, 13))
+                val secondYPath = mergeResolutionPath.withMapElementKey("y", Location(1, 19))
+                val labelPath = secondItemPath.withMapElementKey("label", Location(5, 3))
+                val rPath = secondItemPath.withMapElementKey("r", Location(4, 3))
+
                 it("returns that map with the values from the source map merged into it") {
                     expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
-                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22))
-                                    ), Location(1, 3)
+                                        YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
+                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22)))
+                                    ), firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
-                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22)),
-                                        YamlScalar("r", Location(4, 3)) to YamlScalar("10", Location(4, 6)),
-                                        YamlScalar("label", Location(5, 3)) to YamlScalar("center/big", Location(5, 10))
-                                    ), Location(3, 3)
+                                        YamlScalar("x", secondXPath) to YamlScalar("1", secondXPath.withMapElementValue(Location(1, 16))),
+                                        YamlScalar("y", secondYPath) to YamlScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
+                                        YamlScalar("r", rPath) to YamlScalar("10", rPath.withMapElementValue(Location(4, 6))),
+                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10)))
+                                    ), secondItemPath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -1064,24 +1172,34 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
 
+                val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
+                val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 13))
+                val firstYPath = firstItemPath.withMapElementKey("y", Location(1, 19))
+                val secondItemPath = YamlPath.root.withListEntry(1, Location(3, 3))
+                val mergeResolutionPath = secondItemPath.withMerge(Location(3, 8)).withAliasReference("CENTER", Location(3, 8)).withAliasDefinition("CENTER", Location(1, 3))
+                val secondXPath = secondItemPath.withMapElementKey("x", Location(4, 3))
+                val secondYPath = mergeResolutionPath.withMapElementKey("y", Location(1, 19))
+                val labelPath = secondItemPath.withMapElementKey("label", Location(5, 3))
+
                 it("returns that map with the values from the source map merged into it, with the local values taking precedence") {
                     expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
-                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22))
-                                    ), Location(1, 3)
+                                        YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
+                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22)))
+                                    ), firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(4, 3)) to YamlScalar("10", Location(4, 6)),
-                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22)),
-                                        YamlScalar("label", Location(5, 3)) to YamlScalar("center/big", Location(5, 10))
-                                    ), Location(3, 3)
+                                        YamlScalar("x", secondXPath) to YamlScalar("10", secondXPath.withMapElementValue(Location(4, 6))),
+                                        YamlScalar("y", secondYPath) to YamlScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
+                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10)))
+                                    ), secondItemPath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -1133,9 +1251,9 @@ object YamlNodeReaderTest : Spek({
         context("given a map with multiple maps to merge into it") {
             val input = """
                 - &CENTER { x: 1, y: 2 }
-                - &BIG { r: 10 }
+                - &RADIUS { r: 10 }
 
-                - << : [ *CENTER, *BIG ]
+                - << : [ *CENTER, *RADIUS ]
                   label: center/big
             """.trimIndent()
 
@@ -1143,30 +1261,46 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
 
+                val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
+                val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 13))
+                val firstYPath = firstItemPath.withMapElementKey("y", Location(1, 19))
+
+                val secondItemPath = YamlPath.root.withListEntry(1, Location(2, 3))
+                val secondRPath = secondItemPath.withMapElementKey("r", Location(2, 13))
+
+                val thirdItemPath = YamlPath.root.withListEntry(2, Location(4, 3))
+                val centerMergeResolutionPath = thirdItemPath.withMerge(Location(4, 8)).withListEntry(0, Location(4, 10)).withAliasReference("CENTER", Location(4, 10)).withAliasDefinition("CENTER", Location(1, 3))
+                val thirdXPath = centerMergeResolutionPath.withMapElementKey("x", Location(1, 13))
+                val thirdYPath = centerMergeResolutionPath.withMapElementKey("y", Location(1, 19))
+                val radiusMergeResolutionPath = thirdItemPath.withMerge(Location(4, 8)).withListEntry(1, Location(4, 19)).withAliasReference("RADIUS", Location(4, 19)).withAliasDefinition("RADIUS", Location(2, 3))
+                val thirdRPath = radiusMergeResolutionPath.withMapElementKey("r", Location(2, 13))
+                val labelPath = thirdItemPath.withMapElementKey("label", Location(5, 3))
+
                 it("returns that map with the values from the source maps merged into it") {
                     expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
-                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22))
-                                    ), Location(1, 3)
+                                        YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
+                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22)))
+                                    ), firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13))
-                                    ), Location(2, 3)
+                                        YamlScalar("r", secondRPath) to YamlScalar("10", secondRPath.withMapElementValue(Location(2, 16)))
+                                    ), secondItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(1, 13)) to YamlScalar("1", Location(1, 16)),
-                                        YamlScalar("y", Location(1, 19)) to YamlScalar("2", Location(1, 22)),
-                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13)),
-                                        YamlScalar("label", Location(5, 3)) to YamlScalar("center/big", Location(5, 10))
-                                    ), Location(4, 3)
+                                        YamlScalar("x", thirdXPath) to YamlScalar("1", thirdXPath.withMapElementValue(Location(1, 16))),
+                                        YamlScalar("y", thirdYPath) to YamlScalar("2", thirdYPath.withMapElementValue(Location(1, 22))),
+                                        YamlScalar("r", thirdRPath) to YamlScalar("10", thirdRPath.withMapElementValue(Location(2, 16))),
+                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10)))
+                                    ), thirdItemPath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -1188,35 +1322,54 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser).read()
 
+                val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
+                val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 11))
+                val firstYPath = firstItemPath.withMapElementKey("y", Location(1, 17))
+
+                val secondItemPath = YamlPath.root.withListEntry(1, Location(2, 3))
+                val secondRPath = secondItemPath.withMapElementKey("r", Location(2, 10))
+
+                val thirdItemPath = YamlPath.root.withListEntry(2, Location(3, 3))
+                val thirdRPath = thirdItemPath.withMapElementKey("r", Location(3, 12))
+
+                val fourthItemPath = YamlPath.root.withListEntry(3, Location(5, 3))
+                val fourthXPath = fourthItemPath.withMapElementKey("x", Location(6, 3))
+                val leftMergeResolutionPath = fourthItemPath.withMerge(Location(5, 8)).withListEntry(1, Location(5, 16)).withAliasReference("LEFT", Location(5, 16)).withAliasDefinition("LEFT", Location(1, 3))
+                val fourthYPath = leftMergeResolutionPath.withMapElementKey("y", Location(1, 17))
+                val bigMergeResolutionPath = fourthItemPath.withMerge(Location(5, 8)).withListEntry(0, Location(5, 10)).withAliasReference("BIG", Location(5, 10)).withAliasDefinition("BIG", Location(2, 3))
+                val fourthRPath = bigMergeResolutionPath.withMapElementKey("r", Location(2, 10))
+                val labelPath = fourthItemPath.withMapElementKey("label", Location(7, 3))
+
                 it("returns that map with the values from the source maps merged into it, with local values taking precedence over earlier source values, and with earlier source values taking precedence over later source values") {
                     expect(result).toBe(
                         YamlList(
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(1, 11)) to YamlScalar("0", Location(1, 14)),
-                                        YamlScalar("y", Location(1, 17)) to YamlScalar("2", Location(1, 20))
-                                    ), Location(1, 3)
+                                        YamlScalar("x", firstXPath) to YamlScalar("0", firstXPath.withMapElementValue(Location(1, 14))),
+                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 20)))
+                                    ), firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13))
-                                    ), Location(2, 3)
+                                        YamlScalar("r", secondRPath) to YamlScalar("10", secondRPath.withMapElementValue(Location(2, 13)))
+                                    ), secondItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("r", Location(3, 12)) to YamlScalar("1", Location(3, 15))
-                                    ), Location(3, 3)
+                                        YamlScalar("r", thirdRPath) to YamlScalar("1", thirdRPath.withMapElementValue(Location(3, 15)))
+                                    ), thirdItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", Location(6, 3)) to YamlScalar("1", Location(6, 6)),
-                                        YamlScalar("y", Location(1, 17)) to YamlScalar("2", Location(1, 20)),
-                                        YamlScalar("r", Location(2, 10)) to YamlScalar("10", Location(2, 13)),
-                                        YamlScalar("label", Location(7, 3)) to YamlScalar("center/big", Location(7, 10))
-                                    ), Location(5, 3)
+                                        YamlScalar("x", fourthXPath) to YamlScalar("1", fourthXPath.withMapElementValue(Location(6, 6))),
+                                        YamlScalar("y", fourthYPath) to YamlScalar("2", fourthYPath.withMapElementValue(Location(1, 20))),
+                                        YamlScalar("r", fourthRPath) to YamlScalar("10", fourthRPath.withMapElementValue(Location(2, 13))),
+                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(7, 10)))
+                                    ), fourthItemPath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -1309,28 +1462,35 @@ object YamlNodeReaderTest : Spek({
 
         context("given a top-level map with an entry matching the extension definition prefix") {
             val input = """
-                .extension: &extension some-value
+                .extension: &extension extension-value
 
-                actual:
-                    key: value
-                    other-key: *extension
+                foo:
+                    bar: value
+                    baz: *extension
             """.trimIndent()
 
             describe("parsing that input with an extension definition prefix defined") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
 
+                val fooKeyPath = YamlPath.root.withMapElementKey("foo", Location(3, 1))
+                val fooValuePath = fooKeyPath.withMapElementValue(Location(4, 5))
+                val barKeyPath = fooValuePath.withMapElementKey("bar", Location(4, 5))
+                val bazKeyPath = fooValuePath.withMapElementKey("baz", Location(5, 5))
+                val bazValuePath = bazKeyPath.withMapElementValue(Location(5, 10)).withAliasReference("extension", Location(5, 10)).withAliasDefinition("extension", Location(1, 13))
+
                 it("returns the map, merging the alias where it is referenced and removing it from the top-level entry") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("actual", Location(3, 1)) to YamlMap(
+                                YamlScalar("foo", fooKeyPath) to YamlMap(
                                     mapOf(
-                                        YamlScalar("key", Location(4, 5)) to YamlScalar("value", Location(4, 10)),
-                                        YamlScalar("other-key", Location(5, 5)) to YamlScalar("some-value", Location(1, 13))
-                                    ), Location(4, 5)
+                                        YamlScalar("bar", barKeyPath) to YamlScalar("value", barKeyPath.withMapElementValue(Location(4, 10))),
+                                        YamlScalar("baz", bazKeyPath) to YamlScalar("extension-value", bazValuePath)
+                                    ), fooValuePath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -1339,24 +1499,29 @@ object YamlNodeReaderTest : Spek({
 
         context("given a non-top-level map with an entry matching the extension definition prefix") {
             val input = """
-                actual:
-                    .key: value
+                foo:
+                    .bar: value
             """.trimIndent()
 
             describe("parsing that input with an extension definition prefix defined") {
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
 
+                val fooKeyPath = YamlPath.root.withMapElementKey("foo", Location(1, 1))
+                val fooValuePath = fooKeyPath.withMapElementValue(Location(2, 5))
+                val barKeyPath = fooValuePath.withMapElementKey(".bar", Location(2, 5))
+
                 it("returns the map, retaining the key matching the extension definition prefix") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar("actual", Location(1, 1)) to YamlMap(
+                                YamlScalar("foo", fooKeyPath) to YamlMap(
                                     mapOf(
-                                        YamlScalar(".key", Location(2, 5)) to YamlScalar("value", Location(2, 11))
-                                    ), Location(2, 5)
+                                        YamlScalar(".bar", barKeyPath) to YamlScalar("value", barKeyPath.withMapElementValue(Location(2, 11)))
+                                    ), fooValuePath
                                 )
-                            ), Location(1, 1)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
@@ -1375,12 +1540,22 @@ object YamlNodeReaderTest : Spek({
                 val parser = YamlParser(input)
                 val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
 
+                val keyPath = YamlPath.root
+                    .withMerge(Location(4, 6))
+                    .withListEntry(0, Location(4, 8))
+                    .withAliasReference("extension", Location(4, 8))
+                    .withAliasDefinition("extension", Location(1, 13))
+                    .withMapElementKey(".some-key", Location(2, 5))
+
+                val valuePath = keyPath.withMapElementValue(Location(2, 16))
+
                 it("returns the map, merging the other map into it and preserving its keys") {
                     expect(result).toBe(
                         YamlMap(
                             mapOf(
-                                YamlScalar(".some-key", Location(2, 5)) to YamlScalar("some-value", Location(2, 16))
-                            ), Location(1, 1)
+                                YamlScalar(".some-key", keyPath) to YamlScalar("some-value", valuePath)
+                            ),
+                            YamlPath.root
                         )
                     )
                 }
