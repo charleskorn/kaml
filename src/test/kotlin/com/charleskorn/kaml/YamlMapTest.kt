@@ -123,7 +123,8 @@ object YamlMapTest : Spek({
                                 mapOf(
                                     YamlScalar("key2", key1Path) to YamlScalar("item 2", key1ValuePath),
                                     YamlScalar("key1", key2Path) to YamlScalar("item 1", key2ValuePath)
-                                ), mapPath
+                                ),
+                                mapPath
                             )
                         )
                     ).toBe(true)
@@ -138,7 +139,8 @@ object YamlMapTest : Spek({
                                 mapOf(
                                     YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
                                     YamlScalar("key3", key2Path) to YamlScalar("item 2", key2ValuePath)
-                                ), mapPath
+                                ),
+                                mapPath
                             )
                         )
                     ).toBe(false)
@@ -153,7 +155,8 @@ object YamlMapTest : Spek({
                                 mapOf(
                                     YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
                                     YamlScalar("key2", key2Path) to YamlScalar("item 3", key2ValuePath)
-                                ), mapPath
+                                ),
+                                mapPath
                             )
                         )
                     ).toBe(false)
@@ -203,7 +206,8 @@ object YamlMapTest : Spek({
                 val map = YamlMap(
                     mapOf(
                         YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath)
-                    ), YamlPath.root
+                    ),
+                    YamlPath.root
                 )
 
                 it("returns that item surrounded by curly brackets") {
@@ -216,7 +220,8 @@ object YamlMapTest : Spek({
                     mapOf(
                         YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
                         YamlScalar("also", alsoKeyPath) to YamlScalar("thanks", alsoValuePath)
-                    ), YamlPath.root
+                    ),
+                    YamlPath.root
                 )
 
                 it("returns all items separated by commas and surrounded by curly brackets") {
@@ -235,7 +240,8 @@ object YamlMapTest : Spek({
                 mapOf(
                     YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
                     YamlScalar("also", alsoKeyPath) to YamlScalar("something", alsoValuePath)
-                ), YamlPath.root
+                ),
+                YamlPath.root
             )
 
             context("the key is not in the map") {
@@ -262,7 +268,8 @@ object YamlMapTest : Spek({
                 mapOf(
                     YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
                     YamlScalar("also", alsoKeyPath) to YamlList(listOf(YamlScalar("something", alsoValueListEntryPath)), alsoValuePath)
-                ), YamlPath.root
+                ),
+                YamlPath.root
             )
 
             context("the key is not in the map") {

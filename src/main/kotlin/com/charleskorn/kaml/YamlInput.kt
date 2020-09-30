@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml
 
-import kotlin.reflect.KClass
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -34,6 +33,7 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.CompositeDecoder.Companion.UNKNOWN_NAME
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleCollector
+import kotlin.reflect.KClass
 
 @OptIn(ExperimentalSerializationApi::class)
 public sealed class YamlInput(
@@ -353,11 +353,12 @@ private class YamlMapInput(map: YamlMap, context: SerializersModule, configurati
         currentlyReadingValue = nextIndex % 2 != 0
 
         currentValueDecoder = when (currentlyReadingValue) {
-            true -> try {
-                createFor(currentEntry.value, serializersModule, configuration, descriptor.getElementDescriptor(1))
-            } catch (e: IncorrectTypeException) {
-                throw InvalidPropertyValueException(propertyName, e.message, e.location, e)
-            }
+            true ->
+                try {
+                    createFor(currentEntry.value, serializersModule, configuration, descriptor.getElementDescriptor(1))
+                } catch (e: IncorrectTypeException) {
+                    throw InvalidPropertyValueException(propertyName, e.message, e.location, e)
+                }
 
             false -> createFor(currentKey, serializersModule, configuration, descriptor.getElementDescriptor(0))
         }

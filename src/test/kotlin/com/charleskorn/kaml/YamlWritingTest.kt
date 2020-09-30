@@ -196,10 +196,12 @@ object YamlWritingTest : Spek({
                 val output = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80)).encodeToString(String.serializer(), "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters")
 
                 it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
-                    expect(output).toBe("""
+                    expect(output).toBe(
+                        """
                         |"Hello world this is a string that is much, much, much (ok, not that much) longer\
                         |  \ than 80 characters"
-                    """.trimMargin())
+                    """.trimMargin()
+                    )
                 }
             }
         }
@@ -219,10 +221,10 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        - 1
-                        - 2
-                        - 3
-                    """.trimIndent()
+                            - 1
+                            - 2
+                            - 3
+                        """.trimIndent()
                     )
                 }
             }
@@ -243,10 +245,10 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        - 1
-                        - null
-                        - 3
-                    """.trimIndent()
+                            - 1
+                            - null
+                            - 3
+                        """.trimIndent()
                     )
                 }
             }
@@ -268,9 +270,9 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        - "item1"
-                        - "item2"
-                    """.trimIndent()
+                            - "item1"
+                            - "item2"
+                        """.trimIndent()
                     )
                 }
             }
@@ -291,11 +293,13 @@ object YamlWritingTest : Spek({
                 val output = yamlWithScalarLimit.encodeToString(ListSerializer(String.serializer()), listOf("item1", "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters"))
 
                 it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
-                    expect(output).toBe("""
+                    expect(output).toBe(
+                        """
                         |- "item1"
                         |- "Hello world this is a string that is much, much, much (ok, not that much) longer\
                         |  \ than 80 characters"
-                    """.trimMargin())
+                        """.trimMargin()
+                    )
                 }
             }
 
@@ -304,10 +308,11 @@ object YamlWritingTest : Spek({
                 val output = yamlWithScalarLimit.encodeToString(ListSerializer(String.serializer()), listOf("item1", "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters"))
 
                 it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
-                    expect(output).toBe("""
-                    ["item1", "Hello world this is a string that is much, much, much (ok, not that much)\
-                        \ longer than 80 characters"]
-                    """.trimIndent()
+                    expect(output).toBe(
+                        """
+                            ["item1", "Hello world this is a string that is much, much, much (ok, not that much)\
+                                \ longer than 80 characters"]
+                        """.trimIndent()
                     )
                 }
             }
@@ -323,12 +328,12 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        - - 1
-                          - 2
-                          - 3
-                        - - 4
-                          - 5
-                    """.trimIndent()
+                            - - 1
+                              - 2
+                              - 3
+                            - - 4
+                              - 5
+                        """.trimIndent()
                     )
                 }
             }
@@ -366,10 +371,10 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        - "key1": "value1"
-                          "key2": "value2"
-                        - "key3": "value3"
-                    """.trimIndent()
+                            - "key1": "value1"
+                              "key2": "value2"
+                            - "key3": "value3"
+                        """.trimIndent()
                     )
                 }
             }
@@ -385,9 +390,9 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        - name: "name1"
-                        - name: "name2"
-                    """.trimIndent()
+                            - name: "name1"
+                            - name: "name2"
+                        """.trimIndent()
                     )
                 }
             }
@@ -402,8 +407,8 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        [{name: "name1"}, {name: "name2"}]
-                    """.trimIndent()
+                            [{name: "name1"}, {name: "name2"}]
+                        """.trimIndent()
                     )
                 }
             }
@@ -421,9 +426,9 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        "key1": "value1"
-                        "key2": "value2"
-                    """.trimIndent()
+                            "key1": "value1"
+                            "key2": "value2"
+                        """.trimIndent()
                     )
                 }
             }
@@ -445,12 +450,12 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        "map1":
-                          "key1": "value1"
-                          "key2": "value2"
-                        "map2":
-                          "key3": "value3"
-                    """.trimIndent()
+                            "map1":
+                              "key1": "value1"
+                              "key2": "value2"
+                            "map2":
+                              "key3": "value3"
+                        """.trimIndent()
                     )
                 }
             }
@@ -467,15 +472,15 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        "list1":
-                        - 1
-                        - 2
-                        - 3
-                        "list2":
-                        - 4
-                        - 5
-                        - 6
-                    """.trimIndent()
+                            "list1":
+                            - 1
+                            - 2
+                            - 3
+                            "list2":
+                            - 4
+                            - 5
+                            - 6
+                        """.trimIndent()
                     )
                 }
             }
@@ -492,11 +497,11 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        "item1":
-                          name: "name1"
-                        "item2":
-                          name: "name2"
-                    """.trimIndent()
+                            "item1":
+                              name: "name1"
+                            "item2":
+                              name: "name2"
+                        """.trimIndent()
                     )
                 }
             }
@@ -510,8 +515,8 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        name: "The name"
-                    """.trimIndent()
+                            name: "The name"
+                        """.trimIndent()
                     )
                 }
             }
@@ -601,10 +606,10 @@ object YamlWritingTest : Spek({
                 it("returns the value serialized in the expected YAML form") {
                     expect(output).toBe(
                         """
-                        variables:
-                          "var1": "value1"
-                          "var2": "value2"
-                    """.trimIndent()
+                            variables:
+                              "var1": "value1"
+                              "var2": "value2"
+                        """.trimIndent()
                     )
                 }
             }

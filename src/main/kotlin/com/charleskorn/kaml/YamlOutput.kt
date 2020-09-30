@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml
 
-import java.util.Optional
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -39,6 +38,7 @@ import org.snakeyaml.engine.v2.events.ScalarEvent
 import org.snakeyaml.engine.v2.events.SequenceEndEvent
 import org.snakeyaml.engine.v2.events.SequenceStartEvent
 import org.snakeyaml.engine.v2.events.StreamStartEvent
+import java.util.Optional
 
 @OptIn(ExperimentalSerializationApi::class)
 internal class YamlOutput(

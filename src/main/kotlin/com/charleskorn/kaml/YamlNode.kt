@@ -58,11 +58,12 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
             ".inf", ".Inf", ".INF" -> Float.POSITIVE_INFINITY
             "-.inf", "-.Inf", "-.INF" -> Float.NEGATIVE_INFINITY
             ".nan", ".NaN", ".NAN" -> Float.NaN
-            else -> try {
-                content.toFloat()
-            } catch (e: NumberFormatException) {
-                throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
-            }
+            else ->
+                try {
+                    content.toFloat()
+                } catch (e: NumberFormatException) {
+                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
+                }
         }
     }
 
@@ -71,11 +72,12 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
             ".inf", ".Inf", ".INF" -> Double.POSITIVE_INFINITY
             "-.inf", "-.Inf", "-.INF" -> Double.NEGATIVE_INFINITY
             ".nan", ".NaN", ".NAN" -> Double.NaN
-            else -> try {
-                content.toDouble()
-            } catch (e: NumberFormatException) {
-                throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
-            }
+            else ->
+                try {
+                    content.toDouble()
+                } catch (e: NumberFormatException) {
+                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
+                }
         }
     }
 

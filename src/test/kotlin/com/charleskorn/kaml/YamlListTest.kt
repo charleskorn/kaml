@@ -95,10 +95,13 @@ object YamlListTest : Spek({
             }
 
             context("a list with multiple entries") {
-                val list = YamlList(listOf(
-                    YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
-                    YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
-                ), YamlPath.root)
+                val list = YamlList(
+                    listOf(
+                        YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
+                        YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
+                    ),
+                    YamlPath.root
+                )
 
                 it("returns all items separated by commas and surrounded by square brackets") {
                     expect(list.contentToString()).toBe("['hello', 'world']")
@@ -107,17 +110,23 @@ object YamlListTest : Spek({
         }
 
         describe("replacing its path") {
-            val original = YamlList(listOf(
-                YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
-                YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
-            ), YamlPath.root)
+            val original = YamlList(
+                listOf(
+                    YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
+                    YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
+                ),
+                YamlPath.root
+            )
 
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
 
-            val expected = YamlList(listOf(
-                YamlScalar("hello", newPath.withListEntry(0, Location(1, 1))),
-                YamlScalar("world", newPath.withListEntry(1, Location(2, 1)))
-            ), newPath)
+            val expected = YamlList(
+                listOf(
+                    YamlScalar("hello", newPath.withListEntry(0, Location(1, 1))),
+                    YamlScalar("world", newPath.withListEntry(1, Location(2, 1)))
+                ),
+                newPath
+            )
 
             it("returns a new list node with the path for the node and its items updated to the new path") {
                 expect(original.withPath(newPath)).toBe(expected)

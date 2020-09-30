@@ -224,14 +224,14 @@ object YamlNodeReaderTest : Spek({
                             message {
                                 toBe(
                                     """
-                                    while scanning a quoted scalar
-                                     at line 1, column 1:
-                                        $input
-                                        ^
-                                    found unexpected end of stream
-                                     at line 1, column 7:
-                                        $input
-                                              ^
+                                        while scanning a quoted scalar
+                                         at line 1, column 1:
+                                            $input
+                                            ^
+                                        found unexpected end of stream
+                                         at line 1, column 7:
+                                            $input
+                                                  ^
                                     """.trimIndent()
                                 )
                             }
@@ -263,7 +263,7 @@ object YamlNodeReaderTest : Spek({
                                      at line 1, column 7:
                                         [thing
                                               ^
-                                    """.trimIndent()
+                                """.trimIndent()
                             )
                         }
                         line { toBe(1) }
@@ -486,13 +486,15 @@ object YamlNodeReaderTest : Spek({
                                     listOf(
                                         YamlScalar("thing1", firstListPath.withListEntry(0, Location(1, 4))),
                                         YamlScalar("thing2", firstListPath.withListEntry(1, Location(1, 12)))
-                                    ), firstListPath
+                                    ),
+                                    firstListPath
                                 ),
                                 YamlList(
                                     listOf(
                                         YamlScalar("thing3", secondListPath.withListEntry(0, Location(3, 7))),
                                         YamlScalar("thing4", secondListPath.withListEntry(1, Location(4, 7)))
-                                    ), secondListPath
+                                    ),
+                                    secondListPath
                                 )
                             ),
                             YamlPath.root
@@ -614,7 +616,7 @@ object YamlNodeReaderTest : Spek({
             val input = """
                 key1: value1
                 key2:
-                """.trimIndent()
+            """.trimIndent()
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
@@ -642,7 +644,7 @@ object YamlNodeReaderTest : Spek({
             val input = """
                 key1: &value value1
                 key2: *value
-                """.trimIndent()
+            """.trimIndent()
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
@@ -677,7 +679,7 @@ object YamlNodeReaderTest : Spek({
                 key4: [something]
                 key5:
                   inner: othervalue
-                """.trimIndent()
+            """.trimIndent()
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
@@ -707,19 +709,23 @@ object YamlNodeReaderTest : Spek({
                                         YamlMap(
                                             mapOf(
                                                 YamlScalar("thing", thingPath) to YamlScalar("value", thingPath.withMapElementValue(Location(6, 12)))
-                                            ), value3Path.withListEntry(2, Location(6, 5))
+                                            ),
+                                            value3Path.withListEntry(2, Location(6, 5))
                                         )
-                                    ), value3Path
+                                    ),
+                                    value3Path
                                 ),
                                 YamlScalar("key4", key4Path) to YamlList(
                                     listOf(
                                         YamlScalar("something", value4Path.withListEntry(0, Location(7, 8)))
-                                    ), value4Path
+                                    ),
+                                    value4Path
                                 ),
                                 YamlScalar("key5", key5Path) to YamlMap(
                                     mapOf(
                                         YamlScalar("inner", innerPath) to YamlScalar("othervalue", innerPath.withMapElementValue(Location(9, 10)))
-                                    ), value5Path
+                                    ),
+                                    value5Path
                                 )
                             ),
                             YamlPath.root
@@ -774,10 +780,11 @@ object YamlNodeReaderTest : Spek({
 
         context("given a key-value pair with extra indentation") {
             val input = """
-                    thing:
-                      key1: value1
-                       key2: value2
-                """.trimIndent()
+                thing:
+                  key1: value1
+                   key2: value2
+            """.trimIndent()
+
             describe("parsing that input") {
                 it("throws an appropriate exception") {
                     expect({
@@ -803,10 +810,10 @@ object YamlNodeReaderTest : Spek({
 
         context("given a key-value pair with not enough indentation") {
             val input = """
-                    thing:
-                      key1: value1
-                     key2: value2
-                """.trimIndent()
+                thing:
+                  key1: value1
+                 key2: value2
+            """.trimIndent()
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
@@ -837,10 +844,10 @@ object YamlNodeReaderTest : Spek({
 
         context("given a list item in a map value with not enough indentation") {
             val input = """
-                    thing:
-                      - value1
-                     - value2
-                """.trimIndent()
+                thing:
+                  - value1
+                 - value2
+            """.trimIndent()
 
             describe("parsing that input") {
                 it("throws an appropriate exception") {
@@ -948,15 +955,15 @@ object YamlNodeReaderTest : Spek({
                         message {
                             toBe(
                                 """
-                                while parsing a flow mapping
-                                 at line 1, column 1:
-                                    {key: value
-                                    ^
-                                expected ',' or '}', but got <stream end>
-                                 at line 1, column 12:
-                                    {key: value
-                                               ^
-                            """.trimIndent()
+                                    while parsing a flow mapping
+                                     at line 1, column 1:
+                                        {key: value
+                                        ^
+                                    expected ',' or '}', but got <stream end>
+                                     at line 1, column 12:
+                                        {key: value
+                                                   ^
+                                """.trimIndent()
                             )
                         }
                         line { toBe(1) }
@@ -1141,7 +1148,8 @@ object YamlNodeReaderTest : Spek({
                                     mapOf(
                                         YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
                                         YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22)))
-                                    ), firstItemPath
+                                    ),
+                                    firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
@@ -1149,7 +1157,8 @@ object YamlNodeReaderTest : Spek({
                                         YamlScalar("y", secondYPath) to YamlScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
                                         YamlScalar("r", rPath) to YamlScalar("10", rPath.withMapElementValue(Location(4, 6))),
                                         YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10)))
-                                    ), secondItemPath
+                                    ),
+                                    secondItemPath
                                 )
                             ),
                             YamlPath.root
@@ -1189,14 +1198,16 @@ object YamlNodeReaderTest : Spek({
                                     mapOf(
                                         YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
                                         YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22)))
-                                    ), firstItemPath
+                                    ),
+                                    firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
                                         YamlScalar("x", secondXPath) to YamlScalar("10", secondXPath.withMapElementValue(Location(4, 6))),
                                         YamlScalar("y", secondYPath) to YamlScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
                                         YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10)))
-                                    ), secondItemPath
+                                    ),
+                                    secondItemPath
                                 )
                             ),
                             YamlPath.root
@@ -1284,12 +1295,14 @@ object YamlNodeReaderTest : Spek({
                                     mapOf(
                                         YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
                                         YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22)))
-                                    ), firstItemPath
+                                    ),
+                                    firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
                                         YamlScalar("r", secondRPath) to YamlScalar("10", secondRPath.withMapElementValue(Location(2, 16)))
-                                    ), secondItemPath
+                                    ),
+                                    secondItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
@@ -1297,7 +1310,8 @@ object YamlNodeReaderTest : Spek({
                                         YamlScalar("y", thirdYPath) to YamlScalar("2", thirdYPath.withMapElementValue(Location(1, 22))),
                                         YamlScalar("r", thirdRPath) to YamlScalar("10", thirdRPath.withMapElementValue(Location(2, 16))),
                                         YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10)))
-                                    ), thirdItemPath
+                                    ),
+                                    thirdItemPath
                                 )
                             ),
                             YamlPath.root
@@ -1348,17 +1362,20 @@ object YamlNodeReaderTest : Spek({
                                     mapOf(
                                         YamlScalar("x", firstXPath) to YamlScalar("0", firstXPath.withMapElementValue(Location(1, 14))),
                                         YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 20)))
-                                    ), firstItemPath
+                                    ),
+                                    firstItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
                                         YamlScalar("r", secondRPath) to YamlScalar("10", secondRPath.withMapElementValue(Location(2, 13)))
-                                    ), secondItemPath
+                                    ),
+                                    secondItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
                                         YamlScalar("r", thirdRPath) to YamlScalar("1", thirdRPath.withMapElementValue(Location(3, 15)))
-                                    ), thirdItemPath
+                                    ),
+                                    thirdItemPath
                                 ),
                                 YamlMap(
                                     mapOf(
@@ -1366,7 +1383,8 @@ object YamlNodeReaderTest : Spek({
                                         YamlScalar("y", fourthYPath) to YamlScalar("2", fourthYPath.withMapElementValue(Location(1, 20))),
                                         YamlScalar("r", fourthRPath) to YamlScalar("10", fourthRPath.withMapElementValue(Location(2, 13))),
                                         YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(7, 10)))
-                                    ), fourthItemPath
+                                    ),
+                                    fourthItemPath
                                 )
                             ),
                             YamlPath.root
@@ -1487,7 +1505,8 @@ object YamlNodeReaderTest : Spek({
                                     mapOf(
                                         YamlScalar("bar", barKeyPath) to YamlScalar("value", barKeyPath.withMapElementValue(Location(4, 10))),
                                         YamlScalar("baz", bazKeyPath) to YamlScalar("extension-value", bazValuePath)
-                                    ), fooValuePath
+                                    ),
+                                    fooValuePath
                                 )
                             ),
                             YamlPath.root
@@ -1518,7 +1537,8 @@ object YamlNodeReaderTest : Spek({
                                 YamlScalar("foo", fooKeyPath) to YamlMap(
                                     mapOf(
                                         YamlScalar(".bar", barKeyPath) to YamlScalar("value", barKeyPath.withMapElementValue(Location(2, 11)))
-                                    ), fooValuePath
+                                    ),
+                                    fooValuePath
                                 )
                             ),
                             YamlPath.root

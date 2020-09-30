@@ -18,12 +18,12 @@
 
 package com.charleskorn.kaml
 
-import java.io.StringReader
 import org.snakeyaml.engine.v2.api.LoadSettings
 import org.snakeyaml.engine.v2.events.Event
 import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v2.parser.ParserImpl
 import org.snakeyaml.engine.v2.scanner.StreamReader
+import java.io.StringReader
 
 internal class YamlParser(yamlSource: String) {
     private val dummyFileName = "DUMMY_FILE_NAME"

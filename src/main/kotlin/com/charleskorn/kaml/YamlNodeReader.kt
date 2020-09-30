@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml
 
-import java.util.Optional
 import org.snakeyaml.engine.v2.common.Anchor
 import org.snakeyaml.engine.v2.events.AliasEvent
 import org.snakeyaml.engine.v2.events.Event
@@ -26,6 +25,7 @@ import org.snakeyaml.engine.v2.events.MappingStartEvent
 import org.snakeyaml.engine.v2.events.NodeEvent
 import org.snakeyaml.engine.v2.events.ScalarEvent
 import org.snakeyaml.engine.v2.events.SequenceStartEvent
+import java.util.Optional
 
 internal class YamlNodeReader(
     private val parser: YamlParser,

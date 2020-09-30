@@ -80,7 +80,7 @@ fun Project.configureSpotless() {
 
         kotlin {
             target("src/**/*.kt", "buildSrc/**/*.kt")
-            ktlint("0.36.0")
+            ktlint("0.39.0")
 
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeader(kotlinLicenseHeader)

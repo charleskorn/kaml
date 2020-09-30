@@ -870,8 +870,10 @@ object YamlReadingTest : Spek({
                 """.trimIndent()
 
                 context("parsing that input as map") {
-                    val result = Yaml.default.decodeFromString(MapSerializer
-                        (String.serializer(), String.serializer()), input)
+                    val result = Yaml.default.decodeFromString(
+                        MapSerializer(String.serializer(), String.serializer()),
+                        input
+                    )
                     it("deserializes it to a Map ignoring the tag") {
                         expect(result).toBe(mapOf("foo" to "bar"))
                     }
