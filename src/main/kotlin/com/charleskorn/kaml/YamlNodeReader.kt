@@ -86,7 +86,7 @@ internal class YamlNodeReader(
     }
 
     private fun readMapping(path: YamlPath): YamlMap {
-        val items = mutableMapOf<YamlNode, YamlNode>()
+        val items = mutableMapOf<YamlScalar, YamlNode>()
 
         while (true) {
             val event = parser.peekEvent()
@@ -141,7 +141,7 @@ internal class YamlNodeReader(
     private fun YamlNode.maybeToTaggedNode(tag: Optional<String>): YamlNode =
         tag.map<YamlNode> { YamlTaggedNode(it, this) }.orElse(this)
 
-    private fun doMerges(items: Map<YamlNode, YamlNode>): Map<YamlNode, YamlNode> {
+    private fun doMerges(items: Map<YamlScalar, YamlNode>): Map<YamlScalar, YamlNode> {
         val mergeEntries = items.entries.filter { (key, _) -> isMerge(key) }
 
         when (mergeEntries.count()) {
@@ -156,8 +156,8 @@ internal class YamlNodeReader(
 
     private fun isMerge(key: YamlNode): Boolean = key is YamlScalar && key.content == "<<"
 
-    private fun doMerges(original: Map<YamlNode, YamlNode>, others: List<YamlNode>): Map<YamlNode, YamlNode> {
-        val merged = mutableMapOf<YamlNode, YamlNode>()
+    private fun doMerges(original: Map<YamlScalar, YamlNode>, others: List<YamlNode>): Map<YamlScalar, YamlNode> {
+        val merged = mutableMapOf<YamlScalar, YamlNode>()
 
         original
             .filterNot { (key, _) -> isMerge(key) }

@@ -89,7 +89,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
 
     public fun toChar(): Char = content.singleOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", location, content)
 
-    override fun withPath(path: YamlPath): YamlScalar = this.copy(path = path)
+    override fun withPath(newPath: YamlPath): YamlScalar = this.copy(path = newPath)
 
     override fun toString(): String = "scalar @ $path : $content"
 }
@@ -97,7 +97,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
 public data class YamlNull(override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlNull
     override fun contentToString(): String = "null"
-    override fun withPath(path: YamlPath): YamlNull = YamlNull(path)
+    override fun withPath(newPath: YamlPath): YamlNull = YamlNull(newPath)
     override fun toString(): String = "null @ $path"
 }
 
@@ -140,7 +140,7 @@ public data class YamlList(val items: List<YamlNode>, override val path: YamlPat
     }
 }
 
-public data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val path: YamlPath) : YamlNode(path) {
+public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val path: YamlPath) : YamlNode(path) {
     init {
         val keys = entries.keys.sortedWith { a, b ->
             val lineComparison = a.location.line.compareTo(b.location.line)
@@ -181,7 +181,7 @@ public data class YamlMap(val entries: Map<YamlNode, YamlNode>, override val pat
     @Suppress("UNCHECKED_CAST")
     public operator fun <T : YamlNode> get(key: String): T? =
         entries.entries
-            .firstOrNull { it.key is YamlScalar && (it.key as YamlScalar).content == key }
+            .firstOrNull { it.key.content == key }
             ?.value as T?
 
     public fun getScalar(key: String): YamlScalar? = when (val node = get<YamlNode>(key)) {
@@ -237,7 +237,7 @@ public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : Yam
     }
 
     override fun contentToString(): String = "!$tag ${innerNode.contentToString()}"
-    override fun withPath(path: YamlPath): YamlNode = this.copy(innerNode = innerNode.withPath(path))
+    override fun withPath(newPath: YamlPath): YamlNode = this.copy(innerNode = innerNode.withPath(newPath))
 
     override fun toString(): String = "tagged $tag: $innerNode"
 }

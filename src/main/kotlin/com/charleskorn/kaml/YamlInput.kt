@@ -98,7 +98,7 @@ public sealed class YamlInput(
 
         private fun YamlMap.getValue(desiredKey: String): YamlNode {
             this.entries.forEach { (keyNode, valueNode) ->
-                if (keyNode is YamlScalar && keyNode.content == desiredKey) {
+                if (keyNode.content == desiredKey) {
                     return valueNode
                 }
             }
@@ -107,7 +107,7 @@ public sealed class YamlInput(
         }
 
         private fun YamlMap.withoutKey(key: String): YamlMap {
-            return this.copy(entries = entries.filterKeys { !(it is YamlScalar && it.content == key) })
+            return this.copy(entries = entries.filterKeys { it.content != key })
         }
     }
 
@@ -287,7 +287,7 @@ private class YamlContextualInput(node: YamlNode, context: SerializersModule, co
 
 private sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
     protected lateinit var currentValueDecoder: YamlInput
-    protected lateinit var currentKey: YamlNode
+    protected lateinit var currentKey: YamlScalar
     protected var currentlyReadingValue = false
 
     override fun decodeNotNullMark(): Boolean {
@@ -314,16 +314,11 @@ private sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModu
             return action(currentValueDecoder)
         } catch (e: YamlException) {
             if (currentlyReadingValue) {
-                throw InvalidPropertyValueException(getPropertyName(currentKey), e.message, e.location, e)
+                throw InvalidPropertyValueException(propertyName, e.message, e.location, e)
             } else {
                 throw e
             }
         }
-    }
-
-    protected fun getPropertyName(key: YamlNode): String = when (key) {
-        is YamlScalar -> key.content
-        is YamlNull, is YamlMap, is YamlList, is YamlTaggedNode -> throw MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", key.location)
     }
 
     protected val haveStartedReadingEntries: Boolean
@@ -336,13 +331,16 @@ private sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModu
             node.location
         }
     }
+
+    protected val propertyName: String
+        get() = currentKey.content
 }
 
 @OptIn(ExperimentalSerializationApi::class)
 private class YamlMapInput(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
-    private lateinit var currentEntry: Map.Entry<YamlNode, YamlNode>
+    private lateinit var currentEntry: Map.Entry<YamlScalar, YamlNode>
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         if (nextIndex == entriesList.size * 2) {
@@ -358,7 +356,7 @@ private class YamlMapInput(map: YamlMap, context: SerializersModule, configurati
             true -> try {
                 createFor(currentEntry.value, serializersModule, configuration, descriptor.getElementDescriptor(1))
             } catch (e: IncorrectTypeException) {
-                throw InvalidPropertyValueException(getPropertyName(currentKey), e.message, e.location, e)
+                throw InvalidPropertyValueException(propertyName, e.message, e.location, e)
             }
 
             false -> createFor(currentKey, serializersModule, configuration, descriptor.getElementDescriptor(0))
@@ -389,12 +387,11 @@ private class YamlObjectInput(map: YamlMap, context: SerializersModule, configur
 
             val currentEntry = entriesList[nextIndex]
             currentKey = currentEntry.key
-            val name = getPropertyName(currentKey)
-            val fieldDescriptorIndex = descriptor.getElementIndex(name)
+            val fieldDescriptorIndex = descriptor.getElementIndex(propertyName)
 
             if (fieldDescriptorIndex == UNKNOWN_NAME) {
                 if (configuration.strictMode) {
-                    throwUnknownProperty(name, currentKey.location, descriptor)
+                    throwUnknownProperty(propertyName, currentKey.location, descriptor)
                 } else {
                     nextIndex++
                     continue
@@ -404,7 +401,7 @@ private class YamlObjectInput(map: YamlMap, context: SerializersModule, configur
             try {
                 currentValueDecoder = createFor(entriesList[nextIndex].value, serializersModule, configuration, descriptor.getElementDescriptor(fieldDescriptorIndex))
             } catch (e: IncorrectTypeException) {
-                throw InvalidPropertyValueException(getPropertyName(currentKey), e.message, e.location, e)
+                throw InvalidPropertyValueException(propertyName, e.message, e.location, e)
             }
 
             currentlyReadingValue = true
