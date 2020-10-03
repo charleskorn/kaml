@@ -132,5 +132,21 @@ object YamlListTest : Spek({
                 expect(original.withPath(newPath)).toBe(expected)
             }
         }
+
+        describe("converting it to a string") {
+            val path = YamlPath.root.withMapElementKey("test", Location(2, 1)).withMapElementValue(Location(2, 7))
+            val elementPath = path.withListEntry(0, Location(3, 3))
+            val value = YamlList(listOf(YamlScalar("hello", elementPath)), path)
+
+            it("returns a human-readable description of itself") {
+                expect(value.toString()).toBe(
+                    """
+                        list @ $path (size: 1)
+                        - item 0:
+                          scalar @ $elementPath : hello
+                    """.trimIndent()
+                )
+            }
+        }
     }
 })

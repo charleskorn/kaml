@@ -23,7 +23,7 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-object YamlTaggedTest : Spek({
+object YamlTaggedNodeTest : Spek({
     describe("a YAML tagged node") {
         describe("testing equivalence") {
             val tagged = YamlTaggedNode(
@@ -90,6 +90,15 @@ object YamlTaggedTest : Spek({
 
             it("returns a tagged node with the inner node updated with the provided path") {
                 expect(original.withPath(newPath)).toBe(YamlTaggedNode("tag", YamlScalar("value", newPath)))
+            }
+        }
+
+        describe("converting it to a string") {
+            val path = YamlPath.root.withListEntry(2, Location(3, 4))
+            val value = YamlTaggedNode("some tag", YamlScalar("some value", path))
+
+            it("returns a human-readable description of itself") {
+                expect(value.toString()).toBe("tagged 'some tag': scalar @ $path : some value")
             }
         }
     }

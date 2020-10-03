@@ -138,7 +138,7 @@ public data class YamlList(val items: List<YamlNode>, override val path: YamlPat
             }
         }
 
-        return builder.toString()
+        return builder.trimEnd().toString()
     }
 }
 
@@ -221,7 +221,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
             }
         }
 
-        return builder.toString()
+        return builder.trimEnd().toString()
     }
 }
 
@@ -241,5 +241,5 @@ public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : Yam
     override fun contentToString(): String = "!$tag ${innerNode.contentToString()}"
     override fun withPath(newPath: YamlPath): YamlNode = this.copy(innerNode = innerNode.withPath(newPath))
 
-    override fun toString(): String = "tagged $tag: $innerNode"
+    override fun toString(): String = "tagged '$tag': $innerNode"
 }

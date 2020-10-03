@@ -328,5 +328,29 @@ object YamlMapTest : Spek({
                 expect(original.withPath(newPath)).toBe(expected)
             }
         }
+
+        describe("converting it to a string") {
+            val path = YamlPath.root.withMapElementKey("test", Location(2, 1)).withMapElementValue(Location(2, 7))
+            val keyPath = path.withMapElementKey("something", Location(3, 3))
+            val valuePath = keyPath.withMapElementValue(Location(3, 7))
+            val value = YamlMap(
+                mapOf(
+                    YamlScalar("something", keyPath) to YamlScalar("some value", valuePath)
+                ),
+                path
+            )
+
+            it("returns a human-readable description of itself") {
+                expect(value.toString()).toBe(
+                    """
+                        map @ $path (size: 1)
+                        - key:
+                            scalar @ $keyPath : something
+                          value:
+                            scalar @ $valuePath : some value
+                    """.trimIndent()
+                )
+            }
+        }
     }
 })

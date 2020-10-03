@@ -81,5 +81,14 @@ object YamlNullTest : Spek({
                 expect(original.withPath(newPath)).toBe(YamlNull(newPath))
             }
         }
+
+        describe("converting it to a string") {
+            val path = YamlPath.root.withListEntry(2, Location(3, 4))
+            val value = YamlNull(path)
+
+            it("returns a human-readable description of itself") {
+                expect(value.toString()).toBe("null @ $path")
+            }
+        }
     }
 })

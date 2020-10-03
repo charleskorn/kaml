@@ -369,5 +369,14 @@ object YamlScalarTest : Spek({
                 expect(original.withPath(newPath)).toBe(YamlScalar("abc123", newPath))
             }
         }
+
+        describe("converting it to a string") {
+            val path = YamlPath.root.withListEntry(2, Location(3, 4))
+            val value = YamlScalar("hello world", path)
+
+            it("returns a human-readable description of itself") {
+                expect(value.toString()).toBe("scalar @ $path : hello world")
+            }
+        }
     }
 })
