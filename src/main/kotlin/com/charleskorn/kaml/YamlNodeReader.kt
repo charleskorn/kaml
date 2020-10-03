@@ -38,7 +38,7 @@ internal class YamlNodeReader(
     private fun readNode(path: YamlPath): YamlNode = readNodeAndAnchor(path).first
 
     private fun readNodeAndAnchor(path: YamlPath): Pair<YamlNode, Anchor?> {
-        val event = parser.consumeEvent()
+        val event = parser.consumeEvent(path)
         val node = readFromEvent(event, path)
 
         if (event is NodeEvent) {
@@ -57,7 +57,7 @@ internal class YamlNodeReader(
         is SequenceStartEvent -> readSequence(path).maybeToTaggedNode(event.tag)
         is MappingStartEvent -> readMapping(path).maybeToTaggedNode(event.tag)
         is AliasEvent -> readAlias(event, path)
-        else -> throw MalformedYamlException("Unexpected ${event.eventId}", event.location)
+        else -> throw MalformedYamlException("Unexpected ${event.eventId}", path.withError(event.location))
     }
 
     private fun readScalarOrNull(event: ScalarEvent, path: YamlPath): YamlNode {
@@ -72,11 +72,11 @@ internal class YamlNodeReader(
         val items = mutableListOf<YamlNode>()
 
         while (true) {
-            val event = parser.peekEvent()
+            val event = parser.peekEvent(path)
 
             when (event.eventId) {
                 Event.ID.SequenceEnd -> {
-                    parser.consumeEventOfType(Event.ID.SequenceEnd)
+                    parser.consumeEventOfType(Event.ID.SequenceEnd, path)
                     return YamlList(items, path)
                 }
 
@@ -89,26 +89,26 @@ internal class YamlNodeReader(
         val items = mutableMapOf<YamlScalar, YamlNode>()
 
         while (true) {
-            val event = parser.peekEvent()
+            val event = parser.peekEvent(path)
 
             when (event.eventId) {
                 Event.ID.MappingEnd -> {
-                    parser.consumeEventOfType(Event.ID.MappingEnd)
+                    parser.consumeEventOfType(Event.ID.MappingEnd, path)
                     return YamlMap(doMerges(items), path)
                 }
 
                 else -> {
-                    val keyLocation = parser.peekEvent().location
-                    val key = readMapKey()
+                    val keyLocation = parser.peekEvent(path).location
+                    val key = readMapKey(path)
                     val keyNode = YamlScalar(key, path.withMapElementKey(key, keyLocation))
 
-                    val valueLocation = parser.peekEvent().location
+                    val valueLocation = parser.peekEvent(keyNode.path).location
                     val valuePath = if (isMerge(keyNode)) path.withMerge(valueLocation) else keyNode.path.withMapElementValue(valueLocation)
                     val (value, anchor) = readNodeAndAnchor(valuePath)
 
                     if (path == YamlPath.root && extensionDefinitionPrefix != null && key.startsWith(extensionDefinitionPrefix)) {
                         if (anchor == null) {
-                            throw NoAnchorForExtensionException(key, extensionDefinitionPrefix, event.location)
+                            throw NoAnchorForExtensionException(key, extensionDefinitionPrefix, path.withError(event.location))
                         }
                     } else {
                         items += (keyNode to value)
@@ -118,25 +118,25 @@ internal class YamlNodeReader(
         }
     }
 
-    private fun readMapKey(): String {
-        val event = parser.peekEvent()
+    private fun readMapKey(path: YamlPath): String {
+        val event = parser.peekEvent(path)
 
         when (event.eventId) {
             Event.ID.Scalar -> {
-                parser.consumeEventOfType(Event.ID.Scalar)
+                parser.consumeEventOfType(Event.ID.Scalar, path)
                 val scalarEvent = event as ScalarEvent
 
                 if (scalarEvent.tag.isPresent || (scalarEvent.value == "null" && scalarEvent.isPlain)) {
-                    throw nonScalarMapKeyException(event)
+                    throw nonScalarMapKeyException(path, event)
                 }
 
                 return scalarEvent.value
             }
-            else -> throw nonScalarMapKeyException(event)
+            else -> throw nonScalarMapKeyException(path, event)
         }
     }
 
-    private fun nonScalarMapKeyException(event: Event) = MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", event.location)
+    private fun nonScalarMapKeyException(path: YamlPath, event: Event) = MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", path.withError(event.location))
 
     private fun YamlNode.maybeToTaggedNode(tag: Optional<String>): YamlNode =
         tag.map<YamlNode> { YamlTaggedNode(it, this) }.orElse(this)
@@ -150,7 +150,7 @@ internal class YamlNodeReader(
                 is YamlList -> return doMerges(items, mappingsToMerge.items)
                 else -> return doMerges(items, listOf(mappingsToMerge))
             }
-            else -> throw MalformedYamlException("Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.", mergeEntries.second().key.location)
+            else -> throw MalformedYamlException("Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.", mergeEntries.second().key.path)
         }
     }
 
@@ -166,9 +166,9 @@ internal class YamlNodeReader(
         others
             .forEach { other ->
                 when (other) {
-                    is YamlNull -> throw MalformedYamlException("Cannot merge a null value into a map.", other.location)
-                    is YamlScalar -> throw MalformedYamlException("Cannot merge a scalar value into a map.", other.location)
-                    is YamlList -> throw MalformedYamlException("Cannot merge a list value into a map.", other.location)
+                    is YamlNull -> throw MalformedYamlException("Cannot merge a null value into a map.", other.path)
+                    is YamlScalar -> throw MalformedYamlException("Cannot merge a scalar value into a map.", other.path)
+                    is YamlList -> throw MalformedYamlException("Cannot merge a list value into a map.", other.path)
                     is YamlMap ->
                         other.entries.forEach { (key, value) ->
                             val existingEntry = merged.entries.singleOrNull { it.key.equivalentContentTo(key) }
@@ -187,11 +187,14 @@ internal class YamlNodeReader(
         val anchor = event.anchor.get()
 
         val resolvedNode = aliases.getOrElse(anchor) {
-            throw UnknownAnchorException(anchor.value, event.location)
+            throw UnknownAnchorException(anchor.value, path.withError(event.location))
         }
 
         return resolvedNode.withPath(path.withAliasReference(anchor.value, event.location).withAliasDefinition(anchor.value, resolvedNode.location))
     }
 
     private fun <T> Iterable<T>.second(): T = this.drop(1).first()
+
+    private val Event.location: Location
+        get() = Location(startMark.get().line + 1, startMark.get().column + 1)
 }

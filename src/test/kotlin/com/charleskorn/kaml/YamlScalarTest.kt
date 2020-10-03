@@ -85,7 +85,8 @@ object YamlScalarTest : Spek({
             ""
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
+                val path = YamlPath.root.withListEntry(1, Location(2, 4))
+                val scalar = YamlScalar(content, path)
 
                 context("retrieving the value as an integer") {
                     it("throws an appropriate exception") {
@@ -93,6 +94,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid integer value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }
@@ -104,6 +106,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid long value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }
@@ -115,6 +118,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid short value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }
@@ -126,6 +130,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid byte value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }
@@ -212,7 +217,8 @@ object YamlScalarTest : Spek({
             ""
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
+                val path = YamlPath.root.withListEntry(1, Location(2, 4))
+                val scalar = YamlScalar(content, path)
 
                 context("retrieving the value as a float") {
                     it("throws an appropriate exception") {
@@ -220,6 +226,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid floating point value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }
@@ -231,6 +238,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid floating point value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }
@@ -260,7 +268,8 @@ object YamlScalarTest : Spek({
         }
 
         context("given a scalar with the content 'nonsense'") {
-            val scalar = YamlScalar("nonsense", YamlPath.root.withListEntry(1, Location(2, 4)))
+            val path = YamlPath.root.withListEntry(1, Location(2, 4))
+            val scalar = YamlScalar("nonsense", path)
 
             context("retrieving the value as a boolean") {
                 it("throws an appropriate exception") {
@@ -268,6 +277,7 @@ object YamlScalarTest : Spek({
                         message { toBe("Value 'nonsense' is not a valid boolean, permitted choices are: true or false") }
                         line { toBe(2) }
                         column { toBe(4) }
+                        path { toBe(path) }
                         originalValue { toBe("nonsense") }
                     }
                 }
@@ -291,7 +301,8 @@ object YamlScalarTest : Spek({
             ""
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
+                val path = YamlPath.root.withListEntry(1, Location(2, 4))
+                val scalar = YamlScalar(content, path)
 
                 context("retrieving the value as a character value") {
                     it("throws an appropriate exception") {
@@ -299,6 +310,7 @@ object YamlScalarTest : Spek({
                             message { toBe("Value '$content' is not a valid character value.") }
                             line { toBe(2) }
                             column { toBe(4) }
+                            path { toBe(path) }
                             originalValue { toBe(content) }
                         }
                     }

@@ -80,8 +80,11 @@ object YamlMapTest : Spek({
                         message { toBe("Duplicate key 'key1'. It was previously given at line 4, column 1.") }
                         line { toBe(6) }
                         column { toBe(1) }
+                        path { toBe(key2Path) }
                         originalLocation { toBe(Location(4, 1)) }
+                        originalPath { toBe(key1Path) }
                         duplicateLocation { toBe(Location(6, 1)) }
+                        duplicatePath { toBe(key2Path) }
                         key { toBe("'key1'") }
                     }
                 }
@@ -290,6 +293,7 @@ object YamlMapTest : Spek({
                         message { toBe("Value for 'also' is not a scalar.") }
                         line { toBe(4) }
                         column { toBe(1) }
+                        path { toBe(alsoValuePath) }
                     }
                 }
             }

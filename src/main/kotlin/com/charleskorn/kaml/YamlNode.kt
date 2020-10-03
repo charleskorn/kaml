@@ -49,7 +49,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 else -> converter(content, 10)
             }
         } catch (e: NumberFormatException) {
-            throw YamlScalarFormatException("Value '$content' is not a valid $description value.", location, content)
+            throw YamlScalarFormatException("Value '$content' is not a valid $description value.", path, content)
         }
     }
 
@@ -62,7 +62,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 try {
                     content.toFloat()
                 } catch (e: NumberFormatException) {
-                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
+                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
                 }
         }
     }
@@ -76,7 +76,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 try {
                     content.toDouble()
                 } catch (e: NumberFormatException) {
-                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", location, content)
+                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
                 }
         }
     }
@@ -85,11 +85,11 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
         return when (content) {
             "true", "True", "TRUE" -> true
             "false", "False", "FALSE" -> false
-            else -> throw YamlScalarFormatException("Value '$content' is not a valid boolean, permitted choices are: true or false", location, content)
+            else -> throw YamlScalarFormatException("Value '$content' is not a valid boolean, permitted choices are: true or false", path, content)
         }
     }
 
-    public fun toChar(): Char = content.singleOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", location, content)
+    public fun toChar(): Char = content.singleOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", path, content)
 
     override fun withPath(newPath: YamlPath): YamlScalar = this.copy(path = newPath)
 
@@ -158,7 +158,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
             val duplicate = keys.subList(0, index).firstOrNull { it.equivalentContentTo(key) }
 
             if (duplicate != null) {
-                throw DuplicateKeyException(duplicate.location, key.location, key.contentToString())
+                throw DuplicateKeyException(duplicate.path, key.path, key.contentToString())
             }
         }
     }
@@ -189,7 +189,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
     public fun getScalar(key: String): YamlScalar? = when (val node = get<YamlNode>(key)) {
         null -> null
         is YamlScalar -> node
-        else -> throw IncorrectTypeException("Value for '$key' is not a scalar.", node.location)
+        else -> throw IncorrectTypeException("Value for '$key' is not a scalar.", node.path)
     }
 
     override fun withPath(newPath: YamlPath): YamlMap {
@@ -205,7 +205,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
 
         builder.appendLine("map @ $path (size: ${entries.size})")
 
-        entries.forEach { key, value ->
+        entries.forEach { (key, value) ->
             builder.appendLine("- key:")
 
             key.toString().lines().forEach { line ->

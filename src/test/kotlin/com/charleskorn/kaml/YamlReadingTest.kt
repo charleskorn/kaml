@@ -86,7 +86,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 1") }
+                            message { toBe("Serializer called with location (1, 1) and path: <root>") }
                         }
                     }
                 }
@@ -253,6 +253,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -275,6 +276,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -293,6 +295,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -311,6 +314,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -329,6 +333,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -347,6 +352,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -365,6 +371,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -383,6 +390,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -401,6 +409,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -419,6 +428,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -437,6 +447,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -455,6 +466,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -473,6 +485,7 @@ object YamlReadingTest : Spek({
                         message { toBe("Unexpected null or empty value for non-null field.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -480,7 +493,7 @@ object YamlReadingTest : Spek({
             context("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
                 it("throws an exception with the correct location information") {
                     expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
-                        message { toBe("Serializer called with location: 1, 1") }
+                        message { toBe("Serializer called with location (1, 1) and path: <root>") }
                     }
                 }
             }
@@ -513,7 +526,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(ListSerializer(LocationThrowingSerializer), input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 3") }
+                            message { toBe("Serializer called with location (1, 3) and path: [0]") }
                         }
                     }
                 }
@@ -857,7 +870,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 1") }
+                            message { toBe("Serializer called with location (1, 1) and path: <root>") }
                         }
                     }
                 }
@@ -882,7 +895,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(LocationThrowingMapSerializer, input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 1") }
+                            message { toBe("Serializer called with location (1, 1) and path: <root>") }
                         }
                     }
                 }
@@ -908,6 +921,7 @@ object YamlReadingTest : Spek({
                             line { toBe(1) }
                             column { toBe(1) }
                             propertyName { toBe("string") }
+                            path { toBe(YamlPath.root) }
                         }
                     }
                 }
@@ -926,6 +940,7 @@ object YamlReadingTest : Spek({
                             column { toBe(1) }
                             propertyName { toBe("abc123") }
                             validPropertyNames { toBe(setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")) }
+                            path { toBe(YamlPath.root.withMapElementKey("abc123", Location(1, 1))) }
                         }
                     }
                 }
@@ -954,6 +969,7 @@ object YamlReadingTest : Spek({
                                     column { toBe(fieldName.length + 3) }
                                     propertyName { toBe(fieldName) }
                                     reason { toBe(errorMessage) }
+                                    path { toBe(YamlPath.root.withMapElementKey(fieldName, Location(1, 1)).withMapElementValue(Location(1, fieldName.length + 3))) }
                                 }
                             }
                         }
@@ -972,6 +988,7 @@ object YamlReadingTest : Spek({
                             column { toBe(7) }
                             propertyName { toBe("name") }
                             reason { toBe("Unexpected null or empty value for non-null field.") }
+                            path { toBe(YamlPath.root.withMapElementKey("name", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                         }
                     }
                 }
@@ -988,6 +1005,7 @@ object YamlReadingTest : Spek({
                             column { toBe(14) }
                             propertyName { toBe("firstPerson") }
                             reason { toBe("Unexpected null or empty value for non-null field.") }
+                            path { toBe(YamlPath.root.withMapElementKey("firstPerson", Location(1, 1)).withMapElementValue(Location(1, 14))) }
                         }
                     }
                 }
@@ -1019,6 +1037,7 @@ object YamlReadingTest : Spek({
                             column { toBe(10) }
                             propertyName { toBe("members") }
                             reason { toBe("Unexpected null or empty value for non-null field.") }
+                            path { toBe(YamlPath.root.withMapElementKey("members", Location(1, 1)).withMapElementValue(Location(1, 10))) }
                         }
                     }
                 }
@@ -1045,7 +1064,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(StructureWithLocationThrowingSerializer.serializer(), input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 8") }
+                            message { toBe("Serializer called with location (1, 8) and path: value") }
                         }
                     }
                 }
@@ -1073,7 +1092,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(MapSerializer(LocationThrowingSerializer, String.serializer()), input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 1") }
+                            message { toBe("Serializer called with location (1, 1) and path: SOME_ENV_VAR") }
                         }
                     }
                 }
@@ -1081,7 +1100,7 @@ object YamlReadingTest : Spek({
                 context("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
                     it("throws an exception with the correct location information") {
                         expect({ Yaml.default.decodeFromString(MapSerializer(String.serializer(), LocationThrowingSerializer), input) }).toThrow<LocationInformationException> {
-                            message { toBe("Serializer called with location: 1, 15") }
+                            message { toBe("Serializer called with location (1, 15) and path: SOME_ENV_VAR") }
                         }
                     }
                 }
@@ -1121,6 +1140,7 @@ object YamlReadingTest : Spek({
                                 message { toBe("Unknown property 'extra-field'. Known properties are: name") }
                                 line { toBe(2) }
                                 column { toBe(1) }
+                                path { toBe(YamlPath.root.withMapElementKey("extra-field", Location(2, 1))) }
                             }
                         }
                     }
@@ -1304,6 +1324,7 @@ object YamlReadingTest : Spek({
                                 line { toBe(2) }
                                 column { toBe(5) }
                                 cause<MissingTypeTagException>()
+                                path { toBe(YamlPath.root.withMapElementKey("element", Location(1, 1)).withMapElementValue(Location(2, 5))) }
                             }
                         }
                     }
@@ -1321,6 +1342,7 @@ object YamlReadingTest : Spek({
                                 line { toBe(1) }
                                 column { toBe(7) }
                                 cause<MissingTypeTagException>()
+                                path { toBe(YamlPath.root.withMapElementKey("test", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                             }
                         }
                     }
@@ -1338,6 +1360,7 @@ object YamlReadingTest : Spek({
                                 line { toBe(1) }
                                 column { toBe(7) }
                                 cause<MissingTypeTagException>()
+                                path { toBe(YamlPath.root.withMapElementKey("test", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                             }
                         }
                     }
@@ -1356,6 +1379,7 @@ object YamlReadingTest : Spek({
                                 column { toBe(1) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("unsealedBoolean", "unsealedString")) }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -1374,6 +1398,7 @@ object YamlReadingTest : Spek({
                                 column { toBe(1) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -1392,6 +1417,7 @@ object YamlReadingTest : Spek({
                                 column { toBe(1) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -1483,6 +1509,7 @@ object YamlReadingTest : Spek({
                                 line { toBe(1) }
                                 column { toBe(1) }
                                 propertyName { toBe("type") }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -1508,6 +1535,7 @@ object YamlReadingTest : Spek({
                                     column { toBe(7) }
                                     propertyName { toBe("type") }
                                     reason { toBe("expected a string, but got $description") }
+                                    path { toBe(YamlPath.root.withMapElementKey("type", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                                 }
                             }
                         }
@@ -1553,9 +1581,10 @@ object YamlReadingTest : Spek({
                             expect({ polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: unsealedBoolean, unsealedString") }
                                 line { toBe(1) }
-                                column { toBe(1) }
+                                column { toBe(7) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("unsealedBoolean", "unsealedString")) }
+                                path { toBe(YamlPath.root.withMapElementKey("type", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                             }
                         }
                     }
@@ -1572,9 +1601,10 @@ object YamlReadingTest : Spek({
                             expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
                                 line { toBe(1) }
-                                column { toBe(1) }
+                                column { toBe(7) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                                path { toBe(YamlPath.root.withMapElementKey("type", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                             }
                         }
                     }
@@ -1682,6 +1712,7 @@ object YamlReadingTest : Spek({
                                 line { toBe(1) }
                                 column { toBe(1) }
                                 propertyName { toBe("kind") }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -1707,6 +1738,7 @@ object YamlReadingTest : Spek({
                                     column { toBe(7) }
                                     propertyName { toBe("kind") }
                                     reason { toBe("expected a string, but got $description") }
+                                    path { toBe(YamlPath.root.withMapElementKey("kind", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                                 }
                             }
                         }
@@ -1752,9 +1784,10 @@ object YamlReadingTest : Spek({
                             expect({ polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: unsealedBoolean, unsealedString") }
                                 line { toBe(1) }
-                                column { toBe(1) }
+                                column { toBe(7) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("unsealedBoolean", "unsealedString")) }
+                                path { toBe(YamlPath.root.withMapElementKey("kind", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                             }
                         }
                     }
@@ -1771,9 +1804,10 @@ object YamlReadingTest : Spek({
                             expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<UnknownPolymorphicTypeException> {
                                 message { toBe("Unknown type 'someOtherType'. Known types are: sealedInt, sealedString") }
                                 line { toBe(1) }
-                                column { toBe(1) }
+                                column { toBe(7) }
                                 typeName { toBe("someOtherType") }
                                 validTypeNames { toBe(setOf("sealedInt", "sealedString")) }
+                                path { toBe(YamlPath.root.withMapElementKey("kind", Location(1, 1)).withMapElementValue(Location(1, 7))) }
                             }
                         }
                     }
@@ -1932,6 +1966,7 @@ object YamlReadingTest : Spek({
                                 message { toBe("Expected $description, but got a list") }
                                 line { toBe(1) }
                                 column { toBe(1) }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -1948,6 +1983,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Value for 'key' is invalid: Expected a string, but got a list") }
                             line { toBe(2) }
                             column { toBe(5) }
+                            path { toBe(YamlPath.root.withMapElementKey("key", Location(1, 1)).withMapElementValue(Location(2, 5))) }
                         }
                     }
                 }
@@ -1963,6 +1999,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Value for 'string' is invalid: Expected a string, but got a list") }
                             line { toBe(2) }
                             column { toBe(5) }
+                            path { toBe(YamlPath.root.withMapElementKey("string", Location(1, 1)).withMapElementValue(Location(2, 5))) }
                         }
                     }
                 }
@@ -1977,6 +2014,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Expected a string, but got a list") }
                             line { toBe(1) }
                             column { toBe(3) }
+                            path { toBe(YamlPath.root.withListEntry(0, Location(1, 3))) }
                         }
                     }
                 }
@@ -2005,6 +2043,7 @@ object YamlReadingTest : Spek({
                                 message { toBe("Expected $description, but got a map") }
                                 line { toBe(1) }
                                 column { toBe(1) }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -2021,6 +2060,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Value for 'key' is invalid: Expected a string, but got a map") }
                             line { toBe(2) }
                             column { toBe(5) }
+                            path { toBe(YamlPath.root.withMapElementKey("key", Location(1, 1)).withMapElementValue(Location(2, 5))) }
                         }
                     }
                 }
@@ -2036,6 +2076,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Value for 'string' is invalid: Expected a string, but got a map") }
                             line { toBe(2) }
                             column { toBe(5) }
+                            path { toBe(YamlPath.root.withMapElementKey("string", Location(1, 1)).withMapElementValue(Location(2, 5))) }
                         }
                     }
                 }
@@ -2050,6 +2091,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Expected a string, but got a map") }
                             line { toBe(1) }
                             column { toBe(3) }
+                            path { toBe(YamlPath.root.withListEntry(0, Location(1, 3))) }
                         }
                     }
                 }
@@ -2069,6 +2111,7 @@ object YamlReadingTest : Spek({
                                 message { toBe("Expected $description, but got a scalar value") }
                                 line { toBe(1) }
                                 column { toBe(1) }
+                                path { toBe(YamlPath.root) }
                             }
                         }
                     }
@@ -2084,6 +2127,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Value for 'key' is invalid: Expected a list, but got a scalar value") }
                             line { toBe(1) }
                             column { toBe(6) }
+                            path { toBe(YamlPath.root.withMapElementKey("key", Location(1, 1)).withMapElementValue(Location(1, 6))) }
                         }
                     }
                 }
@@ -2098,6 +2142,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Value for 'members' is invalid: Expected a list, but got a scalar value") }
                             line { toBe(1) }
                             column { toBe(10) }
+                            path { toBe(YamlPath.root.withMapElementKey("members", Location(1, 1)).withMapElementValue(Location(1, 10))) }
                         }
                     }
                 }
@@ -2112,6 +2157,7 @@ object YamlReadingTest : Spek({
                             message { toBe("Expected a list, but got a scalar value") }
                             line { toBe(1) }
                             column { toBe(3) }
+                            path { toBe(YamlPath.root.withListEntry(0, Location(1, 3))) }
                         }
                     }
                 }
@@ -2160,6 +2206,7 @@ object YamlReadingTest : Spek({
                                     message { toBe("Expected $description, but got a map") }
                                     line { toBe(1) }
                                     column { toBe(1) }
+                                    path { toBe(YamlPath.root) }
                                 }
                             }
                         }
@@ -2181,6 +2228,7 @@ object YamlReadingTest : Spek({
                                     message { toBe("Expected $description, but got a list") }
                                     line { toBe(1) }
                                     column { toBe(1) }
+                                    path { toBe(YamlPath.root) }
                                 }
                             }
                         }
@@ -2202,6 +2250,7 @@ object YamlReadingTest : Spek({
                                     message { toBe("Expected $description, but got a scalar value") }
                                     line { toBe(1) }
                                     column { toBe(1) }
+                                    path { toBe(YamlPath.root) }
                                 }
                             }
                         }
@@ -2240,8 +2289,9 @@ private object LocationThrowingSerializer : KSerializer<Any> {
 
     override fun deserialize(decoder: Decoder): Any {
         val location = (decoder as YamlInput).getCurrentLocation()
+        val path = decoder.getCurrentPath()
 
-        throw LocationInformationException("Serializer called with location: ${location.line}, ${location.column}")
+        throw LocationInformationException("Serializer called with location (${location.line}, ${location.column}) and path: ${path.toHumanReadableString()}")
     }
 
     override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
@@ -2252,8 +2302,9 @@ private object LocationThrowingMapSerializer : KSerializer<Any> {
 
     override fun deserialize(decoder: Decoder): Any {
         val location = (decoder as YamlInput).getCurrentLocation()
+        val path = decoder.getCurrentPath()
 
-        throw LocationInformationException("Serializer called with location: ${location.line}, ${location.column}")
+        throw LocationInformationException("Serializer called with location (${location.line}, ${location.column}) and path: ${path.toHumanReadableString()}")
     }
 
     override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()

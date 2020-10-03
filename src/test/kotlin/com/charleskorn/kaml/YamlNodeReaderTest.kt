@@ -237,6 +237,7 @@ object YamlNodeReaderTest : Spek({
                             }
                             line { toBe(1) }
                             column { toBe(7) }
+                            path { toBe(YamlPath.root.withError(Location(1, 7))) }
                         }
                     }
                 }
@@ -268,6 +269,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(1) }
                         column { toBe(7) }
+                        path { toBe(YamlPath.root.withError(Location(1, 7))) }
                     }
                 }
             }
@@ -376,6 +378,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(2) }
                         column { toBe(3) }
+                        path { toBe(YamlPath.root.withListEntry(1, Location(2, 3)).withError(Location(2, 3))) }
                     }
                 }
             }
@@ -756,6 +759,7 @@ object YamlNodeReaderTest : Spek({
                             message { toBe("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)") }
                             line { toBe(2) }
                             column { toBe(1) }
+                            path { toBe(YamlPath.root.withError(Location(2, 1))) }
                         }
                     }
                 }
@@ -803,6 +807,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(3) }
                         column { toBe(8) }
+                        path { toBe(YamlPath.root.withMapElementKey("thing", Location(1, 1)).withMapElementValue(Location(2, 3)).withError(Location(3, 8))) }
                     }
                 }
             }
@@ -837,6 +842,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(3) }
                         column { toBe(2) }
+                        path { toBe(YamlPath.root.withError(Location(3, 2))) }
                     }
                 }
             }
@@ -871,6 +877,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(3) }
                         column { toBe(2) }
+                        path { toBe(YamlPath.root.withError(Location(3, 2))) }
                     }
                 }
             }
@@ -916,6 +923,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(1) }
                         column { toBe(2) }
+                        path { toBe(YamlPath.root.withError(Location(1, 2))) }
                     }
                 }
             }
@@ -968,6 +976,7 @@ object YamlNodeReaderTest : Spek({
                         }
                         line { toBe(1) }
                         column { toBe(12) }
+                        path { toBe(YamlPath.root.withError(Location(1, 12))) }
                     }
                 }
             }
@@ -1094,6 +1103,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("The YAML document is empty.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -1111,6 +1121,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("The YAML document is empty.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root) }
                     }
                 }
             }
@@ -1233,6 +1244,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("Cannot merge a null value into a map.") }
                         line { toBe(1) }
                         column { toBe(8) }
+                        path { toBe(YamlPath.root.withListEntry(0, Location(1, 3)).withMerge(Location(1, 8))) }
                     }
                 }
             }
@@ -1254,6 +1266,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("Cannot merge a scalar value into a map.") }
                         line { toBe(1) }
                         column { toBe(8) }
+                        path { toBe(YamlPath.root.withListEntry(0, Location(1, 3)).withMerge(Location(1, 8))) }
                     }
                 }
             }
@@ -1410,6 +1423,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("Cannot merge a null value into a map.") }
                         line { toBe(1) }
                         column { toBe(9) }
+                        path { toBe(YamlPath.root.withListEntry(0, Location(1, 3)).withMerge(Location(1, 8)).withListEntry(0, Location(1, 9))) }
                     }
                 }
             }
@@ -1431,6 +1445,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("Cannot merge a scalar value into a map.") }
                         line { toBe(1) }
                         column { toBe(9) }
+                        path { toBe(YamlPath.root.withListEntry(0, Location(1, 3)).withMerge(Location(1, 8)).withListEntry(0, Location(1, 9))) }
                     }
                 }
             }
@@ -1452,6 +1467,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("Cannot merge a list value into a map.") }
                         line { toBe(1) }
                         column { toBe(10) }
+                        path { toBe(YamlPath.root.withListEntry(0, Location(1, 3)).withMerge(Location(1, 8)).withListEntry(0, Location(1, 10))) }
                     }
                 }
             }
@@ -1473,6 +1489,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.") }
                         line { toBe(2) }
                         column { toBe(3) }
+                        path { toBe(YamlPath.root.withListEntry(0, Location(1, 3)).withMapElementKey("<<", Location(2, 3))) }
                     }
                 }
             }
@@ -1596,6 +1613,7 @@ object YamlNodeReaderTest : Spek({
                         message { toBe("The key '.invalid-extension' starts with the extension definition prefix '.' but does not define an anchor.") }
                         line { toBe(1) }
                         column { toBe(1) }
+                        path { toBe(YamlPath.root.withError(Location(1, 1))) }
                     }
                 }
             }
