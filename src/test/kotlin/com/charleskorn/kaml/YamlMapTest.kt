@@ -299,6 +299,33 @@ object YamlMapTest : Spek({
             }
         }
 
+        describe("getting keys of the map") {
+            val helloKeyPath = YamlPath.root.withMapElementKey("hello", Location(1, 1))
+            val helloValuePath = helloKeyPath.withMapElementValue(Location(2, 1))
+            val alsoKeyPath = YamlPath.root.withMapElementKey("also", Location(3, 1))
+            val alsoValuePath = alsoKeyPath.withMapElementValue(Location(4, 1))
+
+            val map = YamlMap(
+                mapOf(
+                    YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
+                    YamlScalar("also", alsoKeyPath) to YamlScalar("something", alsoValuePath)
+                ),
+                YamlPath.root
+            )
+
+            context("the key is not in the map") {
+                it("returns null") {
+                    expect(map.getKey("something else")).toBe(null)
+                }
+            }
+
+            context("the key is in the map") {
+                it("returns the node for that key") {
+                    expect(map.getKey("hello")).toBe(YamlScalar("hello", helloKeyPath))
+                }
+            }
+        }
+
         describe("replacing its path") {
             val originalPath = YamlPath.root
             val originalKey1Path = originalPath.withMapElementKey("key1", Location(4, 1))

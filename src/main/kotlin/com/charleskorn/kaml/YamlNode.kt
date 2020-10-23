@@ -192,6 +192,8 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
         else -> throw IncorrectTypeException("Value for '$key' is not a scalar.", node.path)
     }
 
+    public fun getKey(key: String): YamlScalar? = entries.keys.singleOrNull { it.content == key }
+
     override fun withPath(newPath: YamlPath): YamlMap {
         val updatedEntries = entries
             .mapKeys { (k, _) -> k.withPath(replacePathOnChild(k, newPath)) }
