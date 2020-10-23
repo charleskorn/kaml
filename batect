@@ -8,8 +8,8 @@
     # You should commit this file to version control alongside the rest of your project. It should not be installed globally.
     # For more information, visit https://github.com/batect/batect.
 
-    VERSION="0.58.3"
-    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-3bc2771f5b5b4d83c54fadc94dc0666714a7a4ba3c8144d02ffa5dc72f816670}"
+    VERSION="0.60.1"
+    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-24b4af104830ecff3622b90e63d43ad518405921480ad960c0601edff41caea3}"
     DOWNLOAD_URL_ROOT=${BATECT_DOWNLOAD_URL_ROOT:-"https://dl.bintray.com/batect/batect"}
     DOWNLOAD_URL=${BATECT_DOWNLOAD_URL:-"$DOWNLOAD_URL_ROOT/$VERSION/bin/batect-$VERSION.jar"}
     QUIET_DOWNLOAD=${BATECT_QUIET_DOWNLOAD:-false}
@@ -38,13 +38,13 @@
     function download() {
         checkForCurl
 
-        echo "Downloading batect version $VERSION from $DOWNLOAD_URL..."
         mkdir -p "$VERSION_CACHE_DIR"
         temp_file=$(mktemp)
 
         if [[ $QUIET_DOWNLOAD == 'true' ]]; then
-            curl --fail --show-error --location --output "$temp_file" "$DOWNLOAD_URL"
+            curl --silent --fail --show-error --location --output "$temp_file" "$DOWNLOAD_URL"
         else
+            echo "Downloading batect version $VERSION from $DOWNLOAD_URL..."
             curl -# --fail --show-error --location --output "$temp_file" "$DOWNLOAD_URL"
         fi
 
