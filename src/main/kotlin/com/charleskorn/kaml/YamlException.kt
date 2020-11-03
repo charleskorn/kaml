@@ -18,11 +18,13 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.SerializationException
+
 public open class YamlException(
     override val message: String,
     public val path: YamlPath,
     override val cause: Throwable? = null
-) : RuntimeException(message, cause) {
+) : SerializationException(message, cause) {
     public val location: Location = path.endLocation
     public val line: Int = location.line
     public val column: Int = location.column
