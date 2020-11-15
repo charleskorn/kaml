@@ -58,7 +58,7 @@ dependencies {
     implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.2")
     implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.0.1")
 
-    val spekVersion = "2.0.13"
+    val spekVersion = "2.0.14"
 
     testImplementation(group = "org.spekframework.spek2", name = "spek-dsl-jvm", version = spekVersion)
     testImplementation(group = "ch.tutteli.atrium", name = "atrium-fluent-en_GB", version = "0.13.0")
