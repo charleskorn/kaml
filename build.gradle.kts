@@ -55,7 +55,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     implementation(kotlin("stdlib-jdk8"))
-    implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.1")
+    implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.2")
     implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.0.1")
 
     val spekVersion = "2.0.13"
