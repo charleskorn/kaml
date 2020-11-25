@@ -146,8 +146,30 @@ println(result)
 
 Add the following to your Gradle build script:
 
+**Groovy DSL**
+
+```groovy
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.20'
+}
+
+dependencies {
+  implementation "com.charleskorn.kaml:kaml:<version number here>" // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
+}
+```
+
+**Kotlin DSL**
+
 ```kotlin
-implementation("com.charleskorn.kaml:kaml:<version number here>")
+plugins {
+    kotlin("jvm") version "1.4.20"
+    kotlin("plugin.serialization") version "1.4.20"
+}
+
+dependencies {
+  implementation("com.charleskorn.kaml:kaml:<version number here>") // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
+}
 ```
 
 Check the [releases page](https://github.com/charleskorn/kaml/releases) for the latest release information,
