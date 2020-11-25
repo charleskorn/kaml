@@ -51,6 +51,40 @@ val result = Yaml.default.encodeToString(Team.serializer(), input)
 println(result)
 ```
 
+## Referencing kaml
+
+Add the following to your Gradle build script:
+
+**Groovy DSL**
+
+```groovy
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.20'
+}
+
+dependencies {
+  implementation "com.charleskorn.kaml:kaml:<version number here>" // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
+}
+```
+
+**Kotlin DSL**
+
+```kotlin
+plugins {
+    kotlin("jvm") version "1.4.20"
+    kotlin("plugin.serialization") version "1.4.20"
+}
+
+dependencies {
+  implementation("com.charleskorn.kaml:kaml:<version number here>") // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
+}
+```
+
+Check the [releases page](https://github.com/charleskorn/kaml/releases) for the latest release information,
+and the [Maven Central page](https://search.maven.org/artifact/com.charleskorn.kaml/kaml) for examples of how
+to reference the library in other build systems.
+
 ## Features
 
 * Supports most major YAML features:
@@ -141,40 +175,6 @@ println(result)
   Specify the extension prefix by setting `YamlConfiguration.extensionDefinitionPrefix` when creating an instance of `Yaml` (eg. `"x-"` for the example above).
 
   Extensions can only be defined at the top level of a document, and only if the top level element is a map or object. Any key starting with the extension prefix must have an anchor defined (`&...`) and will not be included in the deserialised value.
-
-## Referencing kaml
-
-Add the following to your Gradle build script:
-
-**Groovy DSL**
-
-```groovy
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.20'
-}
-
-dependencies {
-  implementation "com.charleskorn.kaml:kaml:<version number here>" // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
-}
-```
-
-**Kotlin DSL**
-
-```kotlin
-plugins {
-    kotlin("jvm") version "1.4.20"
-    kotlin("plugin.serialization") version "1.4.20"
-}
-
-dependencies {
-  implementation("com.charleskorn.kaml:kaml:<version number here>") // Get the latest version number from https://github.com/charleskorn/kaml/releases/latest
-}
-```
-
-Check the [releases page](https://github.com/charleskorn/kaml/releases) for the latest release information,
-and the [Maven Central page](https://search.maven.org/artifact/com.charleskorn.kaml/kaml) for examples of how
-to reference the library in other build systems.
 
 ## Contributing to kaml
 
