@@ -4,5 +4,8 @@
   ],
   "reviewers": [
     "charleskorn"
-  ]
+  ],
+  "autoMerge": true,
+  "labels": ["is:dependency-update"],
+  "rebaseWhen": "behind-base-branch"
 }
