@@ -180,7 +180,7 @@ to reference the library in other build systems.
 
 Pull requests and bug reports are always welcome!
 
-kaml uses [batect](https://batect.charleskorn.com) to simplify development environment setup:
+kaml uses [Batect](https://batect.dev) to simplify development environment setup:
 
 * To build the library: `./batect build`
 * To run the tests and static analysis tools: `./batect check`
