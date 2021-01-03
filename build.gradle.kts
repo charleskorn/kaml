@@ -23,25 +23,18 @@ import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
 import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
         jcenter()
     }
-
-    dependencies {
-        classpath(kotlin("serialization", version = "1.4.10"))
-    }
 }
 
 plugins {
-    kotlin("jvm") version "1.4.10"
-
-    apply { id("com.github.ben-manes.versions") version "0.36.0" }
+    kotlin("multiplatform") version "1.4.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.4.10"
+    id("com.github.ben-manes.versions") version "0.36.0"
 }
-
-apply(plugin = "kotlinx-serialization")
 
 group = "com.charleskorn.kaml"
 
@@ -51,28 +44,40 @@ repositories {
     maven(url = "https://kotlin.bintray.com/kotlinx")
 }
 
-dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.2.1")
-    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.0.1")
-
-    val spekVersion = "2.0.15"
-
-    testImplementation(group = "org.spekframework.spek2", name = "spek-dsl-jvm", version = spekVersion)
-    testImplementation(group = "ch.tutteli.atrium", name = "atrium-fluent-en_GB", version = "0.15.0")
-
-    testRuntimeOnly(group = "org.spekframework.spek2", name = "spek-runner-junit5", version = spekVersion)
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs = listOf("-Xuse-experimental=kotlin.RequiresOptIn")
-}
-
 kotlin {
     explicitApi()
+
+    jvm {
+        withJava()
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "1.8"
+            }
+        }
+    }
+
+    sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+        }
+
+        val jvmMain by getting {
+            dependencies {
+                implementation(project.dependencies.platform("org.jetbrains.kotlin:kotlin-bom"))
+                implementation(kotlin("stdlib-jdk8"))
+                implementation("org.snakeyaml:snakeyaml-engine:2.2.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+            }
+        }
+        val jvmTest by getting {
+            val spekVersion = "2.0.15"
+            dependencies {
+                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.15.0")
+                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+            }
+        }
+    }
 }
 
 configureAssemble()
