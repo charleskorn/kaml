@@ -60,7 +60,11 @@ kotlin {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
-
+        val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+            }
+        }
         val jvmMain by getting {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlin:kotlin-bom"))
