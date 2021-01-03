@@ -20,6 +20,7 @@ package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.fluent.en_GB.feature
 import ch.tutteli.atrium.creating.Expect
+import kotlin.jvm.JvmName
 
 fun <T : YamlException> Expect<T>.path(assertionCreator: Expect<YamlPath>.() -> Unit) {
     feature(YamlException::path).addAssertionsCreatedBy(assertionCreator)
