@@ -16,6 +16,7 @@
 
 */
 
+import com.charleskorn.kaml.build.Versions
 import com.charleskorn.kaml.build.configureAssemble
 import com.charleskorn.kaml.build.configureJacoco
 import com.charleskorn.kaml.build.configurePublishing
@@ -57,34 +58,33 @@ kotlin {
     }
 
     sourceSets {
-        val spekVersion = "2.0.15"
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}")
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation("org.spekframework.spek2:spek-dsl-metadata:$spekVersion")
-                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:0.15.0")
+                implementation("org.spekframework.spek2:spek-dsl-metadata:${Versions.spek}")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:${Versions.atrium}")
             }
         }
         val jvmMain by getting {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlin:kotlin-bom"))
                 implementation(kotlin("stdlib-jdk8"))
-                implementation("org.snakeyaml:snakeyaml-engine:2.2.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+                implementation("org.snakeyaml:snakeyaml-engine:${Versions.snakeYaml}")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}")
             }
         }
         val jvmTest by getting {
             dependencies {
-                implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-                implementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.15.0")
-                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+                implementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spek}")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB:${Versions.atrium}")
+                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spek}")
             }
         }
     }
