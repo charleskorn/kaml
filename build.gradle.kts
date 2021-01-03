@@ -57,12 +57,19 @@ kotlin {
     }
 
     sourceSets {
+        val spekVersion = "2.0.15"
         all {
             languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation("org.spekframework.spek2:spek-dsl-metadata:$spekVersion")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:0.15.0")
             }
         }
         val jvmMain by getting {
@@ -74,7 +81,6 @@ kotlin {
             }
         }
         val jvmTest by getting {
-            val spekVersion = "2.0.15"
             dependencies {
                 implementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
                 implementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.15.0")
