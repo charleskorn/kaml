@@ -33,7 +33,7 @@ buildscript {
 
 plugins {
     kotlin("multiplatform") version "1.4.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.4.10"
+    kotlin("plugin.serialization") version "1.4.10"
     id("com.github.ben-manes.versions") version "0.36.0"
 }
 
@@ -77,7 +77,6 @@ kotlin {
                 implementation(project.dependencies.platform("org.jetbrains.kotlin:kotlin-bom"))
                 implementation(kotlin("stdlib-jdk8"))
                 implementation("org.snakeyaml:snakeyaml-engine:${Versions.snakeYaml}")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.serialization}")
             }
         }
         val jvmTest by getting {
