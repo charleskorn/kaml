@@ -8,8 +8,8 @@
     # You should commit this file to version control alongside the rest of your project. It should not be installed globally.
     # For more information, visit https://github.com/batect/batect.
 
-    VERSION="0.66.0"
-    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-c07ba245e9aded109e129bda3864e47a833536f3b65f71a29a5920f2607f3e6c}"
+    VERSION="0.66.1"
+    CHECKSUM="${BATECT_DOWNLOAD_CHECKSUM:-635986dfc452d730afd4d512d55f17f9365cfce08afc6d5194b87c7dda3d75cb}"
     DOWNLOAD_URL_ROOT=${BATECT_DOWNLOAD_URL_ROOT:-"https://dl.bintray.com/batect/batect"}
     DOWNLOAD_URL=${BATECT_DOWNLOAD_URL:-"$DOWNLOAD_URL_ROOT/$VERSION/bin/batect-$VERSION.jar"}
     QUIET_DOWNLOAD=${BATECT_QUIET_DOWNLOAD:-false}
@@ -94,10 +94,10 @@
         BATECT_WRAPPER_DID_DOWNLOAD="$BATECT_WRAPPER_DID_DOWNLOAD" \
         HOSTNAME="$HOSTNAME" \
         exec \
-            "${GIT_BASH_PTY_WORKAROUND[@]}" \
+            ${GIT_BASH_PTY_WORKAROUND[@]+"${GIT_BASH_PTY_WORKAROUND[@]}"} \
             java \
             -Djava.net.useSystemProxies=true \
-            "${JAVA_OPTS[@]}" \
+            ${JAVA_OPTS[@]+"${JAVA_OPTS[@]}"} \
             -jar "$JAR_PATH" \
             "$@"
     }
