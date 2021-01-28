@@ -31,6 +31,8 @@ val input = """
     """.trimIndent()
 
 val result = Yaml.default.decodeFromString(Team.serializer(), input)
+// or using more elegant way:
+// val result = Yaml.decodeFromString<Team>(input)
 
 println(result)
 ```
@@ -47,6 +49,8 @@ data class Team(
 val input = Team("Amy", listOf("Bob", "Cindy", "Dan"))
 
 val result = Yaml.default.encodeToString(Team.serializer(), input)
+// or using more elegant way:
+// val result = Yaml.encodeToString<Team>(input)
 
 println(result)
 ```

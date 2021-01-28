@@ -20,10 +20,12 @@ package com.charleskorn.kaml
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.serializer
 import org.snakeyaml.engine.v2.api.StreamDataWriter
 import java.io.StringWriter
 
@@ -55,5 +57,15 @@ public class Yaml(
 
     public companion object {
         public val default: Yaml = Yaml()
+
+        // using these wrappers you can easily and in more elegant way to call the encoder/decoder directly with a type:
+        // Yaml.decodeFromString<Team>(input) or Yaml.encodeToString<Team>(input)
+        @OptIn(InternalSerializationApi::class)
+        public inline fun <reified T : Any> decodeFromString(string: String): T =
+            Yaml().decodeFromString(T::class.serializer(), string)
+
+        @OptIn(InternalSerializationApi::class)
+        public inline fun <reified T : Any> encodeToString(value: T): String =
+            Yaml().encodeToString(T::class.serializer(), value)
     }
 }
