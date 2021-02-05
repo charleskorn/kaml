@@ -68,10 +68,10 @@ fun Project.configureSpotless() {
 
         kotlinGradle {
             target("*.gradle.kts", "gradle/*.gradle.kts", "buildSrc/*.gradle.kts")
-            ktlint("0.36.0")
+            ktlint("0.40.0")
 
             @Suppress("INACCESSIBLE_TYPE")
-            licenseHeader(kotlinLicenseHeader, "import|tasks|apply|plugins")
+            licenseHeader(kotlinLicenseHeader, "import|tasks|apply|plugins|rootProject")
 
             trimTrailingWhitespace()
             indentWithSpaces()
@@ -80,7 +80,7 @@ fun Project.configureSpotless() {
 
         kotlin {
             target("src/**/*.kt", "buildSrc/**/*.kt")
-            ktlint("0.39.0")
+            ktlint("0.40.0")
 
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeader(kotlinLicenseHeader)
