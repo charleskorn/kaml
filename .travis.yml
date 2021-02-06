@@ -32,7 +32,7 @@ deploy:
     on:
       tags: false
       repo: charleskorn/kaml
-      condition: $TRAVIS_BRANCH = "master" # We can't use branch: master here because we're using tags: false (see https://docs.travis-ci.com/user/deployment/#conditional-releases-with-on)
+      condition: $TRAVIS_BRANCH = "main" # We can't use branch: master here because we're using tags: false (see https://docs.travis-ci.com/user/deployment/#conditional-releases-with-on)
 
   - provider: script
     script: ./batect publishRelease
