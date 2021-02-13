@@ -2,7 +2,7 @@ project_name: kaml
 
 containers:
   build-env:
-    image: openjdk:8u181-jdk
+    image: openjdk:8-jdk
     volumes:
       - local: .
         container: /code
