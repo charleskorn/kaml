@@ -34,7 +34,6 @@ plugins {
 group = "com.charleskorn.kaml"
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
