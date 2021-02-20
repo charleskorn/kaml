@@ -42,7 +42,7 @@ public sealed class YamlInput(
     public val configuration: YamlConfiguration
 ) : AbstractDecoder() {
     internal companion object {
-        private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required, but it was missing$""".toRegex()
+        private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required for type with serial name '.*', but it was missing$""".toRegex()
 
         internal fun createFor(node: YamlNode, context: SerializersModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
             is YamlNull -> when {
