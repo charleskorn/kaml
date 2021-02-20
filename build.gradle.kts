@@ -34,9 +34,7 @@ plugins {
 group = "com.charleskorn.kaml"
 
 repositories {
-    jcenter()
     mavenCentral()
-    maven(url = "https://kotlin.bintray.com/kotlinx")
 }
 
 dependencies {
@@ -44,7 +42,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     implementation(group = "org.snakeyaml", name = "snakeyaml-engine", version = "2.2.1")
-    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.0.1")
+    implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version = "1.1.0")
 
     val spekVersion = "2.0.15"
     testRuntimeOnly(group = "org.spekframework.spek2", name = "spek-runner-junit5", version = spekVersion)
