@@ -11,7 +11,7 @@ jobs:
       BATECT_CACHE_TYPE: directory
       BATECT_ENABLE_TELEMETRY: true
       GPG_KEY_ID: 6D76AD03
-      OSSRH_USERNAME: charleskorn-travis
+      OSSRH_USERNAME: kaml-github-actions
 
     steps:
       - uses: actions/checkout@v2
