@@ -61,11 +61,14 @@ before_cache:
   - rm -f  .batect/caches/gradle-cache/caches/*/javaCompile/*.lock
   - rm -f  .batect/caches/gradle-cache/caches/*/executionHistory/*.lock
   - rm -f  .batect/caches/gradle-cache/caches/*/generated-gradle-jars/*.lock
+  - rm -f  .batect/caches/gradle-cache/caches/*/kotlin-dsl/*.lock
   - rm -f  .batect/caches/gradle-cache/caches/jars-3/*.lock
   - rm -f  .batect/caches/gradle-cache/caches/jars-8/*.lock
   - rm -f  .batect/caches/gradle-cache/caches/transforms-1/transforms-1.lock
   - rm -f  .batect/caches/gradle-cache/caches/journal-1/file-access.bin
   - rm -f  .batect/caches/gradle-cache/caches/journal-1/*.lock
+  - rm -f  .batect/caches/gradle-cache/daemon/*/*.lock
+  - rm -f  .batect/caches/gradle-cache/daemon/*/*.log
   - rm -f  .batect/caches/gradle-cache/kotlin-profile/*
 
 cache:
