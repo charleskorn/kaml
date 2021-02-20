@@ -35,6 +35,9 @@ jobs:
       - name: Generating code coverage report
         run: ./batect generateCodeCoverageReport
 
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@v1.2.1
+
       - name: Assemble release
         run: ./batect assembleRelease
         env:
