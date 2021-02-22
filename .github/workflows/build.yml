@@ -61,6 +61,9 @@ jobs:
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
         if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
 
+      - name: Debug release contents
+        run: tree -R build
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
