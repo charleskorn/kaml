@@ -14,7 +14,10 @@ jobs:
       OSSRH_USERNAME: kaml-github-actions
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
 
       - name: Cache Batect
         uses: actions/cache@v2
