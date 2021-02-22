@@ -170,7 +170,7 @@ private fun Project.createReleaseTasks(
     validateCredentialsTask: TaskProvider<Task>
 ) {
     configure<NexusStagingExtension> {
-        numberOfRetries = 50
+        numberOfRetries = 100
         username = repoUsername
         password = repoPassword
     }
