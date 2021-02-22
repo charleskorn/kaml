@@ -48,6 +48,9 @@ jobs:
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
         if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
 
+      - name: Debug release contents
+        run: tree -R build
+
       - name: Publish snapshot
         run: ./batect publishSnapshot
         env:
