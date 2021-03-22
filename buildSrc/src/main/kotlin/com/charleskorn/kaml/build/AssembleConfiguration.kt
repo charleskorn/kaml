@@ -19,8 +19,10 @@
 package com.charleskorn.kaml.build
 
 import org.gradle.api.Project
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.Copy
-import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 
 fun Project.configureAssemble() {
@@ -28,20 +30,36 @@ fun Project.configureAssemble() {
         description = "Prepares files for release."
         group = "Distribution"
 
-        from(tasks.named("jar"))
-        from(tasks.named("javadocJar"))
-        from(tasks.named("sourcesJar"))
-        from(tasks.named("signMavenJavaPublication"))
-        from(tasks.named("generatePomFileForMavenJavaPublication"))
+        project.extensions.getByType<PublishingExtension>().publications.names
+            .filter { it != "kotlinMultiplatform" }
+            .forEach { publicationName ->
+                from(tasks.named("${publicationName}Jar"))
+                from(tasks.named("${publicationName}SourcesJar"))
+
+                with(copySpec()
+                    .from(tasks.named("sign${publicationName.capitalize()}Publication"))
+                    .rename { fileName ->
+                        when (fileName) {
+                            "module.json.asc" -> "${project.name}-${publicationName}-${project.version}.module.json.asc"
+                            "pom-default.xml.asc" -> "${project.name}-${publicationName}-${project.version}.pom.asc"
+                            else -> fileName
+                        }
+                    }
+                )
+
+                with(copySpec()
+                    .from(tasks.named("generatePomFileFor${publicationName.capitalize()}Publication"))
+                    .rename { fileName -> if (fileName == "pom-default.xml") "${project.name}-${publicationName}-${project.version}.pom" else fileName }
+                )
+
+                with(copySpec()
+                    .from(tasks.named("generateMetadataFileFor${publicationName.capitalize()}Publication"))
+                    .rename { fileName -> if (fileName == "module.json") "${project.name}-${publicationName}-${project.version}.module.json" else fileName }
+                )
+            }
 
         into(buildDir.toPath().resolve("release"))
 
-        rename { filename ->
-            if (filename.startsWith("pom-default.xml")) {
-                filename.replace("^pom-default\\.xml".toRegex(), "${project.name}-${project.version}.pom")
-            } else {
-                filename
-            }
-        }
+        duplicatesStrategy = DuplicatesStrategy.FAIL
     }
 }
