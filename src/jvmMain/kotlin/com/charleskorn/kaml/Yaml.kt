@@ -28,9 +28,9 @@ import org.snakeyaml.engine.v2.api.StreamDataWriter
 import java.io.StringWriter
 
 @OptIn(ExperimentalSerializationApi::class)
-public class Yaml(
+public actual class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule,
-    public val configuration: YamlConfiguration = YamlConfiguration()
+    public actual val configuration: YamlConfiguration = YamlConfiguration()
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
@@ -53,7 +53,7 @@ public class Yaml(
         return writer.toString()
     }
 
-    public companion object {
-        public val default: Yaml = Yaml()
+    public actual companion object {
+        public actual val default: Yaml = Yaml()
     }
 }
