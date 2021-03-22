@@ -36,25 +36,28 @@ fun Project.configureAssemble() {
                 from(tasks.named("${publicationName}Jar"))
                 from(tasks.named("${publicationName}SourcesJar"))
 
-                with(copySpec()
-                    .from(tasks.named("sign${publicationName.capitalize()}Publication"))
-                    .rename { fileName ->
-                        when (fileName) {
-                            "module.json.asc" -> "${project.name}-${publicationName}-${project.version}.module.json.asc"
-                            "pom-default.xml.asc" -> "${project.name}-${publicationName}-${project.version}.pom.asc"
-                            else -> fileName
+                with(
+                    copySpec()
+                        .from(tasks.named("sign${publicationName.capitalize()}Publication"))
+                        .rename { fileName ->
+                            when (fileName) {
+                                "module.json.asc" -> "${project.name}-$publicationName-${project.version}.module.json.asc"
+                                "pom-default.xml.asc" -> "${project.name}-$publicationName-${project.version}.pom.asc"
+                                else -> fileName
+                            }
                         }
-                    }
                 )
 
-                with(copySpec()
-                    .from(tasks.named("generatePomFileFor${publicationName.capitalize()}Publication"))
-                    .rename { fileName -> if (fileName == "pom-default.xml") "${project.name}-${publicationName}-${project.version}.pom" else fileName }
+                with(
+                    copySpec()
+                        .from(tasks.named("generatePomFileFor${publicationName.capitalize()}Publication"))
+                        .rename { fileName -> if (fileName == "pom-default.xml") "${project.name}-$publicationName-${project.version}.pom" else fileName }
                 )
 
-                with(copySpec()
-                    .from(tasks.named("generateMetadataFileFor${publicationName.capitalize()}Publication"))
-                    .rename { fileName -> if (fileName == "module.json") "${project.name}-${publicationName}-${project.version}.module.json" else fileName }
+                with(
+                    copySpec()
+                        .from(tasks.named("generateMetadataFileFor${publicationName.capitalize()}Publication"))
+                        .rename { fileName -> if (fileName == "module.json") "${project.name}-$publicationName-${project.version}.module.json" else fileName }
                 )
             }
 
