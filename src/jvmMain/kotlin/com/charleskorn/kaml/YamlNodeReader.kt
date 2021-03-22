@@ -27,13 +27,13 @@ import org.snakeyaml.engine.v2.events.ScalarEvent
 import org.snakeyaml.engine.v2.events.SequenceStartEvent
 import java.util.Optional
 
-internal class YamlNodeReader(
+internal actual class YamlNodeReader(
     private val parser: YamlParser,
     private val extensionDefinitionPrefix: String? = null
 ) {
     private val aliases = mutableMapOf<Anchor, YamlNode>()
 
-    fun read(): YamlNode = readNode(YamlPath.root)
+    actual fun read(): YamlNode = readNode(YamlPath.root)
 
     private fun readNode(path: YamlPath): YamlNode = readNodeAndAnchor(path).first
 

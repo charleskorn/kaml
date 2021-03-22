@@ -143,6 +143,12 @@ internal class YamlOutput(
         return typeName
     }
 
+    private val SequenceStyle.flowStyle: FlowStyle
+        get() = when (this) {
+            SequenceStyle.Block -> FlowStyle.BLOCK
+            SequenceStyle.Flow -> FlowStyle.FLOW
+        }
+
     companion object {
         private val ALL_IMPLICIT = ImplicitTuple(true, true)
         private val ALL_EXPLICIT = ImplicitTuple(false, false)

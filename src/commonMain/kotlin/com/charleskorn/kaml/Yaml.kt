@@ -16,13 +16,16 @@
 
 */
 
-rootProject.name = "kaml"
+package com.charleskorn.kaml
 
-pluginManagement {
-    plugins {
-        kotlin("jvm") version "1.4.30"
-        kotlin("multiplatform") version "1.4.30"
-        kotlin("plugin.serialization") version "1.4.30"
-        id("com.github.ben-manes.versions") version "0.38.0"
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.StringFormat
+
+@OptIn(ExperimentalSerializationApi::class)
+public expect class Yaml : StringFormat {
+    public val configuration: YamlConfiguration
+
+    public companion object {
+        public val default: Yaml
     }
 }
