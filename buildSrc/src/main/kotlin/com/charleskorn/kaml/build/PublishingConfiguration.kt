@@ -64,27 +64,9 @@ fun Project.configurePublishing() {
         }
     }
 
-    createJarTasks()
     createPublishingTasks(repoUsername, repoPassword, validateCredentialsTask)
     createSigningTasks()
     createReleaseTasks(repoUsername, repoPassword, validateCredentialsTask)
-}
-
-private fun Project.createJarTasks() {
-    val sourcesJarTask = tasks.register<Jar>("sourcesJar") {
-        from(sourceSets.get("main").allSource)
-        archiveClassifier.set("sources")
-    }
-
-    val javadocJarTask = tasks.register<Jar>("javadocJar") {
-        from(tasks.named("javadoc"))
-        archiveClassifier.set("javadoc")
-    }
-
-    tasks.named("assemble").configure {
-        dependsOn(sourcesJarTask)
-        dependsOn(javadocJarTask)
-    }
 }
 
 private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
