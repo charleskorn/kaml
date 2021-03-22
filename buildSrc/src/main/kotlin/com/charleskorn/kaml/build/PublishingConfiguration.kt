@@ -34,8 +34,8 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
@@ -89,37 +89,31 @@ private fun Project.createJarTasks() {
 
 private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
     configure<PublishingExtension> {
-        publications {
-            register<MavenPublication>("mavenJava") {
-                from(components.getByName("java"))
-                artifact(tasks.getByName("sourcesJar"))
-                artifact(tasks.getByName("javadocJar"))
+        publications.withType<MavenPublication> {
+            pom {
+                name.set("kaml")
+                description.set("YAML support for kotlinx.serialization")
+                url.set("https://github.com/charleskorn/kaml")
 
-                pom {
-                    name.set("kaml")
-                    description.set("YAML support for kotlinx.serialization")
-                    url.set("https://github.com/charleskorn/kaml")
-
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
                     }
+                }
 
-                    developers {
-                        developer {
-                            id.set("charleskorn")
-                            name.set("Charles Korn")
-                            email.set("me@charleskorn.com")
-                        }
+                developers {
+                    developer {
+                        id.set("charleskorn")
+                        name.set("Charles Korn")
+                        email.set("me@charleskorn.com")
                     }
+                }
 
-                    scm {
-                        connection.set("scm:git:git://github.com/charleskorn/kaml.git")
-                        developerConnection.set("scm:git:ssh://github.com:charleskorn/kaml.git")
-                        url.set("http://github.com/charleskorn/kaml")
-                    }
+                scm {
+                    connection.set("scm:git:git://github.com/charleskorn/kaml.git")
+                    developerConnection.set("scm:git:ssh://github.com:charleskorn/kaml.git")
+                    url.set("http://github.com/charleskorn/kaml")
                 }
             }
         }
@@ -135,18 +129,20 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
     }
 
     afterEvaluate {
-        tasks.named("publishMavenJavaPublicationToSonatypeRepository").configure {
-            dependsOn(validateCredentialsTask)
+        publishing.publications.names.forEach { publication ->
+            tasks.named("publish${publication.capitalize()}PublicationToSonatypeRepository").configure {
+                dependsOn(validateCredentialsTask)
+            }
         }
     }
 }
 
 private fun Project.createSigningTasks() {
     configure<SigningExtension> {
-        sign(publishing.publications["mavenJava"])
+        sign(publishing.publications)
     }
 
-    tasks.named<Sign>("signMavenJavaPublication").configure {
+    tasks.withType<Sign>().configureEach {
         doFirst {
             val keyId = getEnvironmentVariableOrThrow("GPG_KEY_ID")
             val keyRing = getEnvironmentVariableOrThrow("GPG_KEY_RING")
@@ -190,16 +186,16 @@ private fun Project.createReleaseTasks(
     }
 
     tasks.register("publishSnapshot") {
-        dependsOn("publishMavenJavaPublicationToSonatypeRepository")
+        dependsOn("publishAllPublicationsToSonatypeRepository")
     }
 
     tasks.named("closeRepository") {
-        mustRunAfter("publishMavenJavaPublicationToSonatypeRepository")
+        mustRunAfter("publishAllPublicationsToSonatypeRepository")
     }
 
     tasks.register("publishRelease") {
         dependsOn(validateReleaseTask)
-        dependsOn("publishMavenJavaPublicationToSonatypeRepository")
+        dependsOn("publishAllPublicationsToSonatypeRepository")
         dependsOn("closeAndReleaseRepository")
     }
 }
