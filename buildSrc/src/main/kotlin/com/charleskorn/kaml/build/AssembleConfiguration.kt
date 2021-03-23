@@ -34,6 +34,7 @@ fun Project.configureAssemble() {
             .filter { it != "kotlinMultiplatform" }
             .forEach { publicationName ->
                 from(tasks.named("${publicationName}Jar"))
+                from(tasks.named("${publicationName}JavadocJar"))
                 from(tasks.named("${publicationName}SourcesJar"))
 
                 with(

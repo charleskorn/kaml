@@ -28,6 +28,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
@@ -71,6 +72,17 @@ fun Project.configurePublishing() {
 private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
     configure<PublishingExtension> {
         publications.withType<MavenPublication> {
+            // HACK: this is a workaround while we're waiting to get Dokka set up correctly
+            // (see https://kotlinlang.slack.com/archives/C0F4UNJET/p1616470404031100?thread_ts=1616198351.029900&cid=C0F4UNJET)
+            // This creates an empty JavaDoc JAR to make Maven Central happy.
+            val publicationName = this.name
+            val javadocTask = tasks.register<Jar>(this.name + "JavadocJar") {
+                archiveClassifier.set("javadoc")
+                archiveBaseName.set("kaml-$publicationName")
+            }
+
+            artifact(javadocTask)
+
             pom {
                 name.set("kaml")
                 description.set("YAML support for kotlinx.serialization")
