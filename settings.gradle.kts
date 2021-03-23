@@ -24,5 +24,6 @@ pluginManagement {
         kotlin("multiplatform") version "1.4.30"
         kotlin("plugin.serialization") version "1.4.30"
         id("com.github.ben-manes.versions") version "0.38.0"
+        id("org.jetbrains.dokka") version "1.4.30"
     }
 }

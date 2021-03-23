@@ -23,17 +23,20 @@ import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
 import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
+import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.github.ben-manes.versions")
+    id("org.jetbrains.dokka")
 }
 
 group = "com.charleskorn.kaml"
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 kotlin {
@@ -82,6 +85,22 @@ kotlin {
             }
         }
     }
+}
+
+// Dokka doesn't support being configured from another plugin like buildSrc, so we have to configure it here.
+// See https://github.com/Kotlin/dokka/issues/1463 for details.
+tasks.named<DokkaTask>("dokkaJavadoc") {
+    dokkaSourceSets {
+        configureEach {
+            jdkVersion.set(8)
+            skipDeprecated.set(true)
+        }
+    }
+}
+
+tasks.register<Jar>("javadocJar") {
+    archiveClassifier.set("javadoc")
+    from(tasks.named("dokkaJavadoc"))
 }
 
 configureAssemble()

@@ -71,6 +71,8 @@ fun Project.configurePublishing() {
 private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
     configure<PublishingExtension> {
         publications.withType<MavenPublication> {
+            artifact(tasks.named("javadocJar"))
+
             pom {
                 name.set("kaml")
                 description.set("YAML support for kotlinx.serialization")
