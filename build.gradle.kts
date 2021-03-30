@@ -62,7 +62,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation("org.spekframework.spek2:spek-dsl-metadata:2.0.15")
-                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:0.15.0")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:0.16.0")
             }
         }
 
