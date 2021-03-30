@@ -10,5 +10,12 @@
   "automerge": true,
   "labels": ["is:dependency-update"],
   "rebaseWhen": "behind-base-branch",
-  "digest": { "enabled": "false" }
+  "digest": { "enabled": "false" },
+  "packageRules": [
+    {
+      "groupName": "Atrium",
+      "matchPackagePatterns": ["^ch\\.tutteli\\.atrium:"],
+      "matchDatasources": ["maven"]
+    }
+  ]
 }
