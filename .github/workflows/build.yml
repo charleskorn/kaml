@@ -35,6 +35,9 @@ jobs:
       - name: Build
         run: ./batect build
 
+      - name: Check
+        run: ./batect check
+
       - name: Generating code coverage report
         run: ./batect generateCodeCoverageReport
 
