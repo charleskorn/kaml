@@ -24,7 +24,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.plugins.PublishingPlugin
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -41,7 +41,7 @@ import java.nio.file.Files
 import java.util.Base64
 
 fun Project.configurePublishing() {
-    apply<PublishingPlugin>()
+    apply<MavenPublishPlugin>()
     apply<NexusPublishPlugin>()
     apply<SigningPlugin>()
 
@@ -173,7 +173,7 @@ private fun Project.createReleaseTasks(
     }
 
     tasks.register("publishSnapshot") {
-        dependsOn("publishToSonatype")
+        dependsOn("publishAllPublicationsToSonatypeRepository")
     }
 
     tasks.named("closeSonatypeStagingRepository") {
@@ -182,7 +182,7 @@ private fun Project.createReleaseTasks(
 
     tasks.register("publishRelease") {
         dependsOn(validateReleaseTask)
-        dependsOn("publishToSonatype")
+        dependsOn("publish")
         dependsOn("closeAndReleaseSonatypeStagingRepository")
     }
 }
