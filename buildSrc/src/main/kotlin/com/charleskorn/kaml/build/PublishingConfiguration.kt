@@ -18,21 +18,19 @@
 
 package com.charleskorn.kaml.build
 
-import de.marcphilipp.gradle.nexus.NexusPublishExtension
-import de.marcphilipp.gradle.nexus.NexusPublishPlugin
-import io.codearte.gradle.nexus.NexusStagingExtension
-import io.codearte.gradle.nexus.NexusStagingPlugin
+import io.github.gradlenexus.publishplugin.NexusPublishExtension
+import io.github.gradlenexus.publishplugin.NexusPublishPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
-import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
@@ -43,7 +41,7 @@ import java.nio.file.Files
 import java.util.Base64
 
 fun Project.configurePublishing() {
-    apply<NexusStagingPlugin>()
+    apply<PublishingPlugin>()
     apply<NexusPublishPlugin>()
     apply<SigningPlugin>()
 
@@ -66,7 +64,7 @@ fun Project.configurePublishing() {
 
     createPublishingTasks(repoUsername, repoPassword, validateCredentialsTask)
     createSigningTasks()
-    createReleaseTasks(repoUsername, repoPassword, validateCredentialsTask)
+    createReleaseTasks(validateCredentialsTask)
 }
 
 private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: String?, validateCredentialsTask: TaskProvider<Task>) {
@@ -119,6 +117,10 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
                 password.set(repoPassword)
             }
         }
+
+        transitionCheckOptions {
+            maxRetries.set(100)
+        }
     }
 
     afterEvaluate {
@@ -154,17 +156,9 @@ private fun Project.createSigningTasks() {
 }
 
 private fun Project.createReleaseTasks(
-    repoUsername: String?,
-    repoPassword: String?,
     validateCredentialsTask: TaskProvider<Task>
 ) {
-    configure<NexusStagingExtension> {
-        numberOfRetries = 100
-        username = repoUsername
-        password = repoPassword
-    }
-
-    setOf("closeRepository", "releaseRepository", "getStagingProfile").forEach { taskName ->
+    setOf("closeSonatypeStagingRepository", "releaseSonatypeStagingRepository").forEach { taskName ->
         tasks.named(taskName).configure {
             dependsOn(validateCredentialsTask)
         }
@@ -179,17 +173,17 @@ private fun Project.createReleaseTasks(
     }
 
     tasks.register("publishSnapshot") {
-        dependsOn("publishAllPublicationsToSonatypeRepository")
+        dependsOn("publishToSonatype")
     }
 
-    tasks.named("closeRepository") {
+    tasks.named("closeSonatypeStagingRepository") {
         mustRunAfter("publishAllPublicationsToSonatypeRepository")
     }
 
     tasks.register("publishRelease") {
         dependsOn(validateReleaseTask)
-        dependsOn("publishAllPublicationsToSonatypeRepository")
-        dependsOn("closeAndReleaseRepository")
+        dependsOn("publishToSonatype")
+        dependsOn("closeAndReleaseSonatypeStagingRepository")
     }
 }
 
