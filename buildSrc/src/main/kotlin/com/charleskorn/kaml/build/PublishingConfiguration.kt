@@ -182,7 +182,7 @@ private fun Project.createReleaseTasks(
 
     tasks.register("publishRelease") {
         dependsOn(validateReleaseTask)
-        dependsOn("publish")
+        dependsOn("publishAllPublicationsToSonatypeRepository")
         dependsOn("closeAndReleaseSonatypeStagingRepository")
     }
 }
