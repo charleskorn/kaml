@@ -17,6 +17,12 @@
       "groupName": "Atrium",
       "matchPackagePatterns": ["^ch\\.tutteli\\.atrium:"],
       "matchDatasources": ["maven"]
+    },
+    {
+      "groupName": "Kotlin",
+      "matchManagers": ["gradle-lite"],
+      "matchPackagePatterns": ["^org\\.jetbrains\\.kotlin\\."],
+      "matchDepTypes": ["plugin"]
     }
   ]
 }
