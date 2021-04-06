@@ -30,7 +30,7 @@ kotlinDslPluginOptions {
 }
 
 dependencies {
-    implementation(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "4.5.1")
+    implementation(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "5.11.1")
     implementation(group = "io.codearte.gradle.nexus", name = "gradle-nexus-staging-plugin", version = "0.21.2")
     implementation(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "0.12.0")
     implementation(group = "de.marcphilipp.gradle", name = "nexus-publish-plugin", version = "0.4.0")
