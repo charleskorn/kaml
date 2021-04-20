@@ -42,7 +42,7 @@ jobs:
         run: ./batect generateCodeCoverageReport
 
       - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@v1.4.0
+        uses: codecov/codecov-action@v1.4.1
 
       - name: Assemble release
         run: ./batect assembleRelease
