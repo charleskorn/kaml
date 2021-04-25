@@ -30,6 +30,7 @@ import org.snakeyaml.engine.v2.api.StreamDataWriter
 import org.snakeyaml.engine.v2.common.FlowStyle
 import org.snakeyaml.engine.v2.common.ScalarStyle
 import org.snakeyaml.engine.v2.emitter.Emitter
+import org.snakeyaml.engine.v2.events.DocumentEndEvent
 import org.snakeyaml.engine.v2.events.DocumentStartEvent
 import org.snakeyaml.engine.v2.events.ImplicitTuple
 import org.snakeyaml.engine.v2.events.MappingEndEvent
@@ -37,6 +38,7 @@ import org.snakeyaml.engine.v2.events.MappingStartEvent
 import org.snakeyaml.engine.v2.events.ScalarEvent
 import org.snakeyaml.engine.v2.events.SequenceEndEvent
 import org.snakeyaml.engine.v2.events.SequenceStartEvent
+import org.snakeyaml.engine.v2.events.StreamEndEvent
 import org.snakeyaml.engine.v2.events.StreamStartEvent
 import java.util.Optional
 
@@ -45,7 +47,7 @@ internal class YamlOutput(
     writer: StreamDataWriter,
     override val serializersModule: SerializersModule,
     private val configuration: YamlConfiguration
-) : AbstractEncoder() {
+) : AbstractEncoder(), AutoCloseable {
     private val settings = DumpSettings.builder()
         .setIndent(configuration.encodingIndentationSize)
         .setWidth(configuration.breakScalarsAt)
@@ -124,6 +126,11 @@ internal class YamlOutput(
             StructureKind.LIST -> emitter.emit(SequenceEndEvent())
             StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingEndEvent())
         }
+    }
+
+    override fun close() {
+        emitter.emit(DocumentEndEvent(false))
+        emitter.emit(StreamEndEvent())
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) {

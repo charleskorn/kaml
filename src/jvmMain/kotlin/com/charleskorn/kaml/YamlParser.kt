@@ -28,8 +28,8 @@ import java.io.StringReader
 internal class YamlParser(yamlSource: String) {
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
-    private val streamReader = StreamReader(StringReader(yamlSource), loadSettings)
-    private val events = ParserImpl(streamReader, loadSettings)
+    private val streamReader = StreamReader(loadSettings, StringReader(yamlSource))
+    private val events = ParserImpl(loadSettings, streamReader)
 
     init {
         consumeEventOfType(Event.ID.StreamStart, YamlPath.root)

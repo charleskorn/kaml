@@ -69,7 +69,7 @@ kotlin {
             dependencies {
                 implementation(project.dependencies.platform("org.jetbrains.kotlin:kotlin-bom"))
                 implementation(kotlin("stdlib-jdk8"))
-                implementation("org.snakeyaml:snakeyaml-engine:2.2.1")
+                implementation("org.snakeyaml:snakeyaml-engine:2.3")
             }
         }
 

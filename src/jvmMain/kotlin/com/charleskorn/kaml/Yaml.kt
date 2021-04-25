@@ -47,10 +47,11 @@ public actual class Yaml(
             override fun flush() { }
         }
 
-        val output = YamlOutput(writer, serializersModule, configuration)
-        output.encodeSerializableValue(serializer, value)
+        YamlOutput(writer, serializersModule, configuration).use { output ->
+            output.encodeSerializableValue(serializer, value)
+        }
 
-        return writer.toString()
+        return writer.toString().trimEnd()
     }
 
     public actual companion object {
