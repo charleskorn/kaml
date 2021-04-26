@@ -482,7 +482,7 @@ private class YamlPolymorphicInput(private val typeName: String, private val typ
         val knownTypes = mutableSetOf<String>()
 
         serializersModule.dumpTo(object : SerializersModuleCollector {
-            override fun <T : Any> contextual(kClass: KClass<T>, serializer: KSerializer<T>) {}
+            override fun <T : Any> contextual(kClass: KClass<T>, provider: (typeArgumentsSerializers: List<KSerializer<*>>) -> KSerializer<*>) {}
 
             // FIXME: ideally we'd be able to get the name as used by the SerialModule (eg. the values in 'polyBase2NamedSerializers' in SerialModuleImpl, but these aren't exposed.
             // The serializer's descriptor's name seems to be the same value.
