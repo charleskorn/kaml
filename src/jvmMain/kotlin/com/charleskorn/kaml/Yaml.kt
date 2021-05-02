@@ -22,16 +22,25 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.StreamDataWriter
+import java.io.InputStream
 import java.io.StringWriter
+import java.nio.charset.Charset
+import kotlin.text.Charsets.UTF_8
 
 @OptIn(ExperimentalSerializationApi::class)
 public actual class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule,
     public actual val configuration: YamlConfiguration = YamlConfiguration()
 ) : StringFormat {
+
+    public inline fun <reified T> decodeFromStream(inputStream: InputStream, charset: Charset = UTF_8): T {
+        return decodeFromString(inputStream.bufferedReader(charset).readText())
+    }
+
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         val parser = YamlParser(string)
         val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix)
