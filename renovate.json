@@ -29,5 +29,30 @@
       "matchPackagePatterns": ["^org\\.jetbrains\\.kotlin\\."],
       "matchDepTypes": ["plugin"]
     }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": [
+        ".groovy$",
+        ".gradle$",
+        ".gradle.kts$",
+        ".kt$"
+      ],
+      "matchStrings": [
+        "ktlint\\(\"(?<currentValue>[\\d.]*?)\"\\)"
+      ],
+      "datasourceTemplate": "maven",
+      "depNameTemplate": "com.pinterest:ktlint"
+    },
+    {
+      "fileMatch": [
+        "JacocoConfiguration.kt$"
+      ],
+      "matchStrings": [
+        "configure<JacocoPluginExtension> {\\s+toolVersion = \"(?<currentValue>[\\d.]*?)\""
+      ],
+      "datasourceTemplate": "maven",
+      "depNameTemplate": "org.jacoco:jacoco"
+    }
   ]
 }
