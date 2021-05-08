@@ -2,7 +2,7 @@ project_name: kaml
 
 containers:
   build-env:
-    image: openjdk:8-jdk-buster@sha256:832c6e876a4d6a2fe616c84bc5e9916fe0fe07dd45ef7960017e7578295ce556
+    image: openjdk:11.0.11-9-jdk-buster@sha256:2fbda8114253c05b2883af61116639e05501bcd07032ad3c554902a27c88c28a
     volumes:
       - local: .
         container: /code

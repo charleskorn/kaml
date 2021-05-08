@@ -11,7 +11,7 @@
   "automerge": true,
   "labels": ["is:dependency-update"],
   "rebaseWhen": "behind-base-branch",
-  "digest": { "enabled": "false" },
+  "digest": { "enabled": false },
   "packageRules": [
     {
       "groupName": "Atrium",
@@ -28,6 +28,11 @@
       "matchManagers": ["gradle-lite"],
       "matchPackagePatterns": ["^org\\.jetbrains\\.kotlin\\."],
       "matchDepTypes": ["plugin"]
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["openjdk"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(-\\d+)?-(?<compatibility>.*)$"
     }
   ],
   "regexManagers": [
