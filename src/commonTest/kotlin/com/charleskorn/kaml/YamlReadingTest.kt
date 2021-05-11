@@ -1012,8 +1012,6 @@ object YamlReadingTest : Spek({
             }
 
             context("given some input representing an object with a null value for a nullable nested object field") {
-                @Serializable
-                data class NullableNestedObject(val firstPerson: SimpleStructure?)
 
                 val input = "firstPerson: null"
 
@@ -1044,9 +1042,6 @@ object YamlReadingTest : Spek({
             }
 
             context("given some input representing an object with a null value for a nullable nested list field") {
-                @Serializable
-                data class NullableNestedList(val members: List<String>?)
-
                 val input = "members: null"
 
                 context("parsing that input") {
@@ -1162,9 +1157,6 @@ object YamlReadingTest : Spek({
                 val input = """
                     host: "db.test.com"
                 """.trimIndent()
-
-                @Serializable
-                data class Database(val host: String)
 
                 val result = Yaml.default.decodeFromString(Database.serializer().nullable, input)
 
@@ -1833,11 +1825,6 @@ object YamlReadingTest : Spek({
 
         describe("parsing values with a dynamically installed serializer") {
             describe("parsing a literal with a contextual serializer") {
-                data class Inner(val name: String)
-
-                @Serializable
-                data class Container(@Contextual val inner: Inner)
-
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor: SerialDescriptor
                         get() = String.serializer().descriptor
@@ -1861,11 +1848,6 @@ object YamlReadingTest : Spek({
             }
 
             describe("parsing a class with a contextual serializer") {
-                data class Inner(val name: String)
-
-                @Serializable
-                data class Container(@Contextual val inner: Inner)
-
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor = buildClassSerialDescriptor("Inner") {
                         element("thing", String.serializer().descriptor)
@@ -1899,11 +1881,6 @@ object YamlReadingTest : Spek({
             }
 
             describe("parsing a map with a contextual serializer") {
-                data class Inner(val name: String)
-
-                @Serializable
-                data class Container(@Contextual val inner: Inner)
-
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor = buildSerialDescriptor("Inner", StructureKind.MAP) {
                         element("key", String.serializer().descriptor)
@@ -2180,9 +2157,6 @@ object YamlReadingTest : Spek({
                     }
 
                     context("parsing that input using a contextual serializer nested within an object") {
-                        @Serializable
-                        data class ObjectWithNestedContextualSerializer(@Serializable(with = ContextualSerializer::class) val thing: String)
-
                         val result = Yaml.default.decodeFromString(ObjectWithNestedContextualSerializer.serializer(), "thing: $input")
 
                         it("the serializer receives the correct object") {
@@ -2324,7 +2298,7 @@ object ContextualSerializer : KSerializer<String> {
         val type = input.node::class.simpleName!!
         input.endStructure(descriptor)
 
-        return type.removePrefix("Yaml").toLowerCase()
+        return type.removePrefix("Yaml").lowercase()
     }
 
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
@@ -2349,3 +2323,25 @@ class ContextualSerializerThatAttemptsToDeserializeIncorrectType(private val kin
 
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
 }
+
+// FIXME: ideally these would just be inline in the test cases that need them, but due to
+// https://github.com/Kotlin/kotlinx.serialization/issues/1427, this is no longer possible with
+// kotlinx.serialization 1.2 and above.
+// See also https://github.com/Kotlin/kotlinx.serialization/issues/1468.
+
+@Serializable
+private data class NullableNestedObject(val firstPerson: SimpleStructure?)
+
+@Serializable
+data class NullableNestedList(val members: List<String>?)
+
+@Serializable
+private data class Database(val host: String)
+
+private data class Inner(val name: String)
+
+@Serializable
+private data class Container(@Contextual val inner: Inner)
+
+@Serializable
+private data class ObjectWithNestedContextualSerializer(@Serializable(with = ContextualSerializer::class) val thing: String)

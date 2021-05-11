@@ -591,9 +591,6 @@ object YamlWritingTest : Spek({
             }
 
             context("serializing an object with a nested map") {
-                @Serializable
-                data class ThingWithMap(val variables: Map<String, String>)
-
                 val input = ThingWithMap(
                     mapOf(
                         "var1" to "value1",
@@ -924,7 +921,15 @@ object YamlWritingTest : Spek({
     }
 })
 
+// FIXME: ideally these would just be inline in the test cases that need them, but due to
+// https://github.com/Kotlin/kotlinx.serialization/issues/1427, this is no longer possible with
+// kotlinx.serialization 1.2 and above.
+// See also https://github.com/Kotlin/kotlinx.serialization/issues/1468.
+
 @Serializable
 private data class SimpleStructureWithDefault(
     val name: String = "default"
 )
+
+@Serializable
+private data class ThingWithMap(val variables: Map<String, String>)
