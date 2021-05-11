@@ -2298,7 +2298,7 @@ object ContextualSerializer : KSerializer<String> {
         val type = input.node::class.simpleName!!
         input.endStructure(descriptor)
 
-        return type.removePrefix("Yaml").toLowerCase()
+        return type.removePrefix("Yaml").lowercase()
     }
 
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
