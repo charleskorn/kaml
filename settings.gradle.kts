@@ -20,8 +20,8 @@ rootProject.name = "kaml"
 
 pluginManagement {
     plugins {
-        kotlin("multiplatform") version "1.5.0"
-        kotlin("plugin.serialization") version "1.5.0"
+        kotlin("multiplatform") version "1.5.10"
+        kotlin("plugin.serialization") version "1.5.10"
         id("com.github.ben-manes.versions") version "0.38.0"
     }
 }
