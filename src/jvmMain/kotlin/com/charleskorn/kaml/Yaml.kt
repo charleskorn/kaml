@@ -25,6 +25,10 @@ import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.StreamDataWriter
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.Reader
+import java.io.StringReader
 import java.io.StringWriter
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -33,7 +37,15 @@ public actual class Yaml(
     public actual val configuration: YamlConfiguration = YamlConfiguration()
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        val parser = YamlParser(string)
+        return decodeFromReader(deserializer, StringReader(string))
+    }
+
+    public fun <T> decodeFromStream(deserializer: DeserializationStrategy<T>, source: InputStream): T {
+        return decodeFromReader(deserializer, InputStreamReader(source))
+    }
+
+    private fun <T> decodeFromReader(deserializer: DeserializationStrategy<T>, source: Reader): T {
+        val parser = YamlParser(source)
         val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix)
         val rootNode = reader.read()
         parser.ensureEndOfStreamReached()

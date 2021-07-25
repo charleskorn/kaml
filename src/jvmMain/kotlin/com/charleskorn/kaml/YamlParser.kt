@@ -23,12 +23,15 @@ import org.snakeyaml.engine.v2.events.Event
 import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v2.parser.ParserImpl
 import org.snakeyaml.engine.v2.scanner.StreamReader
+import java.io.Reader
 import java.io.StringReader
 
-internal class YamlParser(yamlSource: String) {
+internal class YamlParser(reader: Reader) {
+    internal constructor(source: String) : this(StringReader(source))
+
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
-    private val streamReader = StreamReader(loadSettings, StringReader(yamlSource))
+    private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
 
     init {
