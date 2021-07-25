@@ -61,7 +61,7 @@ internal actual class YamlNodeReader(
     }
 
     private fun readScalarOrNull(event: ScalarEvent, path: YamlPath): YamlNode {
-        if ((event.value == "null" || event.value == "") && event.isPlain) {
+        if ((event.value == "null" || event.value == "" || event.value == "~") && event.isPlain) {
             return YamlNull(path)
         } else {
             return YamlScalar(event.value, path)
@@ -125,8 +125,9 @@ internal actual class YamlNodeReader(
             Event.ID.Scalar -> {
                 parser.consumeEventOfType(Event.ID.Scalar, path)
                 val scalarEvent = event as ScalarEvent
+                val isNullKey = (scalarEvent.value == "null" || scalarEvent.value == "~") && scalarEvent.isPlain
 
-                if (scalarEvent.tag.isPresent || (scalarEvent.value == "null" && scalarEvent.isPlain)) {
+                if (scalarEvent.tag.isPresent || isNullKey) {
                     throw nonScalarMapKeyException(path, event)
                 }
 

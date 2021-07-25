@@ -46,7 +46,9 @@ object YamlNodeReaderTest : Spek({
             "''" to "",
             """""""" to "",
             "'null'" to "null",
-            """"null"""" to "null"
+            """"null"""" to "null",
+            "'~'" to "~",
+            """"~"""" to "~"
         ).forEach { (input, expectedResult) ->
             context("given the string '$input'") {
                 describe("parsing that input") {
@@ -543,6 +545,20 @@ object YamlNodeReaderTest : Spek({
             }
         }
 
+        // See https://github.com/charleskorn/kaml/issues/149.
+        context("given the string '~'") {
+            val input = "~"
+
+            describe("parsing that input") {
+                val parser = YamlParser(input)
+                val result = YamlNodeReader(parser).read()
+
+                it("returns a single null entry") {
+                    expect(result).toBe(YamlNull(YamlPath.root))
+                }
+            }
+        }
+
         context("given a single key-value pair") {
             val input = "key: value"
 
@@ -740,6 +756,7 @@ object YamlNodeReaderTest : Spek({
 
         mapOf(
             "null" to "null value",
+            "~" to "null value",
             "[]" to "list",
             "{}" to "map",
             "!thing hello" to "tagged value"
@@ -770,6 +787,22 @@ object YamlNodeReaderTest : Spek({
             val input = """
                 key: value
                 "null": something
+            """.trimIndent()
+
+            describe("parsing that input") {
+                it("does not throw an exception") {
+                    expect({
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser).read()
+                    }).notToThrow()
+                }
+            }
+        }
+
+        context("given a map with the the value '~' as a key in quotes") {
+            val input = """
+                key: value
+                "~": something
             """.trimIndent()
 
             describe("parsing that input") {
