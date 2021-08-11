@@ -154,12 +154,15 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
             }
         }
 
-        keys.forEachIndexed { index, key ->
-            val duplicate = keys.subList(0, index).firstOrNull { it.equivalentContentTo(key) }
+        val encounteredKeys = mutableMapOf<String, YamlScalar>()
+        keys.forEach { key ->
+            val duplicate = encounteredKeys[key.content]
 
             if (duplicate != null) {
                 throw DuplicateKeyException(duplicate.path, key.path, key.contentToString())
             }
+
+            encounteredKeys[key.content] = key
         }
     }
 
