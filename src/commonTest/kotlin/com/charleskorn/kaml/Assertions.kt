@@ -22,36 +22,20 @@ import ch.tutteli.atrium.api.fluent.en_GB.feature
 import ch.tutteli.atrium.creating.Expect
 import kotlin.jvm.JvmName
 
-fun <T : YamlException> Expect<T>.path(assertionCreator: Expect<YamlPath>.() -> Unit) {
-    feature(YamlException::path).addAssertionsCreatedBy(assertionCreator)
+fun <T : SinglePathYamlException> Expect<T>.path(assertionCreator: Expect<YamlPath>.() -> Unit) {
+    feature(SinglePathYamlException::path).addAssertionsCreatedBy(assertionCreator)
 }
 
-fun <T : YamlException> Expect<T>.line(assertionCreator: Expect<Int>.() -> Unit) {
-    feature(YamlException::line).addAssertionsCreatedBy(assertionCreator)
+fun <T : SinglePathYamlException> Expect<T>.line(assertionCreator: Expect<Int>.() -> Unit) {
+    feature(SinglePathYamlException::line).addAssertionsCreatedBy(assertionCreator)
 }
 
-fun <T : YamlException> Expect<T>.column(assertionCreator: Expect<Int>.() -> Unit) {
-    feature(YamlException::column).addAssertionsCreatedBy(assertionCreator)
+fun <T : SinglePathYamlException> Expect<T>.column(assertionCreator: Expect<Int>.() -> Unit) {
+    feature(SinglePathYamlException::column).addAssertionsCreatedBy(assertionCreator)
 }
 
-fun Expect<DuplicateKeyException>.originalLocation(assertionCreator: Expect<Location>.() -> Unit) {
-    feature(DuplicateKeyException::originalLocation).addAssertionsCreatedBy(assertionCreator)
-}
-
-fun Expect<DuplicateKeyException>.duplicateLocation(assertionCreator: Expect<Location>.() -> Unit) {
-    feature(DuplicateKeyException::duplicateLocation).addAssertionsCreatedBy(assertionCreator)
-}
-
-fun Expect<DuplicateKeyException>.originalPath(assertionCreator: Expect<YamlPath>.() -> Unit) {
-    feature(DuplicateKeyException::originalPath).addAssertionsCreatedBy(assertionCreator)
-}
-
-fun Expect<DuplicateKeyException>.duplicatePath(assertionCreator: Expect<YamlPath>.() -> Unit) {
-    feature(DuplicateKeyException::duplicatePath).addAssertionsCreatedBy(assertionCreator)
-}
-
-fun Expect<DuplicateKeyException>.key(assertionCreator: Expect<String>.() -> Unit) {
-    feature(DuplicateKeyException::key).addAssertionsCreatedBy(assertionCreator)
+fun Expect<DuplicateKeysException>.duplicates(assertionCreator: Expect<Map<YamlPath, List<YamlPath>>>.() -> Unit) {
+    feature(DuplicateKeysException::duplicates).addAssertionsCreatedBy(assertionCreator)
 }
 
 @JvmName("MissingRequiredPropertyExceptionPropertyName")

@@ -56,7 +56,7 @@ public actual class Yaml(
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
         val writer = object : StringWriter(), StreamDataWriter {
-            override fun flush() { }
+            override fun flush() {}
         }
 
         YamlOutput(writer, serializersModule, configuration).use { output ->

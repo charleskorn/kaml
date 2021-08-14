@@ -65,30 +65,6 @@ object YamlMapTest : Spek({
                     }).notToThrow()
                 }
             }
-
-            context("creating a map with two entries with the same key") {
-                it("throws an appropriate exception") {
-                    expect({
-                        YamlMap(
-                            mapOf(
-                                YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
-                                YamlScalar("key1", key2Path) to YamlScalar("value", key2ValuePath)
-                            ),
-                            mapPath
-                        )
-                    }).toThrow<DuplicateKeyException> {
-                        message { toBe("Duplicate key 'key1'. It was previously given at line 4, column 1.") }
-                        line { toBe(6) }
-                        column { toBe(1) }
-                        path { toBe(key2Path) }
-                        originalLocation { toBe(Location(4, 1)) }
-                        originalPath { toBe(key1Path) }
-                        duplicateLocation { toBe(Location(6, 1)) }
-                        duplicatePath { toBe(key2Path) }
-                        key { toBe("'key1'") }
-                    }
-                }
-            }
         }
 
         describe("testing equivalence") {
@@ -381,6 +357,85 @@ object YamlMapTest : Spek({
                             scalar @ $valuePath : some value
                     """.trimIndent()
                 )
+            }
+        }
+
+        describe("getting duplicates") {
+            val mapPath = YamlPath.root
+            val key1Path = mapPath.withMapElementKey("key1", Location(4, 1))
+            val key1ValuePath = key1Path.withMapElementValue(Location(4, 5))
+            val key2Path = mapPath.withMapElementKey("key2", Location(6, 1))
+            val key2ValuePath = key2Path.withMapElementValue(Location(6, 7))
+            val key3Path = mapPath.withMapElementKey("key3", Location(8, 1))
+            val key3ValuePath = key3Path.withMapElementValue(Location(8, 9))
+            val key4Path = mapPath.withMapElementKey("key4", Location(10, 1))
+            val key4ValuePath = key4Path.withMapElementValue(Location(10, 11))
+            val key5Path = mapPath.withMapElementKey("key5", Location(12, 1))
+            val key5ValuePath = key5Path.withMapElementValue(Location(12, 13))
+
+            context("empty map") {
+                val value = YamlMap(emptyMap(), mapPath)
+
+                it("retruns no duplicates") {
+                    expect(value.duplicates).toBe(emptyMap())
+                }
+            }
+
+            context("map with unique keys") {
+                val value = YamlMap(
+                    mapOf(
+                        YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
+                        YamlScalar("key2", key2Path) to YamlScalar("value", key2ValuePath)
+                    ),
+                    mapPath
+                )
+
+                it("returns no duplicates") {
+                    expect(value.duplicates).toBe(emptyMap())
+                }
+            }
+
+            context("map with the same keys") {
+                val value = YamlMap(
+                    mapOf(
+                        YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
+                        YamlScalar("key1", key2Path) to YamlScalar("value", key2ValuePath),
+                        YamlScalar("key1", key3Path) to YamlScalar("value", key3ValuePath),
+                        YamlScalar("key2", key4Path) to YamlScalar("value", key4ValuePath),
+                        YamlScalar("key2", key5Path) to YamlScalar("value", key5ValuePath)
+                    ),
+                    mapPath
+                )
+
+                it("returns all duplicates") {
+                    expect(value.duplicates).toBe(
+                        mapOf(
+                            key1Path to listOf(key2Path, key3Path),
+                            key4Path to listOf(key5Path),
+                        )
+                    )
+                }
+            }
+
+            context("map with the same keys in nested maps") {
+                val nestedMap = YamlMap(
+                    mapOf(
+                        YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
+                        YamlScalar("key1", key2Path) to YamlScalar("value", key2ValuePath)
+                    ),
+                    mapPath
+                )
+                val value = YamlMap(
+                    mapOf(
+                        YamlScalar("key1", key1Path) to nestedMap.withPath(key1ValuePath),
+                        YamlScalar("key2", key2Path) to nestedMap.withPath(key2ValuePath),
+                    ),
+                    mapPath
+                )
+
+                it("returns no duplicates") {
+                    expect(value.duplicates).toBe(emptyMap())
+                }
             }
         }
     }

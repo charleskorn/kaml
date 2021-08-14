@@ -143,26 +143,18 @@ public data class YamlList(val items: List<YamlNode>, override val path: YamlPat
 }
 
 public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val path: YamlPath) : YamlNode(path) {
+    private val encounteredKeys = mutableMapOf<String, YamlScalar>()
+    private val _duplicates = mutableMapOf<YamlPath, List<YamlPath>>()
+    internal val duplicates: Map<YamlPath, List<YamlPath>> = _duplicates
+
     init {
-        val keys = entries.keys.sortedWith { a, b ->
-            val lineComparison = a.location.line.compareTo(b.location.line)
-
-            if (lineComparison != 0) {
-                lineComparison
+        entries.keys.forEach { key ->
+            val encounteredKey = encounteredKeys[key.content]
+            if (encounteredKey != null) {
+                _duplicates[encounteredKey.path] = _duplicates[encounteredKey.path].orEmpty() + key.path
             } else {
-                a.location.column.compareTo(b.location.column)
+                encounteredKeys[key.content] = key
             }
-        }
-
-        val encounteredKeys = mutableMapOf<String, YamlScalar>()
-        keys.forEach { key ->
-            val duplicate = encounteredKeys[key.content]
-
-            if (duplicate != null) {
-                throw DuplicateKeyException(duplicate.path, key.path, key.contentToString())
-            }
-
-            encounteredKeys[key.content] = key
         }
     }
 

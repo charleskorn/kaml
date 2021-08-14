@@ -267,7 +267,7 @@ private sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModu
     protected fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
         try {
             return action(currentValueDecoder)
-        } catch (e: YamlException) {
+        } catch (e: SinglePathYamlException) {
             if (currentlyReadingValue) {
                 throw InvalidPropertyValueException(propertyName, e.message, e.path, e)
             } else {

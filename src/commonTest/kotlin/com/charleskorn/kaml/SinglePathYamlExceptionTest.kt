@@ -23,14 +23,14 @@ import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-object YamlExceptionTest : Spek({
+object SinglePathYamlExceptionTest : Spek({
     describe("a YAML exception") {
         describe("formatting it as a string") {
             val path = YamlPath.root.withMapElementKey("colours", Location(3, 4)).withMapElementValue(Location(4, 1)).withListEntry(2, Location(123, 456))
-            val exception = YamlException("Something went wrong", path)
+            val exception = SinglePathYamlException("Something went wrong", path)
 
             it("includes the class name, location information and message") {
-                expect(exception.toString()).toBe("com.charleskorn.kaml.YamlException at colours[2] on line 123, column 456: Something went wrong")
+                expect(exception.toString()).toBe("com.charleskorn.kaml.SinglePathYamlException at colours[2] on line 123, column 456: Something went wrong")
             }
         }
     }

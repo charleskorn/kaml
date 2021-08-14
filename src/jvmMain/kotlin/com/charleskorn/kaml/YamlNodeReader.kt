@@ -33,7 +33,11 @@ internal actual class YamlNodeReader(
 ) {
     private val aliases = mutableMapOf<Anchor, YamlNode>()
 
-    actual fun read(): YamlNode = readNode(YamlPath.root)
+    actual fun read(): YamlNode {
+        val node = readNode(YamlPath.root)
+        ensureNoDuplicateKeys(node)
+        return node
+    }
 
     private fun readNode(path: YamlPath): YamlNode = readNodeAndAnchor(path).first
 
@@ -192,6 +196,36 @@ internal actual class YamlNodeReader(
         }
 
         return resolvedNode.withPath(path.withAliasReference(anchor.value, event.location).withAliasDefinition(anchor.value, resolvedNode.location))
+    }
+
+    private fun ensureNoDuplicateKeys(node: YamlNode) {
+        accumulateDuplicateKeys(listOf(node))
+            .takeIf { it.isNotEmpty() }
+            ?.mapValues { (_, duplicates) -> duplicates.sortedWith(compareBy({ it.endLocation.line }, { it.endLocation.column }))  }
+            ?.toSortedMap(compareBy { it.endLocation.line })
+            ?.let { throw DuplicateKeysException(it) }
+    }
+
+    private tailrec fun accumulateDuplicateKeys(
+        nodes: List<YamlNode>,
+        duplicates: MutableMap<YamlPath, List<YamlPath>> = mutableMapOf()
+    ): Map<YamlPath, List<YamlPath>> {
+        val nestedNodes = nodes.flatMap { node ->
+            when (node) {
+                is YamlList -> node.items
+                is YamlMap -> {
+                    duplicates.putAll(node.duplicates)
+                    node.entries.values
+                }
+                is YamlScalar, is YamlNull, is YamlTaggedNode -> emptyList()
+            }
+        }
+
+        return if (nestedNodes.isNotEmpty()) {
+            accumulateDuplicateKeys(nestedNodes, duplicates)
+        } else {
+            duplicates
+        }
     }
 
     private fun <T> Iterable<T>.second(): T = this.drop(1).first()
