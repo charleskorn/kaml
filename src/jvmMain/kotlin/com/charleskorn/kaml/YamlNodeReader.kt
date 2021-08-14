@@ -217,7 +217,8 @@ internal actual class YamlNodeReader(
                     duplicates.putAll(node.duplicates)
                     node.entries.values
                 }
-                is YamlScalar, is YamlNull, is YamlTaggedNode -> emptyList()
+                is YamlTaggedNode -> listOf(node.innerNode)
+                is YamlScalar, is YamlNull -> emptyList()
             }
         }
 
