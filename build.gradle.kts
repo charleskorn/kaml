@@ -75,9 +75,9 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("org.spekframework.spek2:spek-dsl-jvm:2.0.16")
+                implementation("org.spekframework.spek2:spek-dsl-jvm:2.0.17")
                 implementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.16.0")
-                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:2.0.15")
+                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:2.0.17")
             }
         }
     }
