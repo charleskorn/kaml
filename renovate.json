@@ -1,9 +1,11 @@
 {
   "extends": [
     "config:base",
+    "docker:enableMajor",
     ":prHourlyLimitNone",
     ":prConcurrentLimitNone",
-    ":switchToGradleLite"
+    ":switchToGradleLite",
+    ":disableDependencyDashboard",
   ],
   "reviewers": [
     "charleskorn"
