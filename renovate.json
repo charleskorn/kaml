@@ -5,7 +5,7 @@
     ":prHourlyLimitNone",
     ":prConcurrentLimitNone",
     ":switchToGradleLite",
-    ":disableDependencyDashboard",
+    ":disableDependencyDashboard"
   ],
   "reviewers": [
     "charleskorn"
