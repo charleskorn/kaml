@@ -30,6 +30,7 @@ import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.descriptors.elementNames
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.CompositeDecoder.Companion.DECODE_DONE
 import kotlinx.serialization.encoding.CompositeDecoder.Companion.UNKNOWN_NAME
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleCollector
@@ -168,7 +169,7 @@ private class YamlNullInput(val nullValue: YamlNode, context: SerializersModule,
     override fun getCurrentLocation(): Location = nullValue.location
     override fun getCurrentPath(): YamlPath = nullValue.path
 
-    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = 0
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int = DECODE_DONE
 }
 
 @OptIn(ExperimentalSerializationApi::class)

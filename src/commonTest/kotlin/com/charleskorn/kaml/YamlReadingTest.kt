@@ -1193,6 +1193,25 @@ object YamlReadingTest : Spek({
                     }
                 }
 
+                // See https://github.com/charleskorn/kaml/issues/179.
+                context("given some input where a tag is provided but no value is provided") {
+                    val input = """
+                        !<sealedString>
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            expect({ polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }).toThrow<MissingRequiredPropertyException> {
+                                message { toBe("Property 'value' is required but it is missing.") }
+                                line { toBe(1) }
+                                column { toBe(1) }
+                                propertyName { toBe("value") }
+                                path { toBe(YamlPath.root) }
+                            }
+                        }
+                    }
+                }
+
                 context("given some input where the value is a literal") {
                     val input = """
                         !<simpleString> "asdfg"
