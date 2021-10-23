@@ -230,6 +230,7 @@ private class YamlListInput(val list: YamlList, context: SerializersModule, conf
     override fun getCurrentLocation(): Location = getCurrentPath().endLocation
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 private class YamlContextualInput(node: YamlNode, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(node, context, configuration) {
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
     override fun decodeValue(): Any = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
@@ -241,6 +242,7 @@ private class YamlContextualInput(node: YamlNode, context: SerializersModule, co
     override fun getCurrentPath(): YamlPath = node.path
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 private sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
     protected lateinit var currentValueDecoder: YamlInput
     protected lateinit var currentKey: YamlScalar

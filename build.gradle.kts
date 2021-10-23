@@ -50,7 +50,7 @@ kotlin {
 
     sourceSets {
         all {
-            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
+            languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
         val commonMain by getting {
@@ -81,6 +81,11 @@ kotlin {
             }
         }
     }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 configureAssemble()

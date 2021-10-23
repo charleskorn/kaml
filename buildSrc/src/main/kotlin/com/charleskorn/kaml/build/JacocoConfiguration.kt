@@ -35,7 +35,7 @@ fun Project.configureJacoco() {
 
     tasks.named<JacocoReport>("jacocoTestReport") {
         reports {
-            xml.isEnabled = true
+            xml.required.set(true)
         }
     }
 }
