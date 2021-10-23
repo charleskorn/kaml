@@ -104,7 +104,7 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
                 scm {
                     connection.set("scm:git:git://github.com/charleskorn/kaml.git")
                     developerConnection.set("scm:git:ssh://github.com:charleskorn/kaml.git")
-                    url.set("http://github.com/charleskorn/kaml")
+                    url.set("https://github.com/charleskorn/kaml")
                 }
             }
         }
