@@ -25,10 +25,6 @@ repositories {
     maven("https://plugins.gradle.org/m2/")
 }
 
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
-}
-
 dependencies {
     implementation(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "5.17.0")
     implementation(group = "io.github.gradle-nexus", name = "publish-plugin", version = "1.1.0")
