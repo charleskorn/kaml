@@ -2271,7 +2271,9 @@ private data class ComplexStructure(
 
 @Serializable
 private data class StructureWithLocationThrowingSerializer(
-    @Serializable(with = LocationThrowingSerializer::class) val value: CustomSerializedValue
+    @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+    @Serializable(with = LocationThrowingSerializer::class)
+    val value: CustomSerializedValue
 )
 
 private data class CustomSerializedValue(val thing: String)
