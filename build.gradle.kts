@@ -61,7 +61,7 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:0.16.0")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB-common:0.17.0")
             }
         }
 
@@ -76,7 +76,7 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation("org.spekframework.spek2:spek-dsl-jvm:2.0.17")
-                implementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.16.0")
+                implementation("ch.tutteli.atrium:atrium-fluent-en_GB:0.17.0")
                 runtimeOnly("org.spekframework.spek2:spek-runner-junit5:2.0.17")
             }
         }
