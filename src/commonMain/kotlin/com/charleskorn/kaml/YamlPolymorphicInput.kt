@@ -49,6 +49,9 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
                 when (contentNode) {
                     is YamlScalar -> contentDecoder = YamlScalarInput(contentNode, serializersModule, configuration)
                     is YamlNull -> contentDecoder = YamlNullInput(contentNode, serializersModule, configuration)
+                    else -> {
+                        // Nothing to do here - contentDecoder is set in beginStructure() for non-scalar values.
+                    }
                 }
 
                 currentField = CurrentField.Content

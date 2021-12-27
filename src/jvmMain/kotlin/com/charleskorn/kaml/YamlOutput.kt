@@ -116,6 +116,9 @@ internal class YamlOutput(
                     }
                 }
             }
+            else -> {
+                // Nothing to do.
+            }
         }
 
         return super.beginStructure(descriptor)
@@ -125,6 +128,9 @@ internal class YamlOutput(
         when (descriptor.kind) {
             StructureKind.LIST -> emitter.emit(SequenceEndEvent())
             StructureKind.MAP, StructureKind.CLASS, StructureKind.OBJECT -> emitter.emit(MappingEndEvent())
+            else -> {
+                // Nothing to do.
+            }
         }
     }
 
