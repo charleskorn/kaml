@@ -20,71 +20,72 @@ package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.fluent.en_GB.feature
 import ch.tutteli.atrium.creating.Expect
+import ch.tutteli.atrium.logic._logic
 import kotlin.jvm.JvmName
 
 fun <T : YamlException> Expect<T>.path(assertionCreator: Expect<YamlPath>.() -> Unit) {
-    feature(YamlException::path).addAssertionsCreatedBy(assertionCreator)
+    feature(YamlException::path)._logic.appendAsGroup(assertionCreator)
 }
 
 fun <T : YamlException> Expect<T>.line(assertionCreator: Expect<Int>.() -> Unit) {
-    feature(YamlException::line).addAssertionsCreatedBy(assertionCreator)
+    feature(YamlException::line)._logic.appendAsGroup(assertionCreator)
 }
 
 fun <T : YamlException> Expect<T>.column(assertionCreator: Expect<Int>.() -> Unit) {
-    feature(YamlException::column).addAssertionsCreatedBy(assertionCreator)
+    feature(YamlException::column)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.originalLocation(assertionCreator: Expect<Location>.() -> Unit) {
-    feature(DuplicateKeyException::originalLocation).addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::originalLocation)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.duplicateLocation(assertionCreator: Expect<Location>.() -> Unit) {
-    feature(DuplicateKeyException::duplicateLocation).addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::duplicateLocation)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.originalPath(assertionCreator: Expect<YamlPath>.() -> Unit) {
-    feature(DuplicateKeyException::originalPath).addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::originalPath)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.duplicatePath(assertionCreator: Expect<YamlPath>.() -> Unit) {
-    feature(DuplicateKeyException::duplicatePath).addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::duplicatePath)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<DuplicateKeyException>.key(assertionCreator: Expect<String>.() -> Unit) {
-    feature(DuplicateKeyException::key).addAssertionsCreatedBy(assertionCreator)
+    feature(DuplicateKeyException::key)._logic.appendAsGroup(assertionCreator)
 }
 
 @JvmName("MissingRequiredPropertyExceptionPropertyName")
 fun Expect<MissingRequiredPropertyException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
-    feature(MissingRequiredPropertyException::propertyName).addAssertionsCreatedBy(assertionCreator)
+    feature(MissingRequiredPropertyException::propertyName)._logic.appendAsGroup(assertionCreator)
 }
 
 @JvmName("InvalidPropertyValueExceptionPropertyName")
 fun Expect<InvalidPropertyValueException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
-    feature(InvalidPropertyValueException::propertyName).addAssertionsCreatedBy(assertionCreator)
+    feature(InvalidPropertyValueException::propertyName)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<InvalidPropertyValueException>.reason(assertionCreator: Expect<String>.() -> Unit) {
-    feature(InvalidPropertyValueException::reason).addAssertionsCreatedBy(assertionCreator)
+    feature(InvalidPropertyValueException::reason)._logic.appendAsGroup(assertionCreator)
 }
 
 @JvmName("UnknownPropertyExceptionPropertyName")
 fun Expect<UnknownPropertyException>.propertyName(assertionCreator: Expect<String>.() -> Unit) {
-    feature(UnknownPropertyException::propertyName).addAssertionsCreatedBy(assertionCreator)
+    feature(UnknownPropertyException::propertyName)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<UnknownPropertyException>.validPropertyNames(assertionCreator: Expect<Set<String>>.() -> Unit) {
-    feature(UnknownPropertyException::validPropertyNames).addAssertionsCreatedBy(assertionCreator)
+    feature(UnknownPropertyException::validPropertyNames)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<YamlScalarFormatException>.originalValue(assertionCreator: Expect<String>.() -> Unit) {
-    feature(YamlScalarFormatException::originalValue).addAssertionsCreatedBy(assertionCreator)
+    feature(YamlScalarFormatException::originalValue)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<UnknownPolymorphicTypeException>.typeName(assertionCreator: Expect<String>.() -> Unit) {
-    feature(UnknownPolymorphicTypeException::typeName).addAssertionsCreatedBy(assertionCreator)
+    feature(UnknownPolymorphicTypeException::typeName)._logic.appendAsGroup(assertionCreator)
 }
 
 fun Expect<UnknownPolymorphicTypeException>.validTypeNames(assertionCreator: Expect<Set<String>>.() -> Unit) {
-    feature(UnknownPolymorphicTypeException::validTypeNames).addAssertionsCreatedBy(assertionCreator)
+    feature(UnknownPolymorphicTypeException::validTypeNames)._logic.appendAsGroup(assertionCreator)
 }
