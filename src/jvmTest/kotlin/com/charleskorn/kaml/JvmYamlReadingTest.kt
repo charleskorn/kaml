@@ -18,7 +18,7 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import kotlinx.serialization.builtins.serializer
 import org.spekframework.spek2.Spek
@@ -32,7 +32,7 @@ object JvmYamlReadingTest : Spek({
             val result = Yaml.default.decodeFromStream(Int.serializer(), ByteArrayInputStream(input.toByteArray(Charsets.UTF_8)))
 
             it("successfully deserializes values from a stream") {
-                expect(result).toBe(123)
+                expect(result).toEqual(123)
             }
         }
     }
