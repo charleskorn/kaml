@@ -41,7 +41,7 @@ jobs:
       - name: Check
         run: ./batect check
 
-      - name: Generating code coverage report
+      - name: Generate code coverage report
         run: ./batect generateCodeCoverageReport
 
       - name: Upload coverage to codecov.io
