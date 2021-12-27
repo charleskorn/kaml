@@ -18,7 +18,7 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -30,7 +30,7 @@ object YamlExceptionTest : Spek({
             val exception = YamlException("Something went wrong", path)
 
             it("includes the class name, location information and message") {
-                expect(exception.toString()).toBe("com.charleskorn.kaml.YamlException at colours[2] on line 123, column 456: Something went wrong")
+                expect(exception.toString()).toEqual("com.charleskorn.kaml.YamlException at colours[2] on line 123, column 456: Something went wrong")
             }
         }
     }

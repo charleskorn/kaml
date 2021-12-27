@@ -20,7 +20,7 @@ package com.charleskorn.kaml
 
 import ch.tutteli.atrium.api.fluent.en_GB.message
 import ch.tutteli.atrium.api.fluent.en_GB.notToThrow
-import ch.tutteli.atrium.api.fluent.en_GB.toBe
+import ch.tutteli.atrium.api.fluent.en_GB.toEqual
 import ch.tutteli.atrium.api.fluent.en_GB.toThrow
 import ch.tutteli.atrium.api.verbs.expect
 import org.spekframework.spek2.Spek
@@ -77,15 +77,15 @@ object YamlMapTest : Spek({
                             mapPath
                         )
                     }).toThrow<DuplicateKeyException> {
-                        message { toBe("Duplicate key 'key1'. It was previously given at line 4, column 1.") }
-                        line { toBe(6) }
-                        column { toBe(1) }
-                        path { toBe(key2Path) }
-                        originalLocation { toBe(Location(4, 1)) }
-                        originalPath { toBe(key1Path) }
-                        duplicateLocation { toBe(Location(6, 1)) }
-                        duplicatePath { toBe(key2Path) }
-                        key { toBe("'key1'") }
+                        message { toEqual("Duplicate key 'key1'. It was previously given at line 4, column 1.") }
+                        line { toEqual(6) }
+                        column { toEqual(1) }
+                        path { toEqual(key2Path) }
+                        originalLocation { toEqual(Location(4, 1)) }
+                        originalPath { toEqual(key1Path) }
+                        duplicateLocation { toEqual(Location(6, 1)) }
+                        duplicatePath { toEqual(key2Path) }
+                        key { toEqual("'key1'") }
                     }
                 }
             }
@@ -108,13 +108,13 @@ object YamlMapTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    expect(map.equivalentContentTo(map)).toBe(true)
+                    expect(map.equivalentContentTo(map)).toEqual(true)
                 }
             }
 
             context("comparing it to another map with the same items in the same order with a different path") {
                 it("indicates that they are equivalent") {
-                    expect(map.equivalentContentTo(YamlMap(map.entries, YamlPath.root.withListEntry(0, Location(3, 4))))).toBe(true)
+                    expect(map.equivalentContentTo(YamlMap(map.entries, YamlPath.root.withListEntry(0, Location(3, 4))))).toEqual(true)
                 }
             }
 
@@ -130,7 +130,7 @@ object YamlMapTest : Spek({
                                 mapPath
                             )
                         )
-                    ).toBe(true)
+                    ).toEqual(true)
                 }
             }
 
@@ -146,7 +146,7 @@ object YamlMapTest : Spek({
                                 mapPath
                             )
                         )
-                    ).toBe(false)
+                    ).toEqual(false)
                 }
             }
 
@@ -162,31 +162,31 @@ object YamlMapTest : Spek({
                                 mapPath
                             )
                         )
-                    ).toBe(false)
+                    ).toEqual(false)
                 }
             }
 
             context("comparing it to another map with different items with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlMap(emptyMap(), map.path))).toBe(false)
+                    expect(map.equivalentContentTo(YamlMap(emptyMap(), map.path))).toEqual(false)
                 }
             }
 
             context("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlScalar("some content", map.path))).toBe(false)
+                    expect(map.equivalentContentTo(YamlScalar("some content", map.path))).toEqual(false)
                 }
             }
 
             context("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlNull(map.path))).toBe(false)
+                    expect(map.equivalentContentTo(YamlNull(map.path))).toEqual(false)
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlList(emptyList(), map.path))).toBe(false)
+                    expect(map.equivalentContentTo(YamlList(emptyList(), map.path))).toEqual(false)
                 }
             }
         }
@@ -201,7 +201,7 @@ object YamlMapTest : Spek({
                 val map = YamlMap(emptyMap(), YamlPath.root)
 
                 it("returns empty curly brackets") {
-                    expect(map.contentToString()).toBe("{}")
+                    expect(map.contentToString()).toEqual("{}")
                 }
             }
 
@@ -214,7 +214,7 @@ object YamlMapTest : Spek({
                 )
 
                 it("returns that item surrounded by curly brackets") {
-                    expect(map.contentToString()).toBe("{'hello': 'world'}")
+                    expect(map.contentToString()).toEqual("{'hello': 'world'}")
                 }
             }
 
@@ -228,7 +228,7 @@ object YamlMapTest : Spek({
                 )
 
                 it("returns all items separated by commas and surrounded by curly brackets") {
-                    expect(map.contentToString()).toBe("{'hello': 'world', 'also': 'thanks'}")
+                    expect(map.contentToString()).toEqual("{'hello': 'world', 'also': 'thanks'}")
                 }
             }
         }
@@ -249,13 +249,13 @@ object YamlMapTest : Spek({
 
             context("the key is not in the map") {
                 it("returns null") {
-                    expect(map.get<YamlScalar>("something else")).toBe(null)
+                    expect(map.get<YamlScalar>("something else")).toEqual(null)
                 }
             }
 
             context("the key is in the map") {
                 it("returns the value for that key") {
-                    expect(map.get<YamlScalar>("hello")).toBe(YamlScalar("world", helloValuePath))
+                    expect(map.get<YamlScalar>("hello")).toEqual(YamlScalar("world", helloValuePath))
                 }
             }
         }
@@ -277,23 +277,23 @@ object YamlMapTest : Spek({
 
             context("the key is not in the map") {
                 it("returns null") {
-                    expect(map.getScalar("something else")).toBe(null)
+                    expect(map.getScalar("something else")).toEqual(null)
                 }
             }
 
             context("the key is in the map and has a scalar value") {
                 it("returns the value for that key") {
-                    expect(map.getScalar("hello")).toBe(YamlScalar("world", helloValuePath))
+                    expect(map.getScalar("hello")).toEqual(YamlScalar("world", helloValuePath))
                 }
             }
 
             context("the key is in the map but does not have a scalar value") {
                 it("returns the value for that key") {
                     expect { map.getScalar("also") }.toThrow<IncorrectTypeException> {
-                        message { toBe("Value for 'also' is not a scalar.") }
-                        line { toBe(4) }
-                        column { toBe(1) }
-                        path { toBe(alsoValuePath) }
+                        message { toEqual("Value for 'also' is not a scalar.") }
+                        line { toEqual(4) }
+                        column { toEqual(1) }
+                        path { toEqual(alsoValuePath) }
                     }
                 }
             }
@@ -315,13 +315,13 @@ object YamlMapTest : Spek({
 
             context("the key is not in the map") {
                 it("returns null") {
-                    expect(map.getKey("something else")).toBe(null)
+                    expect(map.getKey("something else")).toEqual(null)
                 }
             }
 
             context("the key is in the map") {
                 it("returns the node for that key") {
-                    expect(map.getKey("hello")).toBe(YamlScalar("hello", helloKeyPath))
+                    expect(map.getKey("hello")).toEqual(YamlScalar("hello", helloKeyPath))
                 }
             }
         }
@@ -356,7 +356,7 @@ object YamlMapTest : Spek({
             )
 
             it("returns a new map node with the path for the node and its keys and values updated to the new path") {
-                expect(original.withPath(newPath)).toBe(expected)
+                expect(original.withPath(newPath)).toEqual(expected)
             }
         }
 
@@ -372,7 +372,7 @@ object YamlMapTest : Spek({
             )
 
             it("returns a human-readable description of itself") {
-                expect(value.toString()).toBe(
+                expect(value.toString()).toEqual(
                     """
                         map @ $path (size: 1)
                         - key:
