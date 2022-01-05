@@ -22,6 +22,6 @@ pluginManagement {
     plugins {
         kotlin("multiplatform") version "1.6.10"
         kotlin("plugin.serialization") version "1.6.10"
-        id("com.github.ben-manes.versions") version "0.40.0"
+        id("com.github.ben-manes.versions") version "0.41.0"
     }
 }
