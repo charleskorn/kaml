@@ -44,10 +44,10 @@ public sealed class YamlInput(
                 else -> YamlNullInput(node, context, configuration)
             }
 
-            is YamlScalar -> when (descriptor.kind) {
-                is PrimitiveKind, SerialKind.ENUM -> YamlScalarInput(node, context, configuration)
-                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
-                is PolymorphicKind -> throw MissingTypeTagException(node.path)
+            is YamlScalar -> when {
+                descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, context, configuration)
+                descriptor.kind is SerialKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
+                descriptor.kind is PolymorphicKind -> throw MissingTypeTagException(node.path)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.path)
             }
 

@@ -60,6 +60,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.serializersModuleOf
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.jvm.JvmInline
 
 object YamlReadingTest : Spek({
     describe("a YAML parser") {
@@ -88,6 +89,14 @@ object YamlReadingTest : Spek({
                         expect({ Yaml.default.decodeFromString(LocationThrowingSerializer, input) }).toThrow<LocationInformationException> {
                             message { toEqual("Serializer called with location (1, 1) and path: <root>") }
                         }
+                    }
+                }
+
+                context("parsing that input as a value type") {
+                    val result = Yaml.default.decodeFromString(StringValue.serializer(), input)
+
+                    it("deserializes it to the expected object") {
+                        expect(result).toEqual(StringValue("hello"))
                     }
                 }
             }
@@ -2366,3 +2375,7 @@ private data class Container(@Contextual val inner: Inner)
 
 @Serializable
 private data class ObjectWithNestedContextualSerializer(@Serializable(with = ContextualSerializer::class) val thing: String)
+
+@Serializable
+@JvmInline
+value class StringValue(val value: String)
