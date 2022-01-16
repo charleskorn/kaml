@@ -25,8 +25,11 @@ import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.StreamDataWriter
+import org.snakeyaml.engine.v2.api.YamlOutputStreamWriter
+import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.io.Reader
 import java.io.StringReader
 import java.io.StringWriter
@@ -59,11 +62,27 @@ public actual class Yaml(
             override fun flush() { }
         }
 
+        encodeToStreamDataWriter(serializer, value, writer)
+
+        return writer.toString().trimEnd()
+    }
+
+    public fun <T> encodeToStream(serializer: SerializationStrategy<T>, value: T, stream: OutputStream) {
+        val writer = object : YamlOutputStreamWriter(stream, Charsets.UTF_8) {
+            override fun processIOException(e: IOException?) {
+                if (e != null) {
+                    throw e
+                }
+            }
+        }
+
+        encodeToStreamDataWriter(serializer, value, writer)
+    }
+
+    private fun <T> encodeToStreamDataWriter(serializer: SerializationStrategy<T>, value: T, writer: StreamDataWriter) {
         YamlOutput(writer, serializersModule, configuration).use { output ->
             output.encodeSerializableValue(serializer, value)
         }
-
-        return writer.toString().trimEnd()
     }
 
     public actual companion object {
