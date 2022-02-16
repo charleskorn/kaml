@@ -200,7 +200,7 @@ object YamlWritingTest : Spek({
                         """
                         |"Hello world this is a string that is much, much, much (ok, not that much) longer\
                         |  \ than 80 characters"
-                    """.trimMargin()
+                        """.trimMargin()
                     )
                 }
             }
