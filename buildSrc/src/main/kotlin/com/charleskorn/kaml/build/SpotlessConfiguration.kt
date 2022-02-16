@@ -68,7 +68,7 @@ fun Project.configureSpotless() {
 
         kotlinGradle {
             target("*.gradle.kts", "gradle/*.gradle.kts", "buildSrc/*.gradle.kts")
-            ktlint("0.43.2")
+            ktlint("0.44.0")
 
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeader(kotlinLicenseHeader, "import|tasks|apply|plugins|rootProject")
@@ -80,7 +80,7 @@ fun Project.configureSpotless() {
 
         kotlin {
             target("src/**/*.kt", "buildSrc/**/*.kt")
-            ktlint("0.43.2")
+            ktlint("0.44.0")
 
             @Suppress("INACCESSIBLE_TYPE")
             licenseHeader(kotlinLicenseHeader)
