@@ -66,7 +66,7 @@ internal class YamlOutput(
     override fun encodeNull() = emitPlainScalar("null")
     override fun encodeBoolean(value: Boolean) = emitPlainScalar(value.toString())
     override fun encodeByte(value: Byte) = emitPlainScalar(value.toString())
-    override fun encodeChar(value: Char) = emitQuotedScalar(value.toString())
+    override fun encodeChar(value: Char) = emitQuotedScalar(value.toString(), configuration.stringStyle.scalarStyle)
     override fun encodeDouble(value: Double) = emitPlainScalar(value.toString())
     override fun encodeFloat(value: Float) = emitPlainScalar(value.toString())
     override fun encodeInt(value: Int) = emitPlainScalar(value.toString())
@@ -77,14 +77,17 @@ internal class YamlOutput(
             currentTypeName = value
             shouldReadTypeName = false
         } else {
-            emitQuotedScalar(value)
+            when {
+                value.contains('\n') -> emitQuotedScalar(value, configuration.multiLineStringStyle.scalarStyle)
+                else -> emitQuotedScalar(value, configuration.stringStyle.scalarStyle)
+            }
         }
     }
 
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index))
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index), configuration.stringStyle.scalarStyle)
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
-    private fun emitQuotedScalar(value: String) = emitScalar(value, ScalarStyle.DOUBLE_QUOTED)
+    private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle = ScalarStyle.DOUBLE_QUOTED) = emitScalar(value, scalarStyle)
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         if (descriptor.kind is StructureKind.CLASS) {
@@ -160,6 +163,19 @@ internal class YamlOutput(
         get() = when (this) {
             SequenceStyle.Block -> FlowStyle.BLOCK
             SequenceStyle.Flow -> FlowStyle.FLOW
+        }
+
+    private val MultiLineStringStyle.scalarStyle: ScalarStyle
+        get() = when (this) {
+            MultiLineStringStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
+            MultiLineStringStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
+            MultiLineStringStyle.Literal -> ScalarStyle.LITERAL
+        }
+
+    private val StringStyle.scalarStyle: ScalarStyle
+        get() = when (this) {
+            StringStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
+            StringStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
         }
 
     companion object {

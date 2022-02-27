@@ -40,7 +40,9 @@ public data class YamlConfiguration constructor(
     internal val polymorphismPropertyName: String = "type",
     internal val encodingIndentationSize: Int = 2,
     internal val breakScalarsAt: Int = 80,
-    internal val sequenceStyle: SequenceStyle = SequenceStyle.Block
+    internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
+    internal val multiLineStringStyle: MultiLineStringStyle = MultiLineStringStyle.DoubleQuoted,
+    internal val stringStyle: StringStyle = StringStyle.DoubleQuoted,
 )
 
 public enum class PolymorphismStyle {
@@ -66,4 +68,15 @@ public enum class SequenceStyle {
      * ```
      */
     Flow
+}
+
+public enum class MultiLineStringStyle {
+    Literal,
+    DoubleQuoted,
+    SingleQuoted,
+}
+
+public enum class StringStyle {
+    DoubleQuoted,
+    SingleQuoted,
 }
