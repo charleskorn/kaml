@@ -87,7 +87,7 @@ internal class YamlOutput(
     override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index), configuration.quotedScalarStyle.scalarStyle)
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
-    private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle = ScalarStyle.DOUBLE_QUOTED) = emitScalar(value, scalarStyle)
+    private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         if (descriptor.kind is StructureKind.CLASS) {
@@ -114,7 +114,7 @@ internal class YamlOutput(
 
                         if (typeName.isPresent) {
                             emitPlainScalar(configuration.polymorphismPropertyName)
-                            emitQuotedScalar(typeName.get())
+                            emitQuotedScalar(typeName.get(), QuotedScalarStyle.DoubleQuoted.scalarStyle)
                         }
                     }
                 }
