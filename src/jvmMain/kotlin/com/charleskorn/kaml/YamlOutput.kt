@@ -66,7 +66,7 @@ internal class YamlOutput(
     override fun encodeNull() = emitPlainScalar("null")
     override fun encodeBoolean(value: Boolean) = emitPlainScalar(value.toString())
     override fun encodeByte(value: Byte) = emitPlainScalar(value.toString())
-    override fun encodeChar(value: Char) = emitQuotedScalar(value.toString(), configuration.stringStyle.scalarStyle)
+    override fun encodeChar(value: Char) = emitQuotedScalar(value.toString(), configuration.quotedScalarStyle.scalarStyle)
     override fun encodeDouble(value: Double) = emitPlainScalar(value.toString())
     override fun encodeFloat(value: Float) = emitPlainScalar(value.toString())
     override fun encodeInt(value: Int) = emitPlainScalar(value.toString())
@@ -79,12 +79,12 @@ internal class YamlOutput(
         } else {
             when {
                 value.contains('\n') -> emitQuotedScalar(value, configuration.multiLineStringStyle.scalarStyle)
-                else -> emitQuotedScalar(value, configuration.stringStyle.scalarStyle)
+                else -> emitQuotedScalar(value, configuration.quotedScalarStyle.scalarStyle)
             }
         }
     }
 
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index), configuration.stringStyle.scalarStyle)
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index), configuration.quotedScalarStyle.scalarStyle)
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
     private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle = ScalarStyle.DOUBLE_QUOTED) = emitScalar(value, scalarStyle)
@@ -172,10 +172,10 @@ internal class YamlOutput(
             MultiLineStringStyle.Literal -> ScalarStyle.LITERAL
         }
 
-    private val StringStyle.scalarStyle: ScalarStyle
+    private val QuotedScalarStyle.scalarStyle: ScalarStyle
         get() = when (this) {
-            StringStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
-            StringStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
+            QuotedScalarStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
+            QuotedScalarStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
         }
 
     companion object {
