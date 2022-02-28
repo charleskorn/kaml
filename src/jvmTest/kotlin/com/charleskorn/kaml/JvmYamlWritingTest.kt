@@ -36,11 +36,13 @@ object JvmYamlWritingTest : Spek({
             }
 
             it("should support block literal style output for multiline strings when configured") {
-                with(Yaml(
-                    configuration = YamlConfiguration(
-                        multiLineStringStyle = MultiLineStringStyle.Literal,
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            multiLineStringStyle = MultiLineStringStyle.Literal,
+                        )
                     )
-                )) {
+                ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
 
@@ -55,11 +57,13 @@ object JvmYamlWritingTest : Spek({
                     )
                 }
 
-                with(Yaml(
-                    configuration = YamlConfiguration(
-                        multiLineStringStyle = MultiLineStringStyle.DoubleQuoted,
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            multiLineStringStyle = MultiLineStringStyle.DoubleQuoted,
+                        )
                     )
-                )) {
+                ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
                     expect(output.toString(Charsets.UTF_8)).toEqual(
@@ -71,11 +75,13 @@ object JvmYamlWritingTest : Spek({
             }
 
             it("should support configurable scalar quoting") {
-                with(Yaml(
-                    configuration = YamlConfiguration(
-                        singleLineScalarStyle = SingleLineStringStyle.SingleQuoted
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            singleLineScalarStyle = SingleLineStringStyle.SingleQuoted
+                        )
                     )
-                )) {
+                ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
 
@@ -86,11 +92,13 @@ object JvmYamlWritingTest : Spek({
                     )
                 }
 
-                with(Yaml(
-                    configuration = YamlConfiguration(
-                        singleLineScalarStyle = SingleLineStringStyle.DoubleQuoted
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            singleLineScalarStyle = SingleLineStringStyle.DoubleQuoted
+                        )
                     )
-                )) {
+                ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
 

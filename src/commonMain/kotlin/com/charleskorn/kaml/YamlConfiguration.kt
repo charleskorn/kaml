@@ -81,7 +81,7 @@ public enum class SingleLineStringStyle {
     SingleQuoted;
 
     public val multiLineStringStyle: MultiLineStringStyle
-        get() = when(this) {
+        get() = when (this) {
             DoubleQuoted -> MultiLineStringStyle.DoubleQuoted
             SingleQuoted -> MultiLineStringStyle.SingleQuoted
         }
