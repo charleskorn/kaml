@@ -52,7 +52,7 @@ object JvmYamlWritingTest : Spek({
                              hello
                              world
                              how are | you?
-                        
+
                         """.trimIndent()
                     )
                 }
