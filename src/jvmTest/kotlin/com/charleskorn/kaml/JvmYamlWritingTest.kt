@@ -28,11 +28,78 @@ import java.io.ByteArrayOutputStream
 object JvmYamlWritingTest : Spek({
     describe("JVM-specific extensions for YAML writing") {
         describe("writing to a stream") {
-            val output = ByteArrayOutputStream()
-            Yaml.default.encodeToStream(String.serializer(), "hello world", output)
-
             it("returns the value serialized in the expected YAML form") {
+                val output = ByteArrayOutputStream()
+                Yaml.default.encodeToStream(String.serializer(), "hello world", output)
+
                 expect(output.toString(Charsets.UTF_8)).toEqual("\"hello world\"\n")
+            }
+
+            it("should support block literal style output for multiline strings when configured") {
+                with(Yaml(
+                    configuration = YamlConfiguration(
+                        multiLineStringStyle = MultiLineStringStyle.Literal,
+                    )
+                )) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
+
+                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                        """
+                           |
+                             hello
+                             world
+                             how are | you?
+                        
+                        """.trimIndent()
+                    )
+                }
+
+                with(Yaml(
+                    configuration = YamlConfiguration(
+                        multiLineStringStyle = MultiLineStringStyle.DoubleQuoted,
+                    )
+                )) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
+                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                        """"hello\nworld\nhow are | you?\n"
+                            |
+                        """.trimMargin()
+                    )
+                }
+            }
+
+            it("should support configurable scalar quoting") {
+                with(Yaml(
+                    configuration = YamlConfiguration(
+                        quotedScalarStyle = QuotedScalarStyle.SingleQuoted
+                    )
+                )) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(String.serializer(), "hello, world", output)
+
+                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                        """'hello, world'
+                            |
+                        """.trimMargin()
+                    )
+                }
+
+                with(Yaml(
+                    configuration = YamlConfiguration(
+                        quotedScalarStyle = QuotedScalarStyle.DoubleQuoted
+                    )
+                )) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(String.serializer(), "hello, world", output)
+
+                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                        """"hello, world"
+                            |
+                        """.trimMargin()
+                    )
+                }
             }
         }
     }
