@@ -63,8 +63,8 @@ object JvmYamlWritingTest : Spek({
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
                     expect(output.toString(Charsets.UTF_8)).toEqual(
-                        """"hello\nworld\nhow are | you?\n"
-                            |
+                        """|"hello\nworld\nhow are | you?\n"
+                           |
                         """.trimMargin()
                     )
                 }
@@ -73,30 +73,30 @@ object JvmYamlWritingTest : Spek({
             it("should support configurable scalar quoting") {
                 with(Yaml(
                     configuration = YamlConfiguration(
-                        quotedScalarStyle = QuotedScalarStyle.SingleQuoted
+                        singleLineScalarStyle = SingleLineStringStyle.SingleQuoted
                     )
                 )) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
 
                     expect(output.toString(Charsets.UTF_8)).toEqual(
-                        """'hello, world'
-                            |
+                        """|'hello, world'
+                           |
                         """.trimMargin()
                     )
                 }
 
                 with(Yaml(
                     configuration = YamlConfiguration(
-                        quotedScalarStyle = QuotedScalarStyle.DoubleQuoted
+                        singleLineScalarStyle = SingleLineStringStyle.DoubleQuoted
                     )
                 )) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
 
                     expect(output.toString(Charsets.UTF_8)).toEqual(
-                        """"hello, world"
-                            |
+                        """|"hello, world"
+                           |
                         """.trimMargin()
                     )
                 }
