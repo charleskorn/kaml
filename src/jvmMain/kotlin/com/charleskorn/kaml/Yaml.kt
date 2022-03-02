@@ -24,6 +24,7 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.serializer
 import org.snakeyaml.engine.v2.api.StreamDataWriter
 import org.snakeyaml.engine.v2.api.YamlOutputStreamWriter
 import java.io.IOException
@@ -88,4 +89,21 @@ public actual class Yaml(
     public actual companion object {
         public actual val default: Yaml = Yaml()
     }
+}
+
+/**
+ * Decodes and deserializes from the given [stream] to the value of type [T] using the
+ * deserializer retrieved from the reified type parameter.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+public inline fun <reified T> Yaml.decodeFromStream(stream: InputStream): T =
+    decodeFromStream(serializersModule.serializer(), stream)
+
+/**
+ * Serializes and encodes the given [value] to the given [stream] using the serializer
+ * retrieved from the reified type parameter.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+public inline fun <reified T> Yaml.encodeToStream(value: T, stream: OutputStream) {
+    encodeToStream(serializersModule.serializer(), value, stream)
 }

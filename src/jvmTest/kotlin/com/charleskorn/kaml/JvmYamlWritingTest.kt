@@ -110,5 +110,14 @@ object JvmYamlWritingTest : Spek({
                 }
             }
         }
+
+        describe("writing to a stream via generic extension function") {
+            val output = ByteArrayOutputStream()
+            Yaml.default.encodeToStream<String>("hello world", output)
+
+            it("returns the value serialized in the expected YAML form") {
+                expect(output.toString(Charsets.UTF_8)).toEqual("\"hello world\"\n")
+            }
+        }
     }
 })

@@ -35,5 +35,14 @@ object JvmYamlReadingTest : Spek({
                 expect(result).toEqual(123)
             }
         }
+
+        describe("parsing from a stream via generic extension function") {
+            val input = "123"
+            val result = Yaml.default.decodeFromStream<Int>(ByteArrayInputStream(input.toByteArray(Charsets.UTF_8)))
+
+            it("successfully deserializes values from a stream") {
+                expect(result).toEqual(123)
+            }
+        }
     }
 })
