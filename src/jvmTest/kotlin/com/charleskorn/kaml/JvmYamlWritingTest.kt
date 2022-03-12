@@ -78,7 +78,7 @@ object JvmYamlWritingTest : Spek({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            singleLineScalarStyle = SingleLineStringStyle.SingleQuoted
+                            singleLineStringStyle = SingleLineStringStyle.SingleQuoted
                         )
                     )
                 ) {
@@ -95,7 +95,7 @@ object JvmYamlWritingTest : Spek({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            singleLineScalarStyle = SingleLineStringStyle.DoubleQuoted
+                            singleLineStringStyle = SingleLineStringStyle.DoubleQuoted
                         )
                     )
                 ) {
