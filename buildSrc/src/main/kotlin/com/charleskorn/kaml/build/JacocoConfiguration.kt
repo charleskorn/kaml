@@ -30,7 +30,7 @@ fun Project.configureJacoco() {
     apply<JacocoPlugin>()
 
     configure<JacocoPluginExtension> {
-        toolVersion = "0.8.7"
+        toolVersion = "0.8.8"
     }
 
     tasks.named<JacocoReport>("jacocoTestReport") {
