@@ -35,6 +35,14 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["openjdk"],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(-\\d+)?-(?<compatibility>.*)$"
+    },
+    {
+      "groupName": "Spotless",
+      "matchManagers": ["gradle-lite"],
+      "matchPackagePatterns": [
+        "^com\\.diffplug\\.spotless$",
+        "^com\\.diffplug\\.spotless:"
+      ]
     }
   ],
   "regexManagers": [
