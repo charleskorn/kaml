@@ -22,6 +22,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Validate Batect wrapper scripts
+        uses: batect/batect-wrapper-validation-action@v0.3.1
+
       - name: Cache Batect
         uses: actions/cache@v3.0.2
         with:
