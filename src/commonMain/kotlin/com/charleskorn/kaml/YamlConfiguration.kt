@@ -43,6 +43,7 @@ public data class YamlConfiguration constructor(
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
+    internal val ignoreEmptyDocument: Boolean = false,
 )
 
 public enum class PolymorphismStyle {
