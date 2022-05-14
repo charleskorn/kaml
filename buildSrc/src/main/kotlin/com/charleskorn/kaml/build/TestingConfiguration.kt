@@ -25,9 +25,7 @@ import org.gradle.kotlin.dsl.withType
 
 fun Project.configureTesting() {
     tasks.withType<Test> {
-        useJUnitPlatform {
-            includeEngines("spek2")
-        }
+        useJUnitPlatform()
 
         testLogging {
             events("failed")
