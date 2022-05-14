@@ -2022,22 +2022,28 @@ class YamlReadingTest : DescribeSpec({
         }
 
         describe("parsing values with mismatched types") {
+            data class Scenario(
+                val description: String,
+                val serializer: KSerializer<out Any?>,
+                val expectedErrorMessage: String = description
+            )
+
             context("given a list") {
                 listOf(
-                    "a string" to String.serializer(),
-                    "an integer" to Int.serializer(),
-                    "a long" to Long.serializer(),
-                    "a short" to Short.serializer(),
-                    "a byte" to Byte.serializer(),
-                    "a double" to Double.serializer(),
-                    "a float" to Float.serializer(),
-                    "a boolean" to Boolean.serializer(),
-                    "a character" to Char.serializer(),
-                    "an enumeration value" to TestEnum.serializer(),
-                    "a map" to MapSerializer(String.serializer(), String.serializer()),
-                    "an object" to ComplexStructure.serializer(),
-                    "a string" to String.serializer().nullable
-                ).forEach { (description, serializer) ->
+                    Scenario("a string", String.serializer()),
+                    Scenario("an integer", Int.serializer()),
+                    Scenario("a long", Long.serializer()),
+                    Scenario("a short", Short.serializer()),
+                    Scenario("a byte", Byte.serializer()),
+                    Scenario("a double", Double.serializer()),
+                    Scenario("a float", Float.serializer()),
+                    Scenario("a boolean", Boolean.serializer()),
+                    Scenario("a character", Char.serializer()),
+                    Scenario("an enumeration value", TestEnum.serializer()),
+                    Scenario("a map", MapSerializer(String.serializer(), String.serializer())),
+                    Scenario("an object", ComplexStructure.serializer()),
+                    Scenario("a nullable string", String.serializer().nullable, "a string"),
+                ).forEach { (description, serializer, expectedErrorMessage) ->
                     val input = "- thing"
 
                     context("parsing that input as $description") {
@@ -2045,7 +2051,7 @@ class YamlReadingTest : DescribeSpec({
                             val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(serializer, input) }
 
                             exception.asClue {
-                                it.message shouldBe "Expected $description, but got a list"
+                                it.message shouldBe "Expected $expectedErrorMessage, but got a list"
                                 it.line shouldBe 1
                                 it.column shouldBe 1
                                 it.path shouldBe YamlPath.root
@@ -2110,19 +2116,19 @@ class YamlReadingTest : DescribeSpec({
 
             context("given a map") {
                 listOf(
-                    "a string" to String.serializer(),
-                    "an integer" to Int.serializer(),
-                    "a long" to Long.serializer(),
-                    "a short" to Short.serializer(),
-                    "a byte" to Byte.serializer(),
-                    "a double" to Double.serializer(),
-                    "a float" to Float.serializer(),
-                    "a boolean" to Boolean.serializer(),
-                    "a character" to Char.serializer(),
-                    "an enumeration value" to TestEnum.serializer(),
-                    "a list" to ListSerializer(String.serializer()),
-                    "a string" to String.serializer().nullable
-                ).forEach { (description, serializer) ->
+                    Scenario("a string", String.serializer()),
+                    Scenario("an integer", Int.serializer()),
+                    Scenario("a long", Long.serializer()),
+                    Scenario("a short", Short.serializer()),
+                    Scenario("a byte", Byte.serializer()),
+                    Scenario("a double", Double.serializer()),
+                    Scenario("a float", Float.serializer()),
+                    Scenario("a boolean", Boolean.serializer()),
+                    Scenario("a character", Char.serializer()),
+                    Scenario("an enumeration value", TestEnum.serializer()),
+                    Scenario("a list", ListSerializer(String.serializer())),
+                    Scenario("a nullable string", String.serializer().nullable, "a string"),
+                ).forEach { (description, serializer, expectedErrorMessage) ->
                     val input = "key: value"
 
                     context("parsing that input as $description") {
@@ -2130,7 +2136,7 @@ class YamlReadingTest : DescribeSpec({
                             val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(serializer, input) }
 
                             exception.asClue {
-                                it.message shouldBe "Expected $description, but got a map"
+                                it.message shouldBe "Expected $expectedErrorMessage, but got a map"
                                 it.line shouldBe 1
                                 it.column shouldBe 1
                                 it.path shouldBe YamlPath.root
@@ -2325,7 +2331,7 @@ class YamlReadingTest : DescribeSpec({
                         StructureKind.MAP to "a map",
                         PrimitiveKind.STRING to "a string"
                     ).forEach { (kind, description) ->
-                        context("attempting to begin $description") {
+                        context("attempting to begin $kind") {
                             it("throws an exception with the correct location information") {
                                 val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }
 
@@ -2349,7 +2355,7 @@ class YamlReadingTest : DescribeSpec({
                         StructureKind.MAP to "a map",
                         StructureKind.LIST to "a list"
                     ).forEach { (kind, description) ->
-                        context("attempting to begin $description") {
+                        context("attempting to begin $kind") {
                             it("throws an exception with the correct location information") {
                                 val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }
 

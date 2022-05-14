@@ -188,7 +188,7 @@ class YamlNodeReaderTest : DescribeSpec({
                 |
             """.trimMargin() to " some\n text\nhere there\n\n"
         ).forEach { (input, text) ->
-            context("given the block scalar '$input'") {
+            context("given the block scalar '${input.replace("\n", "\\n")}'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
                     val result = YamlNodeReader(parser).read()
@@ -739,7 +739,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
         mapOf(
             "null" to "null value",
-            "~" to "null value",
+            "~" to "shorthand null value",
             "[]" to "list",
             "{}" to "map",
             "!thing hello" to "tagged value"
