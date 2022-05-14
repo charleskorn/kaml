@@ -18,8 +18,7 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.matchers.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -33,43 +32,37 @@ object YamlTaggedNodeTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    expect(tagged.equivalentContentTo(tagged)).toEqual(true)
+                    tagged.equivalentContentTo(tagged) shouldBe true
                 }
             }
 
             context("comparing it to another non-tagged node") {
                 it("indicates that they are not equivalent") {
-                    expect(
-                        tagged.equivalentContentTo(
-                            YamlScalar("test", YamlPath.root)
-                        )
-                    ).toEqual(false)
+                    tagged.equivalentContentTo(
+                        YamlScalar("test", YamlPath.root)
+                    ) shouldBe false
                 }
             }
 
             context("comparing it to another tagged node with a different tag") {
                 it("indicates that they are not equivalent") {
-                    expect(
-                        tagged.equivalentContentTo(
-                            YamlTaggedNode(
-                                "tag2",
-                                YamlScalar("test", YamlPath.root)
-                            )
+                    tagged.equivalentContentTo(
+                        YamlTaggedNode(
+                            "tag2",
+                            YamlScalar("test", YamlPath.root)
                         )
-                    ).toEqual(false)
+                    ) shouldBe false
                 }
             }
 
             context("comparing it to another tagged node with different child node") {
                 it("indicates that they are not equivalent") {
-                    expect(
-                        tagged.equivalentContentTo(
-                            YamlTaggedNode(
-                                "tag",
-                                YamlScalar("test2", YamlPath.root)
-                            )
+                    tagged.equivalentContentTo(
+                        YamlTaggedNode(
+                            "tag",
+                            YamlScalar("test2", YamlPath.root)
                         )
-                    ).toEqual(false)
+                    ) shouldBe false
                 }
             }
         }
@@ -79,7 +72,7 @@ object YamlTaggedNodeTest : Spek({
                 val map = YamlTaggedNode("tag", YamlScalar("test", YamlPath.root))
 
                 it("returns tag and child") {
-                    expect(map.contentToString()).toEqual("!tag 'test'")
+                    map.contentToString() shouldBe "!tag 'test'"
                 }
             }
         }
@@ -89,7 +82,7 @@ object YamlTaggedNodeTest : Spek({
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
 
             it("returns a tagged node with the inner node updated with the provided path") {
-                expect(original.withPath(newPath)).toEqual(YamlTaggedNode("tag", YamlScalar("value", newPath)))
+                original.withPath(newPath) shouldBe YamlTaggedNode("tag", YamlScalar("value", newPath))
             }
         }
 
@@ -98,7 +91,7 @@ object YamlTaggedNodeTest : Spek({
             val value = YamlTaggedNode("some tag", YamlScalar("some value", path))
 
             it("returns a human-readable description of itself") {
-                expect(value.toString()).toEqual("tagged 'some tag': scalar @ $path : some value")
+                value.toString() shouldBe "tagged 'some tag': scalar @ $path : some value"
             }
         }
     }

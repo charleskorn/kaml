@@ -18,10 +18,9 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.message
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.fluent.en_GB.toThrow
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.assertions.asClue
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -43,7 +42,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toInt()
 
                     it("converts it to the expected integer") {
-                        expect(result).toEqual(expectedValue)
+                        result shouldBe expectedValue
                     }
                 }
 
@@ -51,7 +50,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toLong()
 
                     it("converts it to the expected long") {
-                        expect(result).toEqual(expectedValue.toLong())
+                        result shouldBe expectedValue.toLong()
                     }
                 }
 
@@ -59,7 +58,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toShort()
 
                     it("converts it to the expected short") {
-                        expect(result).toEqual(expectedValue.toShort())
+                        result shouldBe expectedValue.toShort()
                     }
                 }
 
@@ -67,7 +66,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toByte()
 
                     it("converts it to the expected byte") {
-                        expect(result).toEqual(expectedValue.toByte())
+                        result shouldBe expectedValue.toByte()
                     }
                 }
             }
@@ -90,48 +89,56 @@ object YamlScalarTest : Spek({
 
                 context("retrieving the value as an integer") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toInt() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid integer value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toInt() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid integer value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
 
                 context("retrieving the value as a long") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toLong() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid long value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toLong() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid long value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
 
                 context("retrieving the value as a short") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toShort() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid short value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toShort() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid short value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
 
                 context("retrieving the value as a byte") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toByte() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid byte value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toByte() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid byte value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
@@ -166,7 +173,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toDouble()
 
                     it("converts it to the expected double") {
-                        expect(result).toEqual(expectedResult)
+                        result shouldBe expectedResult
                     }
                 }
             }
@@ -200,7 +207,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toFloat()
 
                     it("converts it to the expected float") {
-                        expect(result).toEqual(expectedResult)
+                        result shouldBe expectedResult
                     }
                 }
             }
@@ -222,24 +229,28 @@ object YamlScalarTest : Spek({
 
                 context("retrieving the value as a float") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toFloat() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid floating point value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toFloat() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid floating point value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
 
                 context("retrieving the value as a double") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toDouble() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid floating point value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toDouble() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid floating point value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
@@ -261,7 +272,7 @@ object YamlScalarTest : Spek({
                     val result = scalar.toBoolean()
 
                     it("converts it to the expected value") {
-                        expect(result).toEqual(expectedValue)
+                        result shouldBe expectedValue
                     }
                 }
             }
@@ -273,12 +284,14 @@ object YamlScalarTest : Spek({
 
             context("retrieving the value as a boolean") {
                 it("throws an appropriate exception") {
-                    expect({ scalar.toBoolean() }).toThrow<YamlScalarFormatException> {
-                        message { toEqual("Value 'nonsense' is not a valid boolean, permitted choices are: true or false") }
-                        line { toEqual(2) }
-                        column { toEqual(4) }
-                        path { toEqual(path) }
-                        originalValue { toEqual("nonsense") }
+                    val exception = shouldThrow<YamlScalarFormatException> { scalar.toBoolean() }
+
+                    exception.asClue {
+                        it.message shouldBe "Value 'nonsense' is not a valid boolean, permitted choices are: true or false"
+                        it.line shouldBe 2
+                        it.column shouldBe 4
+                        it.path shouldBe path
+                        it.originalValue shouldBe "nonsense"
                     }
                 }
             }
@@ -291,7 +304,7 @@ object YamlScalarTest : Spek({
                 val result = scalar.toChar()
 
                 it("converts it to the expected value") {
-                    expect(result).toEqual('b')
+                    result shouldBe 'b'
                 }
             }
         }
@@ -306,12 +319,14 @@ object YamlScalarTest : Spek({
 
                 context("retrieving the value as a character value") {
                     it("throws an appropriate exception") {
-                        expect({ scalar.toChar() }).toThrow<YamlScalarFormatException> {
-                            message { toEqual("Value '$content' is not a valid character value.") }
-                            line { toEqual(2) }
-                            column { toEqual(4) }
-                            path { toEqual(path) }
-                            originalValue { toEqual(content) }
+                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toChar() }
+
+                        exception.asClue {
+                            it.message shouldBe "Value '$content' is not a valid character value."
+                            it.line shouldBe 2
+                            it.column shouldBe 4
+                            it.path shouldBe path
+                            it.originalValue shouldBe content
                         }
                     }
                 }
@@ -324,13 +339,13 @@ object YamlScalarTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    expect(scalar.equivalentContentTo(scalar)).toEqual(true)
+                    scalar.equivalentContentTo(scalar) shouldBe true
                 }
             }
 
             context("comparing it to another scalar with the same content and path") {
                 it("indicates that they are equivalent") {
-                    expect(scalar.equivalentContentTo(YamlScalar("some content", path))).toEqual(true)
+                    scalar.equivalentContentTo(YamlScalar("some content", path)) shouldBe true
                 }
             }
 
@@ -338,38 +353,38 @@ object YamlScalarTest : Spek({
                 val otherPath = YamlPath.root.withListEntry(1, Location(2, 4))
 
                 it("indicates that they are equivalent") {
-                    expect(scalar.equivalentContentTo(YamlScalar("some content", otherPath))).toEqual(true)
+                    scalar.equivalentContentTo(YamlScalar("some content", otherPath)) shouldBe true
                 }
             }
 
             context("comparing it to another scalar with the same path but different content") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlScalar("some other content", path))).toEqual(false)
+                    scalar.equivalentContentTo(YamlScalar("some other content", path)) shouldBe false
                 }
             }
 
             context("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlNull(path))).toEqual(false)
+                    scalar.equivalentContentTo(YamlNull(path)) shouldBe false
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlList(emptyList(), path))).toEqual(false)
+                    scalar.equivalentContentTo(YamlList(emptyList(), path)) shouldBe false
                 }
             }
 
             context("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    expect(scalar.equivalentContentTo(YamlMap(emptyMap(), path))).toEqual(false)
+                    scalar.equivalentContentTo(YamlMap(emptyMap(), path)) shouldBe false
                 }
             }
         }
 
         describe("converting the content to a human-readable string") {
             it("returns the content surrounded by single quotes") {
-                expect(YamlScalar("thing", YamlPath.root).contentToString()).toEqual("'thing'")
+                YamlScalar("thing", YamlPath.root).contentToString() shouldBe "'thing'"
             }
         }
 
@@ -378,7 +393,7 @@ object YamlScalarTest : Spek({
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
 
             it("returns a scalar value with the provided path") {
-                expect(original.withPath(newPath)).toEqual(YamlScalar("abc123", newPath))
+                original.withPath(newPath) shouldBe YamlScalar("abc123", newPath)
             }
         }
 
@@ -387,7 +402,7 @@ object YamlScalarTest : Spek({
             val value = YamlScalar("hello world", path)
 
             it("returns a human-readable description of itself") {
-                expect(value.toString()).toEqual("scalar @ $path : hello world")
+                value.toString() shouldBe "scalar @ $path : hello world"
             }
         }
     }

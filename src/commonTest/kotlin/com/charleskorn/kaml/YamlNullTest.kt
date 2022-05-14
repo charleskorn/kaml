@@ -18,8 +18,7 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.matchers.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -30,13 +29,13 @@ object YamlNullTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    expect(nullValue.equivalentContentTo(nullValue)).toEqual(true)
+                    nullValue.equivalentContentTo(nullValue) shouldBe true
                 }
             }
 
             context("comparing it to another null value with the same path") {
                 it("indicates that they are equivalent") {
-                    expect(nullValue.equivalentContentTo(YamlNull(nullValue.path))).toEqual(true)
+                    nullValue.equivalentContentTo(YamlNull(nullValue.path)) shouldBe true
                 }
             }
 
@@ -44,32 +43,32 @@ object YamlNullTest : Spek({
                 val path = YamlPath.root.withListEntry(0, Location(2, 4))
 
                 it("indicates that they are equivalent") {
-                    expect(nullValue.equivalentContentTo(YamlNull(path))).toEqual(true)
+                    nullValue.equivalentContentTo(YamlNull(path)) shouldBe true
                 }
             }
 
             context("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    expect(nullValue.equivalentContentTo(YamlScalar("some content", nullValue.path))).toEqual(false)
+                    nullValue.equivalentContentTo(YamlScalar("some content", nullValue.path)) shouldBe false
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    expect(nullValue.equivalentContentTo(YamlList(emptyList(), nullValue.path))).toEqual(false)
+                    nullValue.equivalentContentTo(YamlList(emptyList(), nullValue.path)) shouldBe false
                 }
             }
 
             context("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    expect(nullValue.equivalentContentTo(YamlMap(emptyMap(), nullValue.path))).toEqual(false)
+                    nullValue.equivalentContentTo(YamlMap(emptyMap(), nullValue.path)) shouldBe false
                 }
             }
         }
 
         describe("converting the content to a human-readable string") {
             it("always returns the value 'null'") {
-                expect(YamlNull(YamlPath.root).contentToString()).toEqual("null")
+                YamlNull(YamlPath.root).contentToString() shouldBe "null"
             }
         }
 
@@ -78,7 +77,7 @@ object YamlNullTest : Spek({
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
 
             it("returns a null value with the provided path") {
-                expect(original.withPath(newPath)).toEqual(YamlNull(newPath))
+                original.withPath(newPath) shouldBe YamlNull(newPath)
             }
         }
 
@@ -87,7 +86,7 @@ object YamlNullTest : Spek({
             val value = YamlNull(path)
 
             it("returns a human-readable description of itself") {
-                expect(value.toString()).toEqual("null @ $path")
+                value.toString() shouldBe "null @ $path"
             }
         }
     }

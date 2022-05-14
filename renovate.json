@@ -16,11 +16,6 @@
   "digest": { "enabled": false },
   "packageRules": [
     {
-      "groupName": "Atrium",
-      "matchPackagePatterns": ["^ch\\.tutteli\\.atrium:"],
-      "matchDatasources": ["maven"]
-    },
-    {
       "groupName": "Spek",
       "matchPackagePatterns": ["^org\\.spekframework\\.spek2:"],
       "matchDatasources": ["maven"]

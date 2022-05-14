@@ -18,11 +18,10 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.message
-import ch.tutteli.atrium.api.fluent.en_GB.notToThrow
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.fluent.en_GB.toThrow
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.assertions.asClue
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -37,24 +36,24 @@ object YamlMapTest : Spek({
 
             context("creating an empty map") {
                 it("does not throw an exception") {
-                    expect({ YamlMap(emptyMap(), mapPath) }).notToThrow()
+                    shouldNotThrowAny { YamlMap(emptyMap(), mapPath) }
                 }
             }
 
             context("creating a map with a single entry") {
                 it("does not throw an exception") {
-                    expect({
+                    shouldNotThrowAny {
                         YamlMap(
                             mapOf(YamlScalar("key", key1Path) to YamlScalar("value", key1ValuePath)),
                             mapPath
                         )
-                    }).notToThrow()
+                    }
                 }
             }
 
             context("creating a map with two entries, each with unique keys") {
                 it("does not throw an exception") {
-                    expect({
+                    shouldNotThrowAny {
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
@@ -62,13 +61,13 @@ object YamlMapTest : Spek({
                             ),
                             mapPath
                         )
-                    }).notToThrow()
+                    }
                 }
             }
 
             context("creating a map with two entries with the same key") {
                 it("throws an appropriate exception") {
-                    expect({
+                    val exception = shouldThrow<DuplicateKeyException> {
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
@@ -76,16 +75,18 @@ object YamlMapTest : Spek({
                             ),
                             mapPath
                         )
-                    }).toThrow<DuplicateKeyException> {
-                        message { toEqual("Duplicate key 'key1'. It was previously given at line 4, column 1.") }
-                        line { toEqual(6) }
-                        column { toEqual(1) }
-                        path { toEqual(key2Path) }
-                        originalLocation { toEqual(Location(4, 1)) }
-                        originalPath { toEqual(key1Path) }
-                        duplicateLocation { toEqual(Location(6, 1)) }
-                        duplicatePath { toEqual(key2Path) }
-                        key { toEqual("'key1'") }
+                    }
+
+                    exception.asClue {
+                        it.message shouldBe "Duplicate key 'key1'. It was previously given at line 4, column 1."
+                        it.line shouldBe 6
+                        it.column shouldBe 1
+                        it.path shouldBe key2Path
+                        it.originalLocation shouldBe Location(4, 1)
+                        it.originalPath shouldBe key1Path
+                        it.duplicateLocation shouldBe Location(6, 1)
+                        it.duplicatePath shouldBe key2Path
+                        it.key shouldBe "'key1'"
                     }
                 }
             }
@@ -108,85 +109,79 @@ object YamlMapTest : Spek({
 
             context("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    expect(map.equivalentContentTo(map)).toEqual(true)
+                    map.equivalentContentTo(map) shouldBe true
                 }
             }
 
             context("comparing it to another map with the same items in the same order with a different path") {
                 it("indicates that they are equivalent") {
-                    expect(map.equivalentContentTo(YamlMap(map.entries, YamlPath.root.withListEntry(0, Location(3, 4))))).toEqual(true)
+                    map.equivalentContentTo(YamlMap(map.entries, YamlPath.root.withListEntry(0, Location(3, 4)))) shouldBe true
                 }
             }
 
             context("comparing it to another map with the same items in a different order with the same path") {
                 it("indicates that they are equivalent") {
-                    expect(
-                        map.equivalentContentTo(
-                            YamlMap(
-                                mapOf(
-                                    YamlScalar("key2", key1Path) to YamlScalar("item 2", key1ValuePath),
-                                    YamlScalar("key1", key2Path) to YamlScalar("item 1", key2ValuePath)
-                                ),
-                                mapPath
-                            )
+                    map.equivalentContentTo(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar("key2", key1Path) to YamlScalar("item 2", key1ValuePath),
+                                YamlScalar("key1", key2Path) to YamlScalar("item 1", key2ValuePath)
+                            ),
+                            mapPath
                         )
-                    ).toEqual(true)
+                    ) shouldBe true
                 }
             }
 
             context("comparing it to another map with different keys with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(
-                        map.equivalentContentTo(
-                            YamlMap(
-                                mapOf(
-                                    YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
-                                    YamlScalar("key3", key2Path) to YamlScalar("item 2", key2ValuePath)
-                                ),
-                                mapPath
-                            )
+                    map.equivalentContentTo(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
+                                YamlScalar("key3", key2Path) to YamlScalar("item 2", key2ValuePath)
+                            ),
+                            mapPath
                         )
-                    ).toEqual(false)
+                    ) shouldBe false
                 }
             }
 
             context("comparing it to another map with different values with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(
-                        map.equivalentContentTo(
-                            YamlMap(
-                                mapOf(
-                                    YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
-                                    YamlScalar("key2", key2Path) to YamlScalar("item 3", key2ValuePath)
-                                ),
-                                mapPath
-                            )
+                    map.equivalentContentTo(
+                        YamlMap(
+                            mapOf(
+                                YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
+                                YamlScalar("key2", key2Path) to YamlScalar("item 3", key2ValuePath)
+                            ),
+                            mapPath
                         )
-                    ).toEqual(false)
+                    ) shouldBe false
                 }
             }
 
             context("comparing it to another map with different items with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlMap(emptyMap(), map.path))).toEqual(false)
+                    map.equivalentContentTo(YamlMap(emptyMap(), map.path)) shouldBe false
                 }
             }
 
             context("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlScalar("some content", map.path))).toEqual(false)
+                    map.equivalentContentTo(YamlScalar("some content", map.path)) shouldBe false
                 }
             }
 
             context("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlNull(map.path))).toEqual(false)
+                    map.equivalentContentTo(YamlNull(map.path)) shouldBe false
                 }
             }
 
             context("comparing it to a list") {
                 it("indicates that they are not equivalent") {
-                    expect(map.equivalentContentTo(YamlList(emptyList(), map.path))).toEqual(false)
+                    map.equivalentContentTo(YamlList(emptyList(), map.path)) shouldBe false
                 }
             }
         }
@@ -201,7 +196,7 @@ object YamlMapTest : Spek({
                 val map = YamlMap(emptyMap(), YamlPath.root)
 
                 it("returns empty curly brackets") {
-                    expect(map.contentToString()).toEqual("{}")
+                    map.contentToString() shouldBe "{}"
                 }
             }
 
@@ -214,7 +209,7 @@ object YamlMapTest : Spek({
                 )
 
                 it("returns that item surrounded by curly brackets") {
-                    expect(map.contentToString()).toEqual("{'hello': 'world'}")
+                    map.contentToString() shouldBe "{'hello': 'world'}"
                 }
             }
 
@@ -228,7 +223,7 @@ object YamlMapTest : Spek({
                 )
 
                 it("returns all items separated by commas and surrounded by curly brackets") {
-                    expect(map.contentToString()).toEqual("{'hello': 'world', 'also': 'thanks'}")
+                    map.contentToString() shouldBe "{'hello': 'world', 'also': 'thanks'}"
                 }
             }
         }
@@ -249,13 +244,13 @@ object YamlMapTest : Spek({
 
             context("the key is not in the map") {
                 it("returns null") {
-                    expect(map.get<YamlScalar>("something else")).toEqual(null)
+                    map.get<YamlScalar>("something else") shouldBe null
                 }
             }
 
             context("the key is in the map") {
                 it("returns the value for that key") {
-                    expect(map.get<YamlScalar>("hello")).toEqual(YamlScalar("world", helloValuePath))
+                    map.get<YamlScalar>("hello") shouldBe YamlScalar("world", helloValuePath)
                 }
             }
         }
@@ -277,23 +272,25 @@ object YamlMapTest : Spek({
 
             context("the key is not in the map") {
                 it("returns null") {
-                    expect(map.getScalar("something else")).toEqual(null)
+                    map.getScalar("something else") shouldBe null
                 }
             }
 
             context("the key is in the map and has a scalar value") {
                 it("returns the value for that key") {
-                    expect(map.getScalar("hello")).toEqual(YamlScalar("world", helloValuePath))
+                    map.getScalar("hello") shouldBe YamlScalar("world", helloValuePath)
                 }
             }
 
             context("the key is in the map but does not have a scalar value") {
                 it("returns the value for that key") {
-                    expect { map.getScalar("also") }.toThrow<IncorrectTypeException> {
-                        message { toEqual("Value for 'also' is not a scalar.") }
-                        line { toEqual(4) }
-                        column { toEqual(1) }
-                        path { toEqual(alsoValuePath) }
+                    val exception = shouldThrow<IncorrectTypeException> { map.getScalar("also") }
+
+                    exception.asClue {
+                        it.message shouldBe "Value for 'also' is not a scalar."
+                        it.line shouldBe 4
+                        it.column shouldBe 1
+                        it.path shouldBe alsoValuePath
                     }
                 }
             }
@@ -315,13 +312,13 @@ object YamlMapTest : Spek({
 
             context("the key is not in the map") {
                 it("returns null") {
-                    expect(map.getKey("something else")).toEqual(null)
+                    map.getKey("something else") shouldBe null
                 }
             }
 
             context("the key is in the map") {
                 it("returns the node for that key") {
-                    expect(map.getKey("hello")).toEqual(YamlScalar("hello", helloKeyPath))
+                    map.getKey("hello") shouldBe YamlScalar("hello", helloKeyPath)
                 }
             }
         }
@@ -356,7 +353,7 @@ object YamlMapTest : Spek({
             )
 
             it("returns a new map node with the path for the node and its keys and values updated to the new path") {
-                expect(original.withPath(newPath)).toEqual(expected)
+                original.withPath(newPath) shouldBe expected
             }
         }
 
@@ -372,7 +369,7 @@ object YamlMapTest : Spek({
             )
 
             it("returns a human-readable description of itself") {
-                expect(value.toString()).toEqual(
+                value.toString() shouldBe
                     """
                         map @ $path (size: 1)
                         - key:
@@ -380,7 +377,6 @@ object YamlMapTest : Spek({
                           value:
                             scalar @ $valuePath : some value
                     """.trimIndent()
-                )
             }
         }
     }

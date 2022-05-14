@@ -18,8 +18,7 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -32,7 +31,7 @@ object JvmYamlWritingTest : Spek({
                 val output = ByteArrayOutputStream()
                 Yaml.default.encodeToStream(String.serializer(), "hello world", output)
 
-                expect(output.toString(Charsets.UTF_8)).toEqual("\"hello world\"\n")
+                output.toString(Charsets.UTF_8) shouldBe "\"hello world\"\n"
             }
 
             it("should support block literal style output for multiline strings when configured") {
@@ -46,7 +45,7 @@ object JvmYamlWritingTest : Spek({
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
 
-                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                    output.toString(Charsets.UTF_8) shouldBe
                         """
                            |
                              hello
@@ -54,7 +53,6 @@ object JvmYamlWritingTest : Spek({
                              how are | you?
 
                         """.trimIndent()
-                    )
                 }
 
                 with(
@@ -66,11 +64,10 @@ object JvmYamlWritingTest : Spek({
                 ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
-                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                    output.toString(Charsets.UTF_8) shouldBe
                         """|"hello\nworld\nhow are | you?\n"
                            |
                         """.trimMargin()
-                    )
                 }
             }
 
@@ -85,11 +82,10 @@ object JvmYamlWritingTest : Spek({
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
 
-                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                    output.toString(Charsets.UTF_8) shouldBe
                         """|'hello, world'
                            |
                         """.trimMargin()
-                    )
                 }
 
                 with(
@@ -102,11 +98,10 @@ object JvmYamlWritingTest : Spek({
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
 
-                    expect(output.toString(Charsets.UTF_8)).toEqual(
+                    output.toString(Charsets.UTF_8) shouldBe
                         """|"hello, world"
                            |
                         """.trimMargin()
-                    )
                 }
             }
         }
@@ -116,7 +111,7 @@ object JvmYamlWritingTest : Spek({
             Yaml.default.encodeToStream<String>("hello world", output)
 
             it("returns the value serialized in the expected YAML form") {
-                expect(output.toString(Charsets.UTF_8)).toEqual("\"hello world\"\n")
+                output.toString(Charsets.UTF_8) shouldBe "\"hello world\"\n"
             }
         }
     }

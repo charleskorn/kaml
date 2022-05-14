@@ -18,8 +18,7 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.matchers.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -36,43 +35,43 @@ object YamlListTest : Spek({
 
             describe("comparing it to the same instance") {
                 it("indicates that they are equivalent") {
-                    expect(list.equivalentContentTo(list)).toEqual(true)
+                    list.equivalentContentTo(list) shouldBe true
                 }
             }
 
             describe("comparing it to another list with the same items in the same order with a different path") {
                 it("indicates that they are equivalent") {
-                    expect(list.equivalentContentTo(YamlList(list.items, YamlPath.root.withMapElementValue(Location(5, 6))))).toEqual(true)
+                    list.equivalentContentTo(YamlList(list.items, YamlPath.root.withMapElementValue(Location(5, 6)))) shouldBe true
                 }
             }
 
             describe("comparing it to another list with the same items in a different order with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlList(list.items.reversed(), list.path))).toEqual(false)
+                    list.equivalentContentTo(YamlList(list.items.reversed(), list.path)) shouldBe false
                 }
             }
 
             describe("comparing it to another list with different items with the same path") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlList(emptyList(), list.path))).toEqual(false)
+                    list.equivalentContentTo(YamlList(emptyList(), list.path)) shouldBe false
                 }
             }
 
             describe("comparing it to a scalar value") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlScalar("some content", list.path))).toEqual(false)
+                    list.equivalentContentTo(YamlScalar("some content", list.path)) shouldBe false
                 }
             }
 
             describe("comparing it to a null value") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlNull(list.path))).toEqual(false)
+                    list.equivalentContentTo(YamlNull(list.path)) shouldBe false
                 }
             }
 
             describe("comparing it to a map") {
                 it("indicates that they are not equivalent") {
-                    expect(list.equivalentContentTo(YamlMap(emptyMap(), list.path))).toEqual(false)
+                    list.equivalentContentTo(YamlMap(emptyMap(), list.path)) shouldBe false
                 }
             }
         }
@@ -82,7 +81,7 @@ object YamlListTest : Spek({
                 val list = YamlList(emptyList(), YamlPath.root)
 
                 it("returns empty square brackets") {
-                    expect(list.contentToString()).toEqual("[]")
+                    list.contentToString() shouldBe "[]"
                 }
             }
 
@@ -90,7 +89,7 @@ object YamlListTest : Spek({
                 val list = YamlList(listOf(YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1)))), YamlPath.root)
 
                 it("returns that item surrounded by square brackets") {
-                    expect(list.contentToString()).toEqual("['hello']")
+                    list.contentToString() shouldBe "['hello']"
                 }
             }
 
@@ -104,7 +103,7 @@ object YamlListTest : Spek({
                 )
 
                 it("returns all items separated by commas and surrounded by square brackets") {
-                    expect(list.contentToString()).toEqual("['hello', 'world']")
+                    list.contentToString() shouldBe "['hello', 'world']"
                 }
             }
         }
@@ -129,7 +128,7 @@ object YamlListTest : Spek({
             )
 
             it("returns a new list node with the path for the node and its items updated to the new path") {
-                expect(original.withPath(newPath)).toEqual(expected)
+                original.withPath(newPath) shouldBe expected
             }
         }
 
@@ -139,13 +138,12 @@ object YamlListTest : Spek({
             val value = YamlList(listOf(YamlScalar("hello", elementPath)), path)
 
             it("returns a human-readable description of itself") {
-                expect(value.toString()).toEqual(
+                value.toString() shouldBe
                     """
                         list @ $path (size: 1)
                         - item 0:
                           scalar @ $elementPath : hello
                     """.trimIndent()
-                )
             }
         }
     }

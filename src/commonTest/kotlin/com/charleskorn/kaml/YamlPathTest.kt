@@ -18,11 +18,10 @@
 
 package com.charleskorn.kaml
 
-import ch.tutteli.atrium.api.fluent.en_GB.message
-import ch.tutteli.atrium.api.fluent.en_GB.notToThrow
-import ch.tutteli.atrium.api.fluent.en_GB.toEqual
-import ch.tutteli.atrium.api.fluent.en_GB.toThrow
-import ch.tutteli.atrium.api.verbs.expect
+import io.kotest.assertions.asClue
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
@@ -31,49 +30,53 @@ object YamlPathTest : Spek({
         describe("creating a path") {
             describe("given an empty list of segments") {
                 it("throws an exception") {
-                    expect { YamlPath(emptyList()) }
-                        .toThrow<IllegalArgumentException> {
-                            message { toEqual("Path must contain at least one segment.") }
-                        }
+                    val exception = shouldThrow<IllegalArgumentException> { YamlPath(emptyList()) }
+
+                    exception.asClue {
+                        it.message shouldBe "Path must contain at least one segment."
+                    }
                 }
             }
 
             describe("given a list of segments where the first element is the root element") {
                 it("does not throw an exception") {
-                    expect { YamlPath(YamlPathSegment.Root) }.notToThrow()
+                    shouldNotThrowAny { YamlPath(YamlPathSegment.Root) }
                 }
             }
 
             describe("given a list of segments where the first element is an alias definition") {
                 it("does not throw an exception") {
-                    expect { YamlPath(YamlPathSegment.AliasDefinition("blah", Location(2, 3))) }.notToThrow()
+                    shouldNotThrowAny { YamlPath(YamlPathSegment.AliasDefinition("blah", Location(2, 3))) }
                 }
             }
 
             describe("given a list of segments where the first element is not the root element or an alias definition") {
                 it("throws an exception") {
-                    expect { YamlPath(YamlPathSegment.Error(Location(1, 2))) }
-                        .toThrow<IllegalArgumentException> {
-                            message { toEqual("First element of path must be root segment or alias definition.") }
-                        }
+                    val exception = shouldThrow<IllegalArgumentException> { YamlPath(YamlPathSegment.Error(Location(1, 2))) }
+
+                    exception.asClue {
+                        it.message shouldBe "First element of path must be root segment or alias definition."
+                    }
                 }
             }
 
             describe("given a list of segments where the root element appears but not as the first element") {
                 it("throws an exception") {
-                    expect { YamlPath(YamlPathSegment.Error(Location(1, 2)), YamlPathSegment.Root) }
-                        .toThrow<IllegalArgumentException> {
-                            message { toEqual("First element of path must be root segment or alias definition.") }
-                        }
+                    val exception = shouldThrow<IllegalArgumentException> { YamlPath(YamlPathSegment.Error(Location(1, 2)), YamlPathSegment.Root) }
+
+                    exception.asClue {
+                        it.message shouldBe "First element of path must be root segment or alias definition."
+                    }
                 }
             }
 
             describe("given a list of segments where the root element appears multiple times") {
                 it("throws an exception") {
-                    expect { YamlPath(YamlPathSegment.Root, YamlPathSegment.Error(Location(1, 2)), YamlPathSegment.Root) }
-                        .toThrow<IllegalArgumentException> {
-                            message { toEqual("Root segment can only be first element of path.") }
-                        }
+                    val exception = shouldThrow<IllegalArgumentException> { YamlPath(YamlPathSegment.Root, YamlPathSegment.Error(Location(1, 2)), YamlPathSegment.Root) }
+
+                    exception.asClue {
+                        it.message shouldBe "Root segment can only be first element of path."
+                    }
                 }
             }
         }
@@ -83,7 +86,7 @@ object YamlPathTest : Spek({
                 val path = YamlPath(YamlPathSegment.Root)
 
                 it("returns the first character of the document") {
-                    expect(path.endLocation).toEqual(Location(1, 1))
+                    path.endLocation shouldBe Location(1, 1)
                 }
             }
 
@@ -95,7 +98,7 @@ object YamlPathTest : Spek({
                 )
 
                 it("returns the location of the last element of the path") {
-                    expect(path.endLocation).toEqual(Location(5, 6))
+                    path.endLocation shouldBe Location(5, 6)
                 }
             }
         }
@@ -105,7 +108,7 @@ object YamlPathTest : Spek({
                 val path = YamlPath.root
 
                 it("returns a description of the root element") {
-                    expect(path.toHumanReadableString()).toEqual("<root>")
+                    path.toHumanReadableString() shouldBe "<root>"
                 }
             }
 
@@ -114,7 +117,7 @@ object YamlPathTest : Spek({
                     .withError(Location(2, 3))
 
                 it("returns a description of the root element") {
-                    expect(path.toHumanReadableString()).toEqual("<root>")
+                    path.toHumanReadableString() shouldBe "<root>"
                 }
             }
 
@@ -124,7 +127,7 @@ object YamlPathTest : Spek({
                     .withError(Location(2, 3))
 
                 it("returns a description of the parent of the error") {
-                    expect(path.toHumanReadableString()).toEqual("[2]")
+                    path.toHumanReadableString() shouldBe "[2]"
                 }
             }
 
@@ -133,7 +136,7 @@ object YamlPathTest : Spek({
                     .withListEntry(2, Location(2, 3))
 
                 it("returns a description of the list entry") {
-                    expect(path.toHumanReadableString()).toEqual("[2]")
+                    path.toHumanReadableString() shouldBe "[2]"
                 }
             }
 
@@ -142,7 +145,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("colour", Location(2, 3))
 
                 it("returns a description of the map key") {
-                    expect(path.toHumanReadableString()).toEqual("colour")
+                    path.toHumanReadableString() shouldBe "colour"
                 }
             }
 
@@ -152,7 +155,7 @@ object YamlPathTest : Spek({
                     .withMapElementValue(Location(2, 11))
 
                 it("returns a description of the map key") {
-                    expect(path.toHumanReadableString()).toEqual("colour")
+                    path.toHumanReadableString() shouldBe "colour"
                 }
             }
 
@@ -163,7 +166,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("brightness", Location(3, 5))
 
                 it("returns a description of the nested map key") {
-                    expect(path.toHumanReadableString()).toEqual("colour.brightness")
+                    path.toHumanReadableString() shouldBe "colour.brightness"
                 }
             }
 
@@ -173,7 +176,7 @@ object YamlPathTest : Spek({
                     .withListEntry(4, Location(3, 5))
 
                 it("returns a description of the nested list entry") {
-                    expect(path.toHumanReadableString()).toEqual("[1][4]")
+                    path.toHumanReadableString() shouldBe "[1][4]"
                 }
             }
 
@@ -183,7 +186,7 @@ object YamlPathTest : Spek({
                     .withListEntry(4, Location(3, 5))
 
                 it("returns a description of the nested list entry") {
-                    expect(path.toHumanReadableString()).toEqual("colours[4]")
+                    path.toHumanReadableString() shouldBe "colours[4]"
                 }
             }
 
@@ -193,7 +196,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("colour", Location(3, 5))
 
                 it("returns a description of the nested object key") {
-                    expect(path.toHumanReadableString()).toEqual("[1].colour")
+                    path.toHumanReadableString() shouldBe "[1].colour"
                 }
             }
 
@@ -202,7 +205,7 @@ object YamlPathTest : Spek({
                     .withAliasReference("blue", Location(2, 3))
 
                 it("returns a description of the alias reference") {
-                    expect(path.toHumanReadableString()).toEqual("->&blue")
+                    path.toHumanReadableString() shouldBe "->&blue"
                 }
             }
 
@@ -212,7 +215,7 @@ object YamlPathTest : Spek({
                     .withAliasReference("blue", Location(3, 7))
 
                 it("returns a description of the nested alias reference") {
-                    expect(path.toHumanReadableString()).toEqual("colour->&blue")
+                    path.toHumanReadableString() shouldBe "colour->&blue"
                 }
             }
 
@@ -223,7 +226,7 @@ object YamlPathTest : Spek({
                     .withAliasReference("blue", Location(3, 7))
 
                 it("returns a description of the nested alias reference") {
-                    expect(path.toHumanReadableString()).toEqual("colours[4]->&blue")
+                    path.toHumanReadableString() shouldBe "colours[4]->&blue"
                 }
             }
 
@@ -233,7 +236,7 @@ object YamlPathTest : Spek({
                     .withAliasDefinition("blue", Location(1, 2))
 
                 it("returns a description of the alias reference") {
-                    expect(path.toHumanReadableString()).toEqual("->&blue")
+                    path.toHumanReadableString() shouldBe "->&blue"
                 }
             }
 
@@ -244,7 +247,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("saturation", Location(1, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toHumanReadableString()).toEqual("->&blue.saturation")
+                    path.toHumanReadableString() shouldBe "->&blue.saturation"
                 }
             }
 
@@ -255,7 +258,7 @@ object YamlPathTest : Spek({
                     .withListEntry(3, Location(1, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toHumanReadableString()).toEqual("->&blue[3]")
+                    path.toHumanReadableString() shouldBe "->&blue[3]"
                 }
             }
 
@@ -265,7 +268,7 @@ object YamlPathTest : Spek({
                     .withMerge(Location(4, 5))
 
                 it("returns a description of the object") {
-                    expect(path.toHumanReadableString()).toEqual("colour>>(merged)")
+                    path.toHumanReadableString() shouldBe "colour>>(merged)"
                 }
             }
 
@@ -277,7 +280,7 @@ object YamlPathTest : Spek({
                     .withListEntry(1, Location(4, 10))
 
                 it("returns a description of the object") {
-                    expect(path.toHumanReadableString()).toEqual("colour>>(merged entry 1)")
+                    path.toHumanReadableString() shouldBe "colour>>(merged entry 1)"
                 }
             }
 
@@ -288,7 +291,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("saturation", Location(4, 7))
 
                 it("returns a description of the element key") {
-                    expect(path.toHumanReadableString()).toEqual("colour>>(merged).saturation")
+                    path.toHumanReadableString() shouldBe "colour>>(merged).saturation"
                 }
             }
 
@@ -301,7 +304,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("saturation", Location(11, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toHumanReadableString()).toEqual("colour>>(merged &blue).saturation")
+                    path.toHumanReadableString() shouldBe "colour>>(merged &blue).saturation"
                 }
             }
 
@@ -316,7 +319,7 @@ object YamlPathTest : Spek({
                     .withMapElementKey("saturation", Location(11, 5))
 
                 it("returns a description of the element key") {
-                    expect(path.toHumanReadableString()).toEqual("colour>>(merged entry 1 &green).saturation")
+                    path.toHumanReadableString() shouldBe "colour>>(merged entry 1 &green).saturation"
                 }
             }
         }
