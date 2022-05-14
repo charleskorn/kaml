@@ -18,11 +18,10 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlNullTest : Spek({
+class YamlNullTest : DescribeSpec({
     describe("a YAML null value") {
         describe("testing equivalence") {
             val nullValue = YamlNull(YamlPath.root)

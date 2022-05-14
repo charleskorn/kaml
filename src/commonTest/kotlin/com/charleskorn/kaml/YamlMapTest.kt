@@ -21,11 +21,10 @@ package com.charleskorn.kaml
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlMapTest : Spek({
+class YamlMapTest : DescribeSpec({
     describe("a YAML map") {
         describe("creating an instance") {
             val mapPath = YamlPath.root

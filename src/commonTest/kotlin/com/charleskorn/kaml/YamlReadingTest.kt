@@ -35,6 +35,7 @@ import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.Contextual
@@ -57,11 +58,9 @@ import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.serializersModuleOf
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import kotlin.jvm.JvmInline
 
-object YamlReadingTest : Spek({
+class YamlReadingTest : DescribeSpec({
     describe("a YAML parser") {
         describe("parsing scalars") {
             context("given the input 'hello'") {
@@ -1604,7 +1603,7 @@ object YamlReadingTest : Spek({
                     "a map" to "{}",
                     "a null value" to "null",
                     "a tagged value" to "!<tag> sealedString"
-                ).forEach { description, value ->
+                ).forEach { (description, value) ->
                     context("given some input with a type property that is $description") {
                         val input = """
                             type: $value
@@ -1814,7 +1813,7 @@ object YamlReadingTest : Spek({
                     "a map" to "{}",
                     "a null value" to "null",
                     "a tagged value" to "!<tag> sealedString"
-                ).forEach { description, value ->
+                ).forEach { (description, value) ->
                     context("given some input with a type property that is $description") {
                         val input = """
                             kind: $value

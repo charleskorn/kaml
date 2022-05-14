@@ -21,11 +21,10 @@ package com.charleskorn.kaml
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlPathTest : Spek({
+class YamlPathTest : DescribeSpec({
     describe("a YAML path") {
         describe("creating a path") {
             describe("given an empty list of segments") {

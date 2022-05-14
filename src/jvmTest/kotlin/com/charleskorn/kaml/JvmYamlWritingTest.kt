@@ -18,13 +18,12 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.ByteArrayOutputStream
 
-object JvmYamlWritingTest : Spek({
+class JvmYamlWritingTest : DescribeSpec({
     describe("JVM-specific extensions for YAML writing") {
         describe("writing to a stream") {
             it("returns the value serialized in the expected YAML form") {

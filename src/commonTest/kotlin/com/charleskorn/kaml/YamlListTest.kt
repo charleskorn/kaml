@@ -18,11 +18,10 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlListTest : Spek({
+class YamlListTest : DescribeSpec({
     describe("a YAML list") {
         describe("testing equivalence") {
             val list = YamlList(

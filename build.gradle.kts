@@ -62,6 +62,8 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation("io.kotest:kotest-assertions-core:5.3.0")
+                implementation("io.kotest:kotest-framework-api:5.3.0")
+                implementation("io.kotest:kotest-framework-engine:5.3.0")
             }
         }
 
@@ -75,8 +77,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("org.spekframework.spek2:spek-dsl-jvm:2.0.18")
-                runtimeOnly("org.spekframework.spek2:spek-runner-junit5:2.0.18")
+                implementation("io.kotest:kotest-runner-junit5:5.3.0")
             }
         }
     }

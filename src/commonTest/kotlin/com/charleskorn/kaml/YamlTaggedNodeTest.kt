@@ -18,11 +18,10 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlTaggedNodeTest : Spek({
+class YamlTaggedNodeTest : DescribeSpec({
     describe("a YAML tagged node") {
         describe("testing equivalence") {
             val tagged = YamlTaggedNode(

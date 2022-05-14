@@ -20,11 +20,10 @@ package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlScalarTest : Spek({
+class YamlScalarTest : DescribeSpec({
     describe("a YAML scalar") {
         mapOf(
             "0" to 0,
@@ -34,7 +33,7 @@ object YamlScalarTest : Spek({
             "-0x11" to -17,
             "0o11" to 9,
             "-0o11" to -9
-        ).forEach { content, expectedValue ->
+        ).forEach { (content, expectedValue) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root)
 
@@ -165,7 +164,7 @@ object YamlScalarTest : Spek({
             "-.inf" to Double.NEGATIVE_INFINITY,
             "-.Inf" to Double.NEGATIVE_INFINITY,
             "-.INF" to Double.NEGATIVE_INFINITY
-        ).forEach { content, expectedResult ->
+        ).forEach { (content, expectedResult) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
@@ -199,7 +198,7 @@ object YamlScalarTest : Spek({
             "-.inf" to Float.NEGATIVE_INFINITY,
             "-.Inf" to Float.NEGATIVE_INFINITY,
             "-.INF" to Float.NEGATIVE_INFINITY
-        ).forEach { content, expectedResult ->
+        ).forEach { (content, expectedResult) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 
@@ -264,7 +263,7 @@ object YamlScalarTest : Spek({
             "false" to false,
             "False" to false,
             "FALSE" to false
-        ).forEach { content, expectedValue ->
+        ).forEach { (content, expectedValue) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
 

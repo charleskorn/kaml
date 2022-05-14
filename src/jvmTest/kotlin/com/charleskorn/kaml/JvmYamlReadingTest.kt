@@ -18,13 +18,12 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.io.ByteArrayInputStream
 
-object JvmYamlReadingTest : Spek({
+class JvmYamlReadingTest : DescribeSpec({
     describe("JVM-specific extensions for YAML reading") {
         describe("parsing from a stream") {
             val input = "123"

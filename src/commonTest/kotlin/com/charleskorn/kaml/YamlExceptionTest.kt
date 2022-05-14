@@ -18,11 +18,10 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlExceptionTest : Spek({
+class YamlExceptionTest : DescribeSpec({
     describe("a YAML exception") {
         describe("formatting it as a string") {
             val path = YamlPath.root.withMapElementKey("colours", Location(3, 4)).withMapElementValue(Location(4, 1)).withListEntry(2, Location(123, 456))

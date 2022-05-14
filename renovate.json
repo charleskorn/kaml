@@ -16,8 +16,8 @@
   "digest": { "enabled": false },
   "packageRules": [
     {
-      "groupName": "Spek",
-      "matchPackagePatterns": ["^org\\.spekframework\\.spek2:"],
+      "groupName": "Kotest",
+      "matchPackagePatterns": ["^io\\.kotest:"],
       "matchDatasources": ["maven"]
     },
     {

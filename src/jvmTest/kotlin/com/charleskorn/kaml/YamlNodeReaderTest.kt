@@ -23,11 +23,10 @@ package com.charleskorn.kaml
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 
-object YamlNodeReaderTest : Spek({
+class YamlNodeReaderTest : DescribeSpec({
     describe("a YAML node reader") {
         mapOf(
             "hello" to "hello",
@@ -744,7 +743,7 @@ object YamlNodeReaderTest : Spek({
             "[]" to "list",
             "{}" to "map",
             "!thing hello" to "tagged value"
-        ).forEach { value, description ->
+        ).forEach { (value, description) ->
             context("given a map with a $description for a key") {
                 val input = """
                     key: value
