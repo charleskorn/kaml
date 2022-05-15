@@ -49,7 +49,7 @@ public actual class Yaml(
     }
 
     private fun <T> decodeFromReader(deserializer: DeserializationStrategy<T>, source: Reader): T {
-        val parser = YamlParser(source)
+        val parser = YamlParser(source, configuration.ignoreEmptyDocument)
         val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix)
         val rootNode = reader.read()
         parser.ensureEndOfStreamReached()

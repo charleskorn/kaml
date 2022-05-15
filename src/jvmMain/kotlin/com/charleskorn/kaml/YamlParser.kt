@@ -26,8 +26,8 @@ import org.snakeyaml.engine.v2.scanner.StreamReader
 import java.io.Reader
 import java.io.StringReader
 
-internal class YamlParser(reader: Reader) {
-    internal constructor(source: String) : this(StringReader(source))
+internal class YamlParser(reader: Reader, ignoreEmptyDocument: Boolean = false) {
+    internal constructor(source: String, ignoreEmptyDocument: Boolean = false) : this(StringReader(source), ignoreEmptyDocument)
 
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
@@ -37,7 +37,7 @@ internal class YamlParser(reader: Reader) {
     init {
         consumeEventOfType(Event.ID.StreamStart, YamlPath.root)
 
-        if (peekEvent(YamlPath.root).eventId == Event.ID.StreamEnd) {
+        if (peekEvent(YamlPath.root).eventId == Event.ID.StreamEnd && !ignoreEmptyDocument) {
             throw EmptyYamlDocumentException("The YAML document is empty.", YamlPath.root)
         }
 
