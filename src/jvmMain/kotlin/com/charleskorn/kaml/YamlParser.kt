@@ -37,7 +37,7 @@ internal class YamlParser(reader: Reader, allowEmptyDocument: Boolean = false) {
     init {
         consumeEventOfType(Event.ID.StreamStart, YamlPath.root)
 
-        if (peekEvent(YamlPath.root).eventId == Event.ID.StreamEnd && !ignoreEmptyDocument) {
+        if (peekEvent(YamlPath.root).eventId == Event.ID.StreamEnd && !allowEmptyDocument) {
             throw EmptyYamlDocumentException("The YAML document is empty.", YamlPath.root)
         }
 
