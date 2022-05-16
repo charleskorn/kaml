@@ -27,7 +27,7 @@ import java.io.Reader
 import java.io.StringReader
 
 internal class YamlParser(reader: Reader, allowEmptyDocument: Boolean = false) {
-    internal constructor(source: String, ignoreEmptyDocument: Boolean = false) : this(StringReader(source), ignoreEmptyDocument)
+    internal constructor(source: String, allowEmptyDocument: Boolean = false) : this(StringReader(source), ignoreEmptyDocument)
 
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
