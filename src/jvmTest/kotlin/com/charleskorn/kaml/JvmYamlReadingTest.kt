@@ -18,6 +18,8 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.assertions.throwables.shouldNotThrowAny
+import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
@@ -40,6 +42,19 @@ class JvmYamlReadingTest : DescribeSpec({
 
             it("successfully deserializes values from a stream") {
                 result shouldBe 123
+            }
+        }
+
+        describe("reading an empty yaml without throwing an error") {
+            val input = ""
+            val bytes = ByteArrayInputStream(input.toByteArray(Charsets.UTF_8))
+
+            it("expect throwing an error because it's an empty document") {
+                shouldThrowExactly<EmptyYamlDocumentException> { Yaml.default.decodeFromStream<String>(bytes) }
+            }
+
+            it("expect ignoring empty document because of configuration") {
+                shouldNotThrowAny { Yaml(configuration = YamlConfiguration(allowReadingEmptyDocument = true)).decodeFromStream<String>(bytes) }
             }
         }
     }
