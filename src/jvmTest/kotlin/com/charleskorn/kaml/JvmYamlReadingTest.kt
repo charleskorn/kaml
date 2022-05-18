@@ -45,16 +45,18 @@ class JvmYamlReadingTest : DescribeSpec({
             }
         }
 
-        describe("reading an empty yaml without throwing an error") {
+        describe("reading an empty yaml without throwing EmptyYamlDocumentException") {
             val input = ""
             val bytes = ByteArrayInputStream(input.toByteArray(Charsets.UTF_8))
 
-            it("expect throwing an error because it's an empty document") {
-                shouldThrowExactly<EmptyYamlDocumentException> { Yaml.default.decodeFromStream<String>(bytes) }
-            }
+            context("empty string reading") {
+                it("expect throwing an error because it's an empty document") {
+                    shouldThrowExactly<EmptyYamlDocumentException> { Yaml.default.decodeFromStream<String>(bytes) }
+                }
 
-            it("expect ignoring empty document because of configuration") {
-                shouldNotThrowAny { Yaml(configuration = YamlConfiguration(allowReadingEmptyDocument = true)).decodeFromStream<String>(bytes) }
+                it("expect ignoring empty document because of configuration") {
+                    shouldNotThrowAny { Yaml(configuration = YamlConfiguration(allowReadingEmptyDocument = true)).decodeFromStream<String>(bytes) }
+                }
             }
         }
     }

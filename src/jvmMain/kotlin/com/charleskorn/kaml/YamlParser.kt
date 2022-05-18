@@ -27,25 +27,37 @@ import java.io.Reader
 import java.io.StringReader
 
 internal class YamlParser(reader: Reader, allowEmptyDocument: Boolean = false) {
-    internal constructor(source: String, allowEmptyDocument: Boolean = false) : this(StringReader(source), allowEmptyDocument)
+    internal constructor(source: String, allowEmptyDocument: Boolean = false) : this(
+        StringReader(source),
+        allowEmptyDocument
+    )
 
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
     private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
+    private var isEmptyAndAllowed = false
 
     init {
         consumeEventOfType(Event.ID.StreamStart, YamlPath.root)
 
-        if (peekEvent(YamlPath.root).eventId == Event.ID.StreamEnd && !allowEmptyDocument) {
-            throw EmptyYamlDocumentException("The YAML document is empty.", YamlPath.root)
+        if (peekEvent(YamlPath.root).eventId == Event.ID.StreamEnd) {
+            if (allowEmptyDocument) {
+                isEmptyAndAllowed = true
+            } else {
+                throw EmptyYamlDocumentException("The YAML document is empty.", YamlPath.root)
+            }
         }
 
-        consumeEventOfType(Event.ID.DocumentStart, YamlPath.root)
+        if (events.hasNext() && peekEvent(YamlPath.root).eventId == Event.ID.DocumentStart) {
+            consumeEventOfType(Event.ID.DocumentStart, YamlPath.root)
+        } else if (!allowEmptyDocument) {
+            throw EmptyYamlDocumentException("The YAML document is empty.", YamlPath.root)
+        }
     }
 
     fun ensureEndOfStreamReached() {
-        consumeEventOfType(Event.ID.DocumentEnd, YamlPath.root)
+        if (!isEmptyAndAllowed) consumeEventOfType(Event.ID.DocumentEnd, YamlPath.root)
         consumeEventOfType(Event.ID.StreamEnd, YamlPath.root)
     }
 
@@ -56,9 +68,14 @@ internal class YamlParser(reader: Reader, allowEmptyDocument: Boolean = false) {
         val event = consumeEvent(path)
 
         if (event.eventId != type) {
-            throw MalformedYamlException("Unexpected ${event.eventId}, expected $type", path.withError(Location(event.startMark.get().line, event.startMark.get().column)))
+            throw MalformedYamlException(
+                "Unexpected ${event.eventId}, expected $type",
+                path.withError(Location(event.startMark.get().line, event.startMark.get().column))
+            )
         }
     }
+
+    fun isLegallyEmpty() = isEmptyAndAllowed
 
     private fun checkEvent(path: YamlPath, retrieve: () -> Event): Event {
         try {
