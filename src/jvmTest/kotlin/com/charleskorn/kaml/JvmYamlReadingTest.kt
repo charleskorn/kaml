@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.testobjects.SimpleStructure
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.DescribeSpec
@@ -48,6 +49,7 @@ class JvmYamlReadingTest : DescribeSpec({
         describe("reading an empty yaml without throwing EmptyYamlDocumentException") {
             val input = ""
             val bytes = ByteArrayInputStream(input.toByteArray(Charsets.UTF_8))
+            val emptyAllowedYaml = Yaml(configuration = YamlConfiguration(allowReadingEmptyDocument = true))
 
             context("empty string reading") {
                 it("expect throwing an error because it's an empty document") {
@@ -55,8 +57,20 @@ class JvmYamlReadingTest : DescribeSpec({
                 }
 
                 it("expect ignoring empty document because of configuration") {
-                    shouldNotThrowAny { Yaml(configuration = YamlConfiguration(allowReadingEmptyDocument = true)).decodeFromStream<String>(bytes) }
+                    shouldNotThrowAny { emptyAllowedYaml.decodeFromStream<String>(bytes) }
                 }
+            }
+
+            it("reading list as empty string") {
+                shouldNotThrowAny { emptyAllowedYaml.decodeFromStream<List<String>>(bytes) }
+            }
+
+            it("reading map as empty string") {
+                shouldNotThrowAny { emptyAllowedYaml.decodeFromStream<Map<String, String>>(bytes) }
+            }
+
+            it("reading an kotlin class as empty string") {
+                shouldNotThrowAny { emptyAllowedYaml.decodeFromStream<SimpleStructure>(bytes) }
             }
         }
     }
