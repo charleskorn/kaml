@@ -19,8 +19,13 @@
 package com.charleskorn.kaml
 
 import org.snakeyaml.engine.v2.common.Anchor
-import org.snakeyaml.engine.v2.events.*
-import java.util.*
+import org.snakeyaml.engine.v2.events.AliasEvent
+import org.snakeyaml.engine.v2.events.Event
+import org.snakeyaml.engine.v2.events.MappingStartEvent
+import org.snakeyaml.engine.v2.events.NodeEvent
+import org.snakeyaml.engine.v2.events.ScalarEvent
+import org.snakeyaml.engine.v2.events.SequenceStartEvent
+import java.util.Optional
 
 internal actual class YamlNodeReader(
     private val parser: YamlParser,
@@ -102,22 +107,12 @@ internal actual class YamlNodeReader(
                     val keyNode = YamlScalar(key, path.withMapElementKey(key, keyLocation))
 
                     val valueLocation = parser.peekEvent(keyNode.path).location
-                    val valuePath =
-                        if (isMerge(keyNode)) path.withMerge(valueLocation) else keyNode.path.withMapElementValue(
-                            valueLocation
-                        )
+                    val valuePath = if (isMerge(keyNode)) path.withMerge(valueLocation) else keyNode.path.withMapElementValue(valueLocation)
                     val (value, anchor) = readNodeAndAnchor(valuePath)
 
-                    if (path == YamlPath.root && extensionDefinitionPrefix != null && key.startsWith(
-                            extensionDefinitionPrefix
-                        )
-                    ) {
+                    if (path == YamlPath.root && extensionDefinitionPrefix != null && key.startsWith(extensionDefinitionPrefix)) {
                         if (anchor == null) {
-                            throw NoAnchorForExtensionException(
-                                key,
-                                extensionDefinitionPrefix,
-                                path.withError(event.location)
-                            )
+                            throw NoAnchorForExtensionException(key, extensionDefinitionPrefix, path.withError(event.location))
                         }
                     } else {
                         items += (keyNode to value)
@@ -146,10 +141,7 @@ internal actual class YamlNodeReader(
         }
     }
 
-    private fun nonScalarMapKeyException(path: YamlPath, event: Event) = MalformedYamlException(
-        "Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)",
-        path.withError(event.location)
-    )
+    private fun nonScalarMapKeyException(path: YamlPath, event: Event) = MalformedYamlException("Property name must not be a list, map, null or tagged value. (To use 'null' as a property name, enclose it in quotes.)", path.withError(event.location))
 
     private fun YamlNode.maybeToTaggedNode(tag: Optional<String>): YamlNode =
         tag.map<YamlNode> { YamlTaggedNode(it, this) }.orElse(this)
@@ -163,10 +155,7 @@ internal actual class YamlNodeReader(
                 is YamlList -> return doMerges(items, mappingsToMerge.items)
                 else -> return doMerges(items, listOf(mappingsToMerge))
             }
-            else -> throw MalformedYamlException(
-                "Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.",
-                mergeEntries.second().key.path
-            )
+            else -> throw MalformedYamlException("Cannot perform multiple '<<' merges into a map. Instead, combine all merges into a single '<<' entry.", mergeEntries.second().key.path)
         }
     }
 
@@ -206,10 +195,7 @@ internal actual class YamlNodeReader(
             throw UnknownAnchorException(anchor.value, path.withError(event.location))
         }
 
-        return resolvedNode.withPath(
-            path.withAliasReference(anchor.value, event.location)
-                .withAliasDefinition(anchor.value, resolvedNode.location)
-        )
+        return resolvedNode.withPath(path.withAliasReference(anchor.value, event.location).withAliasDefinition(anchor.value, resolvedNode.location))
     }
 
     private fun <T> Iterable<T>.second(): T = this.drop(1).first()
