@@ -27,9 +27,11 @@ import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.SerializersModule
 import org.snakeyaml.engine.v2.api.DumpSettings
 import org.snakeyaml.engine.v2.api.StreamDataWriter
+import org.snakeyaml.engine.v2.comments.CommentType
 import org.snakeyaml.engine.v2.common.FlowStyle
 import org.snakeyaml.engine.v2.common.ScalarStyle
 import org.snakeyaml.engine.v2.emitter.Emitter
+import org.snakeyaml.engine.v2.events.CommentEvent
 import org.snakeyaml.engine.v2.events.DocumentEndEvent
 import org.snakeyaml.engine.v2.events.DocumentStartEvent
 import org.snakeyaml.engine.v2.events.ImplicitTuple
@@ -90,6 +92,23 @@ internal class YamlOutput(
     private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
+        if(configuration.serializeComments) {
+            var comment = descriptor.getElementAnnotations(index)
+                .filterIsInstance<YamlComment>()
+                .firstOrNull()
+                ?.comment
+
+            if(comment != null) {
+                // Is multiline comment?
+                if(comment.indexOfAny(charArrayOf('\n', '\r')) > -1)
+                    comment = comment.trimIndent()
+
+                for (line in comment.lineSequence()) {
+                    emitter.emit(CommentEvent(CommentType.BLOCK, line, Optional.empty(), Optional.empty()))
+                }
+            }
+        }
+
         if (descriptor.kind is StructureKind.CLASS) {
             emitPlainScalar(descriptor.getElementName(index))
         }
