@@ -92,22 +92,7 @@ internal class YamlOutput(
     private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
-        if(configuration.serializeComments) {
-            var comment = descriptor.getElementAnnotations(index)
-                .filterIsInstance<YamlComment>()
-                .firstOrNull()
-                ?.comment
-
-            if(comment != null) {
-                // Is multiline comment?
-                if(comment.indexOfAny(charArrayOf('\n', '\r')) > -1)
-                    comment = comment.trimIndent()
-
-                for (line in comment.lineSequence()) {
-                    emitter.emit(CommentEvent(CommentType.BLOCK, line, Optional.empty(), Optional.empty()))
-                }
-            }
-        }
+        encodeComment(descriptor, index)
 
         if (descriptor.kind is StructureKind.CLASS) {
             emitPlainScalar(descriptor.getElementName(index))
@@ -159,6 +144,23 @@ internal class YamlOutput(
     override fun close() {
         emitter.emit(DocumentEndEvent(false))
         emitter.emit(StreamEndEvent())
+    }
+
+    private fun encodeComment(descriptor: SerialDescriptor, index: Int) {
+        val commentAnno = descriptor.getElementAnnotations(index)
+            .filterIsInstance<YamlComment>()
+            .firstOrNull()
+
+        if(commentAnno != null) {
+            for (line in commentAnno.lines) {
+                emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
+            }
+            // FIXME: add `inline` annotation parameter and uncomment when kotlin serialization issue 1956 will be resovled
+            // (default parameters on annotations marked with @SerialInfo will throw an exception currently)
+            // Issue link: https://github.com/Kotlin/kotlinx.serialization/issues/1956
+            /*if(commentAnno.inline.isNotEmpty())
+                emitter.emit(CommentEvent(CommentType.IN_LINE, " ${ commentAnno.inline }", Optional.empty(), Optional.empty()))*/
+        }
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) {

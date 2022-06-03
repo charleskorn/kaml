@@ -32,7 +32,6 @@ import com.charleskorn.kaml.testobjects.polymorphicModule
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -888,16 +887,16 @@ class YamlWritingTest : DescribeSpec({
         }
 
         describe("handling comments") {
-            context("comments in Java object") {
+            context("comments in kotlin object") {
                 val input = SimpleStructureWithComments("objName", 73, "justTest")
 
                 it("is written") {
                     Yaml.default.encodeToString(SimpleStructureWithComments.serializer(), input) shouldBe """
                         name: "objName"
-                        #Cool int
+                        # Cool int
                         myInt: 73
-                        #Testing
-                        #multiline
+                        # Testing
+                        # multiline
                         test: "justTest"
                         """.trimIndent()
                 }
@@ -916,16 +915,15 @@ private data class SimpleStructureWithDefault(
     val name: String = "default"
 )
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 private data class SimpleStructureWithComments(
     val name: String,
     @YamlComment("Cool int")
     val myInt: Int,
-    @YamlComment("""
-        Testing
-        multiline
-    """)
+    @YamlComment(
+        "Testing",
+        "multiline"
+    )
     val test: String
 )
 
