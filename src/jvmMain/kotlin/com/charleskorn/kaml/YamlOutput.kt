@@ -151,15 +151,12 @@ internal class YamlOutput(
             .filterIsInstance<YamlComment>()
             .firstOrNull()
 
-        if(commentAnno != null) {
-            for (line in commentAnno.lines) {
-                emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
-            }
-            // FIXME: add `inline` annotation parameter and uncomment when kotlin serialization issue 1956 will be resovled
-            // (default parameters on annotations marked with @SerialInfo will throw an exception currently)
-            // Issue link: https://github.com/Kotlin/kotlinx.serialization/issues/1956
-            /*if(commentAnno.inline.isNotEmpty())
-                emitter.emit(CommentEvent(CommentType.IN_LINE, " ${ commentAnno.inline }", Optional.empty(), Optional.empty()))*/
+        if (commentAnno == null) {
+            return
+        }
+        
+        for (line in commentAnno.lines) {
+            emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
         }
     }
 
