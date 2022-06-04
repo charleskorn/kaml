@@ -898,7 +898,7 @@ class YamlWritingTest : DescribeSpec({
                         # Testing
                         # multiline
                         test: "justTest"
-                        """.trimIndent()
+                    """.trimIndent()
                 }
             }
         }

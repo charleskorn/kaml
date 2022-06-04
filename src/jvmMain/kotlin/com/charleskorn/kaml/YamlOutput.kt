@@ -154,7 +154,7 @@ internal class YamlOutput(
         if (commentAnno == null) {
             return
         }
-        
+
         for (line in commentAnno.lines) {
             emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
         }
