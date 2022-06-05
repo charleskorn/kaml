@@ -888,7 +888,7 @@ class YamlWritingTest : DescribeSpec({
 
         describe("handling comments") {
             context("comments in kotlin object") {
-                val input = SimpleStructureWithComments("objName", 73, "justTest")
+                val input = SimpleStructureWithComments("objName", 73, "justTest", "test3Quotes", 10, 20)
 
                 it("is written") {
                     Yaml.default.encodeToString(SimpleStructureWithComments.serializer(), input) shouldBe """
@@ -898,6 +898,20 @@ class YamlWritingTest : DescribeSpec({
                         # Testing
                         # multiline
                         test: "justTest"
+                        # Test
+                        # For
+                        # Three quotes
+                        test3Quote: "test3Quotes"
+                        # Test
+                        #  For
+                        #    Trim Margin
+                        testMarginIndent: 10
+                        # 
+                        #     Test
+                        #     For none trim
+                        #     .
+                        # 
+                        testNoneTrim: 20
                     """.trimIndent()
                 }
             }
@@ -924,7 +938,33 @@ private data class SimpleStructureWithComments(
         "Testing",
         "multiline"
     )
-    val test: String
+    val test: String,
+    @YamlComment(
+        """
+        Test
+        For
+        Three quotes
+        """,
+    )
+    val test3Quote: String,
+    @YamlComment(
+        """
+           |Test
+           | For
+           |   Trim Margin
+        """,
+    )
+    @YamlCommentTrim(TrimType.TRIM_MARGIN)
+    val testMarginIndent: Int,
+    @YamlComment(
+        """
+    Test
+    For none trim
+    .
+""",
+    )
+    @YamlCommentTrim(TrimType.NONE)
+    val testNoneTrim: Int,
 )
 
 @Serializable

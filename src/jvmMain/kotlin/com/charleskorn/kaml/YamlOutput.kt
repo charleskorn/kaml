@@ -147,17 +147,27 @@ internal class YamlOutput(
     }
 
     private fun encodeComment(descriptor: SerialDescriptor, index: Int) {
-        val commentAnno = descriptor.getElementAnnotations(index)
+        val anno = descriptor.getElementAnnotations(index)
+        val commentAnno = anno
             .filterIsInstance<YamlComment>()
-            .firstOrNull()
+            .firstOrNull() ?: return
 
-        if (commentAnno == null) {
-            return
-        }
+        val trimType = anno
+            .filterIsInstance<YamlCommentTrim>()
+            .firstOrNull()?.trimType ?: TrimType.TRIM_INDENT
 
-        for (line in commentAnno.lines) {
-            emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
-        }
+        commentAnno.lines
+            .map {
+                when (trimType) {
+                    TrimType.NONE -> it
+                    TrimType.TRIM_INDENT -> it.trimIndent()
+                    TrimType.TRIM_MARGIN -> it.trimMargin()
+                }
+            }.flatMap {
+                it.split("\n")
+            }.forEach { line ->
+                emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
+            }
     }
 
     private fun emitScalar(value: String, style: ScalarStyle) {
