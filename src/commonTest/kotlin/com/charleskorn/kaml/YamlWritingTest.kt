@@ -885,6 +885,23 @@ class YamlWritingTest : DescribeSpec({
                 }
             }
         }
+
+        describe("handling comments") {
+            context("comments in kotlin object") {
+                val input = SimpleStructureWithComments("objName", 73, "justTest")
+
+                it("is written") {
+                    Yaml.default.encodeToString(SimpleStructureWithComments.serializer(), input) shouldBe """
+                        name: "objName"
+                        # Cool int
+                        myInt: 73
+                        # Testing
+                        # multiline
+                        test: "justTest"
+                    """.trimIndent()
+                }
+            }
+        }
     }
 })
 
@@ -896,6 +913,18 @@ class YamlWritingTest : DescribeSpec({
 @Serializable
 private data class SimpleStructureWithDefault(
     val name: String = "default"
+)
+
+@Serializable
+private data class SimpleStructureWithComments(
+    val name: String,
+    @YamlComment("Cool int")
+    val myInt: Int,
+    @YamlComment(
+        "Testing",
+        "multiline"
+    )
+    val test: String
 )
 
 @Serializable
