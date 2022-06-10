@@ -170,6 +170,7 @@ internal actual class YamlNodeReader(
                     is YamlNull -> throw MalformedYamlException("Cannot merge a null value into a map.", other.path)
                     is YamlScalar -> throw MalformedYamlException("Cannot merge a scalar value into a map.", other.path)
                     is YamlList -> throw MalformedYamlException("Cannot merge a list value into a map.", other.path)
+                    is YamlTaggedNode -> throw MalformedYamlException("Cannot merge a tagged value into a map.", other.path)
                     is YamlMap ->
                         other.entries.forEach { (key, value) ->
                             val existingEntry = merged.entries.singleOrNull { it.key.equivalentContentTo(key) }
