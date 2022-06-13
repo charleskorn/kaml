@@ -28,7 +28,8 @@ fun Project.configureVersioning() {
     apply<ReckonPlugin>()
 
     configure<ReckonExtension> {
-        scopeFromProp()
-        snapshotFromProp()
+        snapshots()
+        setStageCalc(calcStageFromProp())
+        setScopeCalc(calcScopeFromProp())
     }
 }

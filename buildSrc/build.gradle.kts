@@ -16,6 +16,8 @@
 
 */
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     `kotlin-dsl`
     id("com.github.ben-manes.versions") version "0.42.0"
@@ -29,4 +31,15 @@ dependencies {
     implementation(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "6.7.2")
     implementation(group = "io.github.gradle-nexus", name = "publish-plugin", version = "1.1.0")
     implementation(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "0.16.1")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
