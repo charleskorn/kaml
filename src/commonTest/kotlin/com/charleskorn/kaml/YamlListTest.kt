@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
@@ -72,6 +73,29 @@ class YamlListTest : DescribeSpec({
                 it("indicates that they are not equivalent") {
                     list.equivalentContentTo(YamlMap(emptyMap(), list.path)) shouldBe false
                 }
+            }
+        }
+
+        describe("getting elements from a list") {
+            val firstItemPath = YamlPath.root.withListEntry(0, Location(4, 5))
+            val secondItemPath = YamlPath.root.withListEntry(1, Location(6, 7))
+
+            val list = YamlList(
+                listOf(
+                    YamlScalar("item 1", firstItemPath),
+                    YamlScalar("item 2", secondItemPath)
+                ),
+                YamlPath.root
+            )
+
+            it("returns element") {
+                list[0] shouldBe YamlScalar("item 1", firstItemPath)
+                list[1] shouldBe YamlScalar("item 2", secondItemPath)
+            }
+
+            it("throws IndexOutOfBoundsException") {
+                shouldThrow<IndexOutOfBoundsException> { list[2] }
+                shouldThrow<IndexOutOfBoundsException> { list[10] }
             }
         }
 
