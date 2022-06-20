@@ -70,8 +70,7 @@ val result = Yaml.default.parseToYamlNode(input)
 
 println(
     result
-        .yamlMap.get<YamlNode>("members")!!
-        .yamlList[1]
+        .yamlMap.get<YamlList>("members")!![1]
         .yamlScalar
         .content
 )
