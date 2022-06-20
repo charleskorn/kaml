@@ -267,5 +267,5 @@ public val YamlNode.yamlTaggedNode: YamlTaggedNode
     get() = this as? YamlTaggedNode ?: error(this, "YamlTaggedNode")
 
 private fun error(node: YamlNode, expectedType: String): Nothing {
-    throw IncorrectTypeException("Element is not $expectedType", node.path)
+    throw IncorrectTypeException("Expected element to be $expectedType but is ${node::class.simpleName}", node.path)
 }

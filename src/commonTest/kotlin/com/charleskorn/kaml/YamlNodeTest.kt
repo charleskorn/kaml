@@ -69,10 +69,11 @@ class YamlNodeTest : DescribeSpec({
             Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testList),
             Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testMap),
         ).forEach { (type, method, value) ->
-            it("throws when converting from ${value::class} to $type") {
+            val fromType = value::class.simpleName
+            it("throws when converting from $fromType to $type") {
                 val exception = shouldThrow<IncorrectTypeException> { method(value) }
                 exception.asClue {
-                    it.message shouldBe "Element is not $type"
+                    it.message shouldBe "Expected element to be $type but is $fromType"
                     it.path shouldBe path
                 }
             }
