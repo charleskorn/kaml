@@ -28,31 +28,52 @@ class YamlNodeTest : DescribeSpec({
     describe("converting from YamlNode") {
         val path = YamlPath.root
 
-        val cases = listOf(
-            Triple("YamlScalar", YamlNode::yamlScalar, YamlScalar("test", path)),
-            Triple("YamlNull", YamlNode::yamlNull, YamlNull(path)),
-            Triple("YamlList", YamlNode::yamlList, YamlList(emptyList(), path)),
-            Triple("YamlMap", YamlNode::yamlMap, YamlMap(emptyMap(), path)),
-            Triple(
-                "YamlTaggedNode", YamlNode::yamlTaggedNode,
-                YamlTaggedNode("tag", YamlScalar("tagged_scalar", path))
-            ),
-        )
+        val testScalar = YamlScalar("test", path)
+        val testNull = YamlNull(path)
+        val testList = YamlList(emptyList(), path)
+        val testMap = YamlMap(emptyMap(), path)
+        val testTaggedNode = YamlTaggedNode("tag", YamlScalar("tagged_scalar", path))
 
-        cases.forEach { (fromType, _, value) ->
-            cases.forEach { (toType, method, _) ->
-                if (fromType == toType) {
-                    it("successfully converts to $toType") {
-                        shouldNotThrowAny { method(value) }
-                    }
-                } else {
-                    it("throws when converting to $toType") {
-                        val exception = shouldThrow<IncorrectTypeException> { method(value) }
-                        exception.asClue {
-                            it.message shouldBe "Element is not $toType"
-                            it.path shouldBe path
-                        }
-                    }
+        listOf(
+            Triple("YamlScalar", YamlNode::yamlScalar, testScalar),
+            Triple("YamlNull", YamlNode::yamlNull, testNull),
+            Triple("YamlList", YamlNode::yamlList, testList),
+            Triple("YamlMap", YamlNode::yamlMap, testMap),
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testTaggedNode),
+        ).forEach { (type, method, value) ->
+            it("successfully converts to $type") {
+                shouldNotThrowAny { method(value) }
+                method(value) shouldBe value
+            }
+        }
+
+        listOf(
+            Triple("YamlScalar", YamlNode::yamlScalar, testNull),
+            Triple("YamlScalar", YamlNode::yamlScalar, testList),
+            Triple("YamlScalar", YamlNode::yamlScalar, testMap),
+            Triple("YamlScalar", YamlNode::yamlScalar, testTaggedNode),
+            Triple("YamlNull", YamlNode::yamlNull, testScalar),
+            Triple("YamlNull", YamlNode::yamlNull, testList),
+            Triple("YamlNull", YamlNode::yamlNull, testMap),
+            Triple("YamlNull", YamlNode::yamlNull, testTaggedNode),
+            Triple("YamlList", YamlNode::yamlList, testScalar),
+            Triple("YamlList", YamlNode::yamlList, testNull),
+            Triple("YamlList", YamlNode::yamlList, testMap),
+            Triple("YamlList", YamlNode::yamlList, testTaggedNode),
+            Triple("YamlMap", YamlNode::yamlMap, testScalar),
+            Triple("YamlMap", YamlNode::yamlMap, testNull),
+            Triple("YamlMap", YamlNode::yamlMap, testList),
+            Triple("YamlMap", YamlNode::yamlMap, testTaggedNode),
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testScalar),
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testNull),
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testList),
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testMap),
+        ).forEach { (type, method, value) ->
+            it("throws when converting from ${value::class} to $type") {
+                val exception = shouldThrow<IncorrectTypeException> { method(value) }
+                exception.asClue {
+                    it.message shouldBe "Element is not $type"
+                    it.path shouldBe path
                 }
             }
         }
