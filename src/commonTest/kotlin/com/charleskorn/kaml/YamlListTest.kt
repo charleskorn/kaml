@@ -88,14 +88,18 @@ class YamlListTest : DescribeSpec({
                 YamlPath.root
             )
 
-            it("returns element") {
-                list[0] shouldBe YamlScalar("item 1", firstItemPath)
-                list[1] shouldBe YamlScalar("item 2", secondItemPath)
+            describe("getting element in bounds") {
+                it("returns element") {
+                    list[0] shouldBe YamlScalar("item 1", firstItemPath)
+                    list[1] shouldBe YamlScalar("item 2", secondItemPath)
+                }
             }
 
-            it("throws IndexOutOfBoundsException") {
-                shouldThrow<IndexOutOfBoundsException> { list[2] }
-                shouldThrow<IndexOutOfBoundsException> { list[10] }
+            describe("getting element out of bounds") {
+                it("throws IndexOutOfBoundsException") {
+                    shouldThrow<IndexOutOfBoundsException> { list[2] }
+                    shouldThrow<IndexOutOfBoundsException> { list[10] }
+                }
             }
         }
 
