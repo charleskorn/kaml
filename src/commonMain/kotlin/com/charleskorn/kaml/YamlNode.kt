@@ -116,6 +116,8 @@ public data class YamlList(val items: List<YamlNode>, override val path: YamlPat
         return this.items.zip(other.items).all { (mine, theirs) -> mine.equivalentContentTo(theirs) }
     }
 
+    public operator fun get(index: Int): YamlNode = items[index]
+
     override fun contentToString(): String = "[" + items.joinToString(", ") { it.contentToString() } + "]"
 
     override fun withPath(newPath: YamlPath): YamlList {
@@ -247,4 +249,23 @@ public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : Yam
     override fun withPath(newPath: YamlPath): YamlNode = this.copy(innerNode = innerNode.withPath(newPath))
 
     override fun toString(): String = "tagged '$tag': $innerNode"
+}
+
+public val YamlNode.yamlScalar: YamlScalar
+    get() = this as? YamlScalar ?: error(this, "YamlScalar")
+
+public val YamlNode.yamlNull: YamlNull
+    get() = this as? YamlNull ?: error(this, "YamlNull")
+
+public val YamlNode.yamlList: YamlList
+    get() = this as? YamlList ?: error(this, "YamlList")
+
+public val YamlNode.yamlMap: YamlMap
+    get() = this as? YamlMap ?: error(this, "YamlMap")
+
+public val YamlNode.yamlTaggedNode: YamlTaggedNode
+    get() = this as? YamlTaggedNode ?: error(this, "YamlTaggedNode")
+
+private fun error(node: YamlNode, expectedType: String): Nothing {
+    throw IncorrectTypeException("Expected element to be $expectedType but is ${node::class.simpleName}", node.path)
 }

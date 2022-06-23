@@ -53,6 +53,29 @@ val result = Yaml.default.encodeToString(Team.serializer(), input)
 println(result)
 ```
 
+### Parsing into YamlNode
+
+It is possible to parse a string or an InputStream directly into a YamlNode, for example
+the following code prints `Cindy`.
+```kotlin
+val input = """
+        leader: Amy
+        members:
+          - Bob
+          - Cindy
+          - Dan
+    """.trimIndent()
+
+val result = Yaml.default.parseToYamlNode(input)
+
+println(
+    result
+        .yamlMap.get<YamlList>("members")!![1]
+        .yamlScalar
+        .content
+)
+```
+
 ## Referencing kaml
 
 Add the following to your Gradle build script:
