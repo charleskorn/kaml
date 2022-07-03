@@ -24,7 +24,7 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class YamlNullInput(val nullValue: YamlNode, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(nullValue, context, configuration) {
+internal class YamlNullInput(val nullValue: YamlNull, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(nullValue, context, configuration) {
     override fun decodeNotNullMark(): Boolean = false
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.path)

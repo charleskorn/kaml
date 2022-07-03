@@ -18,6 +18,9 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.Serializable
+
+@Serializable(with = YamlNodeSerializer::class)
 public sealed class YamlNode(public open val path: YamlPath) {
     public val location: Location
         get() = path.endLocation
@@ -30,6 +33,7 @@ public sealed class YamlNode(public open val path: YamlPath) {
         YamlPath(newParentPath.segments + child.path.segments.drop(path.segments.size))
 }
 
+@Serializable(with = YamlScalarSerializer::class)
 public data class YamlScalar(val content: String, override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlScalar && this.content == other.content
     override fun contentToString(): String = "'$content'"
@@ -96,6 +100,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
     override fun toString(): String = "scalar @ $path : $content"
 }
 
+@Serializable(with = YamlNullSerializer::class)
 public data class YamlNull(override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlNull
     override fun contentToString(): String = "null"
@@ -103,6 +108,7 @@ public data class YamlNull(override val path: YamlPath) : YamlNode(path) {
     override fun toString(): String = "null @ $path"
 }
 
+@Serializable(with = YamlListSerializer::class)
 public data class YamlList(val items: List<YamlNode>, override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlList) {
@@ -144,6 +150,7 @@ public data class YamlList(val items: List<YamlNode>, override val path: YamlPat
     }
 }
 
+@Serializable(with = YamlMapSerializer::class)
 public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val path: YamlPath) : YamlNode(path) {
     init {
         val keys = entries.keys.sortedWith { a, b ->
@@ -232,6 +239,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
     }
 }
 
+@Serializable(with = YamlTaggedNodeSerializer::class)
 public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : YamlNode(innerNode.path) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlTaggedNode) {
