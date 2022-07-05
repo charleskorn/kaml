@@ -42,7 +42,7 @@ public data class YamlConfiguration constructor(
     internal val breakScalarsAt: Int = 80,
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
-    internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
+    internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle
 )
 
 public enum class PolymorphismStyle {

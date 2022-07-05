@@ -37,7 +37,7 @@ class JvmYamlWritingTest : DescribeSpec({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            multiLineStringStyle = MultiLineStringStyle.Literal,
+                            multiLineStringStyle = MultiLineStringStyle.Literal
                         )
                     )
                 ) {
@@ -57,7 +57,7 @@ class JvmYamlWritingTest : DescribeSpec({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            multiLineStringStyle = MultiLineStringStyle.DoubleQuoted,
+                            multiLineStringStyle = MultiLineStringStyle.DoubleQuoted
                         )
                     )
                 ) {

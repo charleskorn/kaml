@@ -2042,7 +2042,7 @@ class YamlReadingTest : DescribeSpec({
                     Scenario("an enumeration value", TestEnum.serializer()),
                     Scenario("a map", MapSerializer(String.serializer(), String.serializer())),
                     Scenario("an object", ComplexStructure.serializer()),
-                    Scenario("a nullable string", String.serializer().nullable, "a string"),
+                    Scenario("a nullable string", String.serializer().nullable, "a string")
                 ).forEach { (description, serializer, expectedErrorMessage) ->
                     val input = "- thing"
 
@@ -2127,7 +2127,7 @@ class YamlReadingTest : DescribeSpec({
                     Scenario("a character", Char.serializer()),
                     Scenario("an enumeration value", TestEnum.serializer()),
                     Scenario("a list", ListSerializer(String.serializer())),
-                    Scenario("a nullable string", String.serializer().nullable, "a string"),
+                    Scenario("a nullable string", String.serializer().nullable, "a string")
                 ).forEach { (description, serializer, expectedErrorMessage) ->
                     val input = "key: value"
 
