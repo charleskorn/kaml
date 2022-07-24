@@ -61,9 +61,9 @@ kotlin {
 
         val commonTest by getting {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:5.3.2")
-                implementation("io.kotest:kotest-framework-api:5.3.2")
-                implementation("io.kotest:kotest-framework-engine:5.3.2")
+                implementation("io.kotest:kotest-assertions-core:5.4.0")
+                implementation("io.kotest:kotest-framework-api:5.4.0")
+                implementation("io.kotest:kotest-framework-engine:5.4.0")
             }
         }
 
@@ -77,7 +77,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:5.3.2")
+                implementation("io.kotest:kotest-runner-junit5:5.4.0")
             }
         }
     }
