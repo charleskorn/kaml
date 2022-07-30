@@ -18,6 +18,8 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.TrimType.TRIM_INDENT
+import com.charleskorn.kaml.TrimType.TRIM_MARGIN
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
@@ -30,5 +32,30 @@ import kotlinx.serialization.SerialInfo
 @Retention(AnnotationRetention.BINARY)
 @SerialInfo
 public annotation class YamlComment(
-    vararg val lines: String
+    vararg val lines: String,
 )
+
+/**
+ * Trim type for [YamlComment], if not specified uses [TRIM_INDENT]
+ *
+ * @see TrimType
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlCommentTrim(
+    val trimType: TrimType,
+)
+
+/**
+ * Trim type for [YamlComment.lines]
+ *
+ * @property TRIM_INDENT uses [String.trimIndent]
+ * @property TRIM_MARGIN uses [String.trimMargin]
+ */
+public enum class TrimType {
+    NONE,
+    TRIM_INDENT,
+    TRIM_MARGIN,
+}
