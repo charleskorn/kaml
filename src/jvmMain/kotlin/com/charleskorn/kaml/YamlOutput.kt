@@ -52,6 +52,9 @@ internal class YamlOutput(
 ) : AbstractEncoder(), AutoCloseable {
     private val settings = DumpSettings.builder()
         .setIndent(configuration.encodingIndentationSize)
+        .setIndicatorIndent(configuration.sequenceBlockIndent)
+        // No special reason why true is conditional. Designed to be consistent with 0.46.0 of kaml
+        .setIndentWithIndicator(configuration.sequenceBlockIndent > 0)
         .setWidth(configuration.breakScalarsAt)
         .build()
 
