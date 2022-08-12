@@ -42,10 +42,10 @@ public data class YamlConfiguration constructor(
     internal val encodingIndentationSize: Int = 2,
     internal val breakScalarsAt: Int = 80,
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
-    internal val sequenceBlockIndent: Int = 0,
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
-    internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle
-)
+    internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
+    internal val sequenceBlockIndent: Int = 0
+    )
 
 public enum class PolymorphismStyle {
     Tag,
