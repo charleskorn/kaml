@@ -45,7 +45,7 @@ public data class YamlConfiguration constructor(
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
     internal val sequenceBlockIndent: Int = 0
-    )
+)
 
 public enum class PolymorphismStyle {
     Tag,
