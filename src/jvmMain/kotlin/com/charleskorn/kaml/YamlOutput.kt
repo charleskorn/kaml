@@ -55,35 +55,7 @@ internal class YamlOutput(
         .setIndent(configuration.encodingIndentationSize)
         // SnakeYAML helps to validate that this value must be non-negative
         .setIndicatorIndent(configuration.sequenceBlockIndent)
-        /*
-         This is required to be true to properly handle the serialization of a list of objects.
-         Does not seem to have an impact on a simple top level array.
-         This issue becomes apparent when `sequenceBlockIndent` is 2 or more, as it causes invalid yaml.
-         Issue is visible if `sequenceBlockIndent` is 1, but is invalid yaml.
-
-         Smallest reproducible test case:
-
-         ```kotlin
-         @Serializable
-         data class Foo(val bar: String)
-
-         Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2).encodeToString(listOf(Foo("baz"))))
-
-         Expected output:
-         """
-         |  - bar: "baz"
-         """.trimMargin()
-
-         Actual output:
-         """
-         |  -
-         |  bar: "baz" # This is NOT valid yaml!
-         """.trimMargin()
-        ```
-        Expected output is achieved when field is set to true
-
-         No special reason why true is conditional. Designed to be consistent with 0.46.0 of kaml
-         */
+        // No special reason why true is conditional. Designed to be consistent with 0.46.0 of kaml
         .setIndentWithIndicator(configuration.sequenceBlockIndent > 0)
         // Unclear if this value is validated
         .setWidth(configuration.breakScalarsAt)

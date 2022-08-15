@@ -282,6 +282,21 @@ class YamlWritingTest : DescribeSpec({
                 }
             }
 
+            context("serializing a list of objects with sequence block indent") {
+                @Serializable
+                data class Foo(val bar: String)
+
+                val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2))
+                    .encodeToString(ListSerializer(Foo.serializer()), listOf(Foo("baz")))
+
+                it("returns the value serialized in the expected YAML form") {
+                    output shouldBe
+                        """
+                        |  - bar: "baz"
+                        """.trimMargin()
+                }
+            }
+
             context("serializing a list of nullable integers in flow form") {
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
                     .encodeToString(ListSerializer(Int.serializer().nullable), listOf(1, null, 3))
