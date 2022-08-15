@@ -245,6 +245,58 @@ class YamlWritingTest : DescribeSpec({
                 }
             }
 
+            context("serializing a list of integers in flow form with sequence block indent") {
+                val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow, sequenceBlockIndent = 2))
+                    .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
+
+                it("returns the value serialized in the expected YAML form") {
+                    output shouldBe "[1, 2, 3]"
+                }
+            }
+
+            context("serializing a list of integers without sequence block indent") {
+                val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 0))
+                    .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
+
+                it("returns the value serialized in the expected YAML form") {
+                    output shouldBe
+                        """
+                        |- 1
+                        |- 2
+                        |- 3
+                        """.trimMargin()
+                }
+            }
+
+            context("serializing a list of integers with sequence block indent") {
+                val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2))
+                    .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
+
+                it("returns the value serialized in the expected YAML form") {
+                    output shouldBe
+                        """
+                        |  - 1
+                        |  - 2
+                        |  - 3
+                        """.trimMargin()
+                }
+            }
+
+            context("serializing a list of objects with sequence block indent") {
+                @Serializable
+                data class Foo(val bar: String)
+
+                val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2))
+                    .encodeToString(ListSerializer(Foo.serializer()), listOf(Foo("baz")))
+
+                it("returns the value serialized in the expected YAML form") {
+                    output shouldBe
+                        """
+                        |  - bar: "baz"
+                        """.trimMargin()
+                }
+            }
+
             context("serializing a list of nullable integers in flow form") {
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
                     .encodeToString(ListSerializer(Int.serializer().nullable), listOf(1, null, 3))
