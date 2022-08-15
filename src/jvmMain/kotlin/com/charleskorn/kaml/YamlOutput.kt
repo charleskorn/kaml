@@ -57,6 +57,7 @@ internal class YamlOutput(
         .setIndicatorIndent(configuration.sequenceBlockIndent)
         /*
          This is required to be true to properly handle the serialization of a list of objects.
+         Does not seem to have an impact on a simple top level array.
          This issue becomes apparent when `sequenceBlockIndent` is 2 or more, as it causes invalid yaml.
          Issue is visible if `sequenceBlockIndent` is 1, but is invalid yaml.
 
@@ -79,6 +80,7 @@ internal class YamlOutput(
          |  bar: "baz" # This is NOT valid yaml!
          """.trimMargin()
         ```
+        Expected output is achieved when field is set to true
 
          No special reason why true is conditional. Designed to be consistent with 0.46.0 of kaml
          */
