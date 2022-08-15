@@ -254,6 +254,20 @@ class YamlWritingTest : DescribeSpec({
                 }
             }
 
+            context("serializing a list of integers without sequence block indent") {
+                val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 0))
+                    .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
+
+                it("returns the value serialized in the expected YAML form") {
+                    output shouldBe
+                        """
+                        |- 1
+                        |- 2
+                        |- 3
+                        """.trimMargin()
+                }
+            }
+
             context("serializing a list of integers with sequence block indent") {
                 val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2))
                     .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
