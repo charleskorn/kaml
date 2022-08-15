@@ -31,7 +31,7 @@ package com.charleskorn.kaml
  * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
  * * [breakScalarsAt]: maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines)
  * * [sequenceStyle]: how sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each
- * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if set to block mode (0 still includes the `-` character and a space after it)
+ * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
  */
 public data class YamlConfiguration constructor(
     internal val encodeDefaults: Boolean = true,
