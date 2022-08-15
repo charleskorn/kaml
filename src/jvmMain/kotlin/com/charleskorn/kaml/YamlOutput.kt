@@ -181,11 +181,7 @@ internal class YamlOutput(
     private fun encodeComment(descriptor: SerialDescriptor, index: Int) {
         val commentAnno = descriptor.getElementAnnotations(index)
             .filterIsInstance<YamlComment>()
-            .firstOrNull()
-
-        if (commentAnno == null) {
-            return
-        }
+            .firstOrNull() ?: return
 
         for (line in commentAnno.lines) {
             emitter.emit(CommentEvent(CommentType.BLOCK, " $line", Optional.empty(), Optional.empty()))
