@@ -51,10 +51,13 @@ internal class YamlOutput(
     private val configuration: YamlConfiguration
 ) : AbstractEncoder(), AutoCloseable {
     private val settings = DumpSettings.builder()
+        // SnakeYAML validates that this value must be at least 1
         .setIndent(configuration.encodingIndentationSize)
+        // SnakeYAML helps to validate that this value must be non-negative
         .setIndicatorIndent(configuration.sequenceBlockIndent)
         // No special reason why true is conditional. Designed to be consistent with 0.46.0 of kaml
         .setIndentWithIndicator(configuration.sequenceBlockIndent > 0)
+        // Unclear if this value is validated
         .setWidth(configuration.breakScalarsAt)
         .build()
 
