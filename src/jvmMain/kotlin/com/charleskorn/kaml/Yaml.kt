@@ -19,7 +19,6 @@
 package com.charleskorn.kaml
 
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -36,7 +35,6 @@ import java.io.StringReader
 import java.io.StringWriter
 import java.nio.charset.Charset
 
-@OptIn(ExperimentalSerializationApi::class)
 public actual class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     public actual val configuration: YamlConfiguration = YamlConfiguration()
@@ -105,7 +103,6 @@ public actual class Yaml(
  * Decodes and deserializes from the given [stream] to the value of type [T] using the
  * deserializer retrieved from the reified type parameter.
  */
-@OptIn(ExperimentalSerializationApi::class)
 public inline fun <reified T> Yaml.decodeFromStream(stream: InputStream): T =
     decodeFromStream(serializersModule.serializer(), stream)
 
@@ -113,7 +110,6 @@ public inline fun <reified T> Yaml.decodeFromStream(stream: InputStream): T =
  * Serializes and encodes the given [value] to the given [stream] using the serializer
  * retrieved from the reified type parameter.
  */
-@OptIn(ExperimentalSerializationApi::class)
 public inline fun <reified T> Yaml.encodeToStream(value: T, stream: OutputStream) {
     encodeToStream(serializersModule.serializer(), value, stream)
 }

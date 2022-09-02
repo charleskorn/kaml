@@ -18,10 +18,8 @@
 
 package com.charleskorn.kaml
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.StringFormat
 
-@OptIn(ExperimentalSerializationApi::class)
 public expect class Yaml : StringFormat {
     public val configuration: YamlConfiguration
 

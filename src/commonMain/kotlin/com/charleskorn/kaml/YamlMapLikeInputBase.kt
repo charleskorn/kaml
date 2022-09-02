@@ -18,11 +18,9 @@
 
 package com.charleskorn.kaml
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
 
-@OptIn(ExperimentalSerializationApi::class)
 internal sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
     protected lateinit var currentValueDecoder: YamlInput
     protected lateinit var currentKey: YamlScalar

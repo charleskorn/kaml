@@ -18,12 +18,10 @@
 
 package com.charleskorn.kaml
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
-@OptIn(ExperimentalSerializationApi::class)
 internal class YamlNullInput(val nullValue: YamlNode, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(nullValue, context, configuration) {
     override fun decodeNotNullMark(): Boolean = false
 
