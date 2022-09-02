@@ -34,6 +34,7 @@ import java.io.OutputStream
 import java.io.Reader
 import java.io.StringReader
 import java.io.StringWriter
+import java.nio.charset.Charset
 
 @OptIn(ExperimentalSerializationApi::class)
 public actual class Yaml(
@@ -44,8 +45,8 @@ public actual class Yaml(
         return decodeFromReader(deserializer, StringReader(string))
     }
 
-    public fun <T> decodeFromStream(deserializer: DeserializationStrategy<T>, source: InputStream): T {
-        return decodeFromReader(deserializer, InputStreamReader(source))
+    public fun <T> decodeFromStream(deserializer: DeserializationStrategy<T>, source: InputStream, charset: Charset = Charsets.UTF_8): T {
+        return decodeFromReader(deserializer, InputStreamReader(source, charset))
     }
 
     private fun <T> decodeFromReader(deserializer: DeserializationStrategy<T>, source: Reader): T {
@@ -77,8 +78,8 @@ public actual class Yaml(
         return writer.toString().trimEnd()
     }
 
-    public fun <T> encodeToStream(serializer: SerializationStrategy<T>, value: T, stream: OutputStream) {
-        val writer = object : YamlOutputStreamWriter(stream, Charsets.UTF_8) {
+    public fun <T> encodeToStream(serializer: SerializationStrategy<T>, value: T, stream: OutputStream, charset: Charset = Charsets.UTF_8) {
+        val writer = object : YamlOutputStreamWriter(stream, charset) {
             override fun processIOException(e: IOException?) {
                 if (e != null) {
                     throw e
