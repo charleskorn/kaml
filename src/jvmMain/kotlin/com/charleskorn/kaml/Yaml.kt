@@ -38,7 +38,7 @@ import java.nio.charset.Charset
 
 @OptIn(ExperimentalSerializationApi::class)
 public actual class Yaml(
-    override val serializersModule: SerializersModule = EmptySerializersModule,
+    override val serializersModule: SerializersModule = EmptySerializersModule(),
     public actual val configuration: YamlConfiguration = YamlConfiguration()
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
