@@ -51,6 +51,7 @@ internal class YamlOutput(
     private val configuration: YamlConfiguration
 ) : AbstractEncoder(), AutoCloseable {
     private val settings = DumpSettings.builder()
+        .setDumpComments(true)
         // SnakeYAML validates that this value must be at least 1
         .setIndent(configuration.encodingIndentationSize)
         // SnakeYAML helps to validate that this value must be non-negative
