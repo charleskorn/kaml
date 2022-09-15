@@ -76,7 +76,7 @@ public enum class MultiLineStringStyle {
     Literal,
     DoubleQuoted,
     SingleQuoted,
-    Plain,
+    Plain
 }
 
 public enum class SingleLineStringStyle {
