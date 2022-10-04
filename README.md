@@ -216,4 +216,4 @@ Other commands are available by running `./batect --list-tasks`
 ## Reference links
 
 * [YAML 1.2 Specification](http://yaml.org/spec/1.2/spec.html)
-* [snakeyaml-engine](https://bitbucket.org/asomov/snakeyaml-engine), the YAML parser this library is based on
+* [snakeyaml-engine](https://bitbucket.org/snakeyaml/snakeyaml-engine/wiki/Home), the YAML parser this library is based on
