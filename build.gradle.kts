@@ -27,7 +27,6 @@ import com.charleskorn.kaml.build.configureWrapper
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("com.github.ben-manes.versions")
 }
 
 group = "com.charleskorn.kaml"

@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl`
-    id("com.github.ben-manes.versions") version "0.42.0"
 }
 
 repositories {

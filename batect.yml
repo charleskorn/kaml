@@ -48,12 +48,6 @@ tasks:
       container: build-env
       command: bash
 
-  outdated:
-    description: Check for outdated dependencies.
-    run:
-      container: build-env
-      command: ./gradlew dependencyUpdates -Drevision=release
-
   generateCodeCoverageReport:
     description: Generate a code coverage report based on a previous test run.
     run:
