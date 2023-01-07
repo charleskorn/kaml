@@ -157,7 +157,7 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
     private enum class CurrentField {
         NotStarted,
         Type,
-        Content
+        Content,
     }
 
     companion object {

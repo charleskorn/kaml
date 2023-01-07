@@ -26,7 +26,7 @@ class YamlTaggedNodeTest : DescribeSpec({
         describe("testing equivalence") {
             val tagged = YamlTaggedNode(
                 "tag",
-                YamlScalar("test", YamlPath.root)
+                YamlScalar("test", YamlPath.root),
             )
 
             context("comparing it to the same instance") {
@@ -38,7 +38,7 @@ class YamlTaggedNodeTest : DescribeSpec({
             context("comparing it to another non-tagged node") {
                 it("indicates that they are not equivalent") {
                     tagged.equivalentContentTo(
-                        YamlScalar("test", YamlPath.root)
+                        YamlScalar("test", YamlPath.root),
                     ) shouldBe false
                 }
             }
@@ -48,8 +48,8 @@ class YamlTaggedNodeTest : DescribeSpec({
                     tagged.equivalentContentTo(
                         YamlTaggedNode(
                             "tag2",
-                            YamlScalar("test", YamlPath.root)
-                        )
+                            YamlScalar("test", YamlPath.root),
+                        ),
                     ) shouldBe false
                 }
             }
@@ -59,8 +59,8 @@ class YamlTaggedNodeTest : DescribeSpec({
                     tagged.equivalentContentTo(
                         YamlTaggedNode(
                             "tag",
-                            YamlScalar("test2", YamlPath.root)
-                        )
+                            YamlScalar("test2", YamlPath.root),
+                        ),
                     ) shouldBe false
                 }
             }

@@ -23,7 +23,7 @@ import kotlinx.serialization.SerializationException
 public open class YamlException(
     override val message: String,
     public val path: YamlPath,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : SerializationException(message, cause) {
     public val location: Location = path.endLocation
     public val line: Int = location.line
@@ -35,7 +35,7 @@ public open class YamlException(
 public class DuplicateKeyException(
     public val originalPath: YamlPath,
     public val duplicatePath: YamlPath,
-    public val key: String
+    public val key: String,
 ) :
     YamlException("Duplicate key $key. It was previously given at line ${originalPath.endLocation.line}, column ${originalPath.endLocation.column}.", duplicatePath) {
 
@@ -49,7 +49,7 @@ public class InvalidPropertyValueException(
     public val propertyName: String,
     public val reason: String,
     path: YamlPath,
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) : YamlException("Value for '$propertyName' is invalid: $reason", path, cause)
 
 public class MalformedYamlException(message: String, path: YamlPath) : YamlException(message, path)
@@ -59,14 +59,14 @@ public class UnexpectedNullValueException(path: YamlPath) : YamlException("Unexp
 public class MissingRequiredPropertyException(
     public val propertyName: String,
     path: YamlPath,
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) :
     YamlException("Property '$propertyName' is required but it is missing.", path, cause)
 
 public class UnknownPropertyException(
     public val propertyName: String,
     public val validPropertyNames: Set<String>,
-    path: YamlPath
+    path: YamlPath,
 ) :
     YamlException("Unknown property '$propertyName'. Known properties are: ${validPropertyNames.sorted().joinToString(", ")}", path)
 
@@ -74,14 +74,14 @@ public class UnknownPolymorphicTypeException(
     public val typeName: String,
     public val validTypeNames: Set<String>,
     path: YamlPath,
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) :
     YamlException("Unknown type '$typeName'. Known types are: ${validTypeNames.sorted().joinToString(", ")}", path, cause)
 
 public class YamlScalarFormatException(
     message: String,
     path: YamlPath,
-    public val originalValue: String
+    public val originalValue: String,
 ) : YamlException(message, path)
 
 public open class IncorrectTypeException(message: String, path: YamlPath) : YamlException(message, path)
@@ -95,6 +95,6 @@ public class UnknownAnchorException(public val anchorName: String, path: YamlPat
 public class NoAnchorForExtensionException(
     public val key: String,
     public val extensionDefinitionPrefix: String,
-    path: YamlPath
+    path: YamlPath,
 ) :
     YamlException("The key '$key' starts with the extension definition prefix '$extensionDefinitionPrefix' but does not define an anchor.", path)

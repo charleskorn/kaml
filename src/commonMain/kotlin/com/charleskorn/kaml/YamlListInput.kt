@@ -39,7 +39,7 @@ internal class YamlListInput(val list: YamlList, context: SerializersModule, con
             list.items[nextElementIndex],
             serializersModule,
             configuration,
-            descriptor.getElementDescriptor(0)
+            descriptor.getElementDescriptor(0),
         )
 
         return nextElementIndex++

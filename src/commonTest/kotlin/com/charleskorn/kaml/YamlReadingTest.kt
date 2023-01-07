@@ -243,7 +243,7 @@ class YamlReadingTest : DescribeSpec({
 
             mapOf(
                 "Value1" to TestEnum.Value1,
-                "Value2" to TestEnum.Value2
+                "Value2" to TestEnum.Value2,
             ).forEach { (input, expectedValue) ->
                 context("given the input '$input'") {
                     context("parsing that input as an enumeration value") {
@@ -700,7 +700,7 @@ class YamlReadingTest : DescribeSpec({
                         result shouldBe
                             listOf(
                                 listOf("thing1", "thing2"),
-                                listOf("thing3")
+                                listOf("thing3"),
                             )
                     }
                 }
@@ -719,7 +719,7 @@ class YamlReadingTest : DescribeSpec({
                         result shouldBe
                             listOf(
                                 SimpleStructure("thing1"),
-                                SimpleStructure("thing2")
+                                SimpleStructure("thing2"),
                             )
                     }
                 }
@@ -758,7 +758,7 @@ class YamlReadingTest : DescribeSpec({
                                 TestEnum.Value1,
                                 true,
                                 'A',
-                                "present"
+                                "present",
                             )
                     }
                 }
@@ -795,7 +795,7 @@ class YamlReadingTest : DescribeSpec({
                                 TestEnum.Value1,
                                 true,
                                 'A',
-                                null
+                                null,
                             )
                     }
                 }
@@ -831,7 +831,7 @@ class YamlReadingTest : DescribeSpec({
                                 TestEnum.Value1,
                                 true,
                                 'A',
-                                null
+                                null,
                             )
                     }
                 }
@@ -921,7 +921,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as map") {
                     val result = Yaml.default.decodeFromString(
                         MapSerializer(String.serializer(), String.serializer()),
-                        input
+                        input,
                     )
                     it("deserializes it to a Map ignoring the tag") {
                         result shouldBe mapOf("foo" to "bar")
@@ -998,7 +998,7 @@ class YamlReadingTest : DescribeSpec({
                     "double" to "Value 'xxx' is not a valid floating point value.",
                     "enum" to "Value 'xxx' is not a valid option, permitted choices are: Value1, Value2",
                     "boolean" to "Value 'xxx' is not a valid boolean, permitted choices are: true or false",
-                    "char" to "Value 'xxx' is not a valid character value."
+                    "char" to "Value 'xxx' is not a valid character value.",
                 ).forEach { (fieldName, errorMessage) ->
                     context("given the invalid field represents a $fieldName") {
                         val input = "$fieldName: xxx"
@@ -1130,7 +1130,7 @@ class YamlReadingTest : DescribeSpec({
                         result shouldBe
                             mapOf(
                                 "SOME_ENV_VAR" to "somevalue",
-                                "SOME_OTHER_ENV_VAR" to "someothervalue"
+                                "SOME_OTHER_ENV_VAR" to "someothervalue",
                             )
                     }
                 }
@@ -1374,7 +1374,7 @@ class YamlReadingTest : DescribeSpec({
                                     TestSealedStructure.SimpleSealedString(null),
                                     TestSealedStructure.SimpleSealedInt(-987),
                                     TestSealedStructure.SimpleSealedInt(654),
-                                    TestSealedStructure.SimpleSealedString("tests")
+                                    TestSealedStructure.SimpleSealedString("tests"),
                                 )
                         }
                     }
@@ -1602,7 +1602,7 @@ class YamlReadingTest : DescribeSpec({
                     "a list" to "[]",
                     "a map" to "{}",
                     "a null value" to "null",
-                    "a tagged value" to "!<tag> sealedString"
+                    "a tagged value" to "!<tag> sealedString",
                 ).forEach { (description, value) ->
                     context("given some input with a type property that is $description") {
                         val input = """
@@ -1648,7 +1648,7 @@ class YamlReadingTest : DescribeSpec({
                                     TestSealedStructure.SimpleSealedString(null),
                                     TestSealedStructure.SimpleSealedInt(-987),
                                     TestSealedStructure.SimpleSealedInt(654),
-                                    TestSealedStructure.SimpleSealedString("tests")
+                                    TestSealedStructure.SimpleSealedString("tests"),
                                 )
                         }
                     }
@@ -1812,7 +1812,7 @@ class YamlReadingTest : DescribeSpec({
                     "a list" to "[]",
                     "a map" to "{}",
                     "a null value" to "null",
-                    "a tagged value" to "!<tag> sealedString"
+                    "a tagged value" to "!<tag> sealedString",
                 ).forEach { (description, value) ->
                     context("given some input with a type property that is $description") {
                         val input = """
@@ -1858,7 +1858,7 @@ class YamlReadingTest : DescribeSpec({
                                     TestSealedStructure.SimpleSealedString(null),
                                     TestSealedStructure.SimpleSealedInt(-987),
                                     TestSealedStructure.SimpleSealedInt(654),
-                                    TestSealedStructure.SimpleSealedString("tests")
+                                    TestSealedStructure.SimpleSealedString("tests"),
                                 )
                         }
                     }
@@ -2025,7 +2025,7 @@ class YamlReadingTest : DescribeSpec({
             data class Scenario(
                 val description: String,
                 val serializer: KSerializer<out Any?>,
-                val expectedErrorMessage: String = description
+                val expectedErrorMessage: String = description,
             )
 
             context("given a list") {
@@ -2042,7 +2042,7 @@ class YamlReadingTest : DescribeSpec({
                     Scenario("an enumeration value", TestEnum.serializer()),
                     Scenario("a map", MapSerializer(String.serializer(), String.serializer())),
                     Scenario("an object", ComplexStructure.serializer()),
-                    Scenario("a nullable string", String.serializer().nullable, "a string")
+                    Scenario("a nullable string", String.serializer().nullable, "a string"),
                 ).forEach { (description, serializer, expectedErrorMessage) ->
                     val input = "- thing"
 
@@ -2127,7 +2127,7 @@ class YamlReadingTest : DescribeSpec({
                     Scenario("a character", Char.serializer()),
                     Scenario("an enumeration value", TestEnum.serializer()),
                     Scenario("a list", ListSerializer(String.serializer())),
-                    Scenario("a nullable string", String.serializer().nullable, "a string")
+                    Scenario("a nullable string", String.serializer().nullable, "a string"),
                 ).forEach { (description, serializer, expectedErrorMessage) ->
                     val input = "key: value"
 
@@ -2203,7 +2203,7 @@ class YamlReadingTest : DescribeSpec({
                 mapOf(
                     "a list" to ListSerializer(String.serializer()),
                     "a map" to MapSerializer(String.serializer(), String.serializer()),
-                    "an object" to ComplexStructure.serializer()
+                    "an object" to ComplexStructure.serializer(),
                 ).forEach { (description, serializer) ->
                     val input = "blah"
 
@@ -2278,7 +2278,7 @@ class YamlReadingTest : DescribeSpec({
             mapOf(
                 "scalar" to "2",
                 "list" to "[ thing ]",
-                "map" to "{ key: value }"
+                "map" to "{ key: value }",
             ).forEach { (description, input) ->
                 context("given some input representing a $description") {
                     context("parsing that input using a contextual serializer at the top level") {
@@ -2305,7 +2305,7 @@ class YamlReadingTest : DescribeSpec({
 
                     mapOf(
                         PrimitiveKind.STRING to "a string",
-                        StructureKind.LIST to "a list"
+                        StructureKind.LIST to "a list",
                     ).forEach { (kind, description) ->
                         context("attempting to begin $description") {
                             it("throws an exception with the correct location information") {
@@ -2329,7 +2329,7 @@ class YamlReadingTest : DescribeSpec({
                         StructureKind.OBJECT to "an object",
                         StructureKind.CLASS to "an object",
                         StructureKind.MAP to "a map",
-                        PrimitiveKind.STRING to "a string"
+                        PrimitiveKind.STRING to "a string",
                     ).forEach { (kind, description) ->
                         context("attempting to begin $kind") {
                             it("throws an exception with the correct location information") {
@@ -2353,7 +2353,7 @@ class YamlReadingTest : DescribeSpec({
                         StructureKind.OBJECT to "an object",
                         StructureKind.CLASS to "an object",
                         StructureKind.MAP to "a map",
-                        StructureKind.LIST to "a list"
+                        StructureKind.LIST to "a list",
                     ).forEach { (kind, description) ->
                         context("attempting to begin $kind") {
                             it("throws an exception with the correct location information") {
@@ -2386,14 +2386,14 @@ private data class ComplexStructure(
     val enum: TestEnum,
     val boolean: Boolean,
     val char: Char,
-    val nullable: String? = null
+    val nullable: String? = null,
 )
 
 @Serializable
 private data class StructureWithLocationThrowingSerializer(
     @Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
     @Serializable(with = LocationThrowingSerializer::class)
-    val value: CustomSerializedValue
+    val value: CustomSerializedValue,
 )
 
 private data class CustomSerializedValue(val thing: String)

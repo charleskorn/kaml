@@ -44,12 +44,12 @@ public data class YamlConfiguration constructor(
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
-    internal val sequenceBlockIndent: Int = 0
+    internal val sequenceBlockIndent: Int = 0,
 )
 
 public enum class PolymorphismStyle {
     Tag,
-    Property
+    Property,
 }
 
 public enum class SequenceStyle {
@@ -69,20 +69,21 @@ public enum class SequenceStyle {
      * [1, 2, 3]
      * ```
      */
-    Flow
+    Flow,
 }
 
 public enum class MultiLineStringStyle {
     Literal,
     DoubleQuoted,
     SingleQuoted,
-    Plain
+    Plain,
 }
 
 public enum class SingleLineStringStyle {
     DoubleQuoted,
     SingleQuoted,
-    Plain;
+    Plain,
+    ;
 
     public val multiLineStringStyle: MultiLineStringStyle
         get() = when (this) {

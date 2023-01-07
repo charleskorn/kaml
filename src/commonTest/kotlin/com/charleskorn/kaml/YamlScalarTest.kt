@@ -32,7 +32,7 @@ class YamlScalarTest : DescribeSpec({
             "0x11" to 17,
             "-0x11" to -17,
             "0o11" to 9,
-            "-0o11" to -9
+            "-0o11" to -9,
         ).forEach { (content, expectedValue) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root)
@@ -81,7 +81,7 @@ class YamlScalarTest : DescribeSpec({
                 "+",
                 "0x",
                 "0o",
-                ""
+                "",
             ).forEach { content ->
                 context("given a scalar with the content '$content'") {
                     val path = YamlPath.root.withListEntry(1, Location(2, 4))
@@ -166,7 +166,7 @@ class YamlScalarTest : DescribeSpec({
                 ".INF" to Double.POSITIVE_INFINITY,
                 "-.inf" to Double.NEGATIVE_INFINITY,
                 "-.Inf" to Double.NEGATIVE_INFINITY,
-                "-.INF" to Double.NEGATIVE_INFINITY
+                "-.INF" to Double.NEGATIVE_INFINITY,
             ).forEach { (content, expectedResult) ->
                 context("given a scalar with the content '$content'") {
                     val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
@@ -202,7 +202,7 @@ class YamlScalarTest : DescribeSpec({
                 ".INF" to Float.POSITIVE_INFINITY,
                 "-.inf" to Float.NEGATIVE_INFINITY,
                 "-.Inf" to Float.NEGATIVE_INFINITY,
-                "-.INF" to Float.NEGATIVE_INFINITY
+                "-.INF" to Float.NEGATIVE_INFINITY,
             ).forEach { (content, expectedResult) ->
                 context("given a scalar with the content '$content'") {
                     val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
@@ -227,7 +227,7 @@ class YamlScalarTest : DescribeSpec({
                 "1e-",
                 "1e+",
                 "+",
-                ""
+                "",
             ).forEach { content ->
                 context("given a scalar with the content '$content'") {
                     val path = YamlPath.root.withListEntry(1, Location(2, 4))
@@ -270,7 +270,7 @@ class YamlScalarTest : DescribeSpec({
             "TRUE" to true,
             "false" to false,
             "False" to false,
-            "FALSE" to false
+            "FALSE" to false,
         ).forEach { (content, expectedValue) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
@@ -318,7 +318,7 @@ class YamlScalarTest : DescribeSpec({
 
         listOf(
             "aa",
-            ""
+            "",
         ).forEach { content ->
             context("given a scalar with the content '$content'") {
                 val path = YamlPath.root.withListEntry(1, Location(2, 4))

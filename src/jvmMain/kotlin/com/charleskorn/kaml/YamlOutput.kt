@@ -48,7 +48,7 @@ import java.util.Optional
 internal class YamlOutput(
     writer: StreamDataWriter,
     override val serializersModule: SerializersModule,
-    private val configuration: YamlConfiguration
+    private val configuration: YamlConfiguration,
 ) : AbstractEncoder(), AutoCloseable {
     private val settings = DumpSettings.builder()
         .setDumpComments(true)

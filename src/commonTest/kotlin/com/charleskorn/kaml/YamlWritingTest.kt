@@ -357,7 +357,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a list of a list of integers") {
                 val input = listOf(
                     listOf(1, 2, 3),
-                    listOf(4, 5)
+                    listOf(4, 5),
                 )
 
                 val output = Yaml.default.encodeToString(ListSerializer(ListSerializer(Int.serializer())), input)
@@ -377,7 +377,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a list of a list of integers in flow form") {
                 val input = listOf(
                     listOf(1, 2, 3),
-                    listOf(4, 5)
+                    listOf(4, 5),
                 )
 
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
@@ -392,11 +392,11 @@ class YamlWritingTest : DescribeSpec({
                 val input = listOf(
                     mapOf(
                         "key1" to "value1",
-                        "key2" to "value2"
+                        "key2" to "value2",
                     ),
                     mapOf(
-                        "key3" to "value3"
-                    )
+                        "key3" to "value3",
+                    ),
                 )
 
                 val serializer = ListSerializer(MapSerializer(String.serializer(), String.serializer()))
@@ -415,7 +415,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a list of objects") {
                 val input = listOf(
                     SimpleStructure("name1"),
-                    SimpleStructure("name2")
+                    SimpleStructure("name2"),
                 )
 
                 val output = Yaml.default.encodeToString(ListSerializer(SimpleStructure.serializer()), input)
@@ -431,7 +431,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a list of objects in flow form") {
                 val input = listOf(
                     SimpleStructure("name1"),
-                    SimpleStructure("name2")
+                    SimpleStructure("name2"),
                 )
 
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow)).encodeToString(ListSerializer(SimpleStructure.serializer()), input)
@@ -449,7 +449,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a map of strings to strings") {
                 val input = mapOf(
                     "key1" to "value1",
-                    "key2" to "value2"
+                    "key2" to "value2",
                 )
 
                 val output = Yaml.default.encodeToString(MapSerializer(String.serializer(), String.serializer()), input)
@@ -467,11 +467,11 @@ class YamlWritingTest : DescribeSpec({
                 val input = mapOf(
                     "map1" to mapOf(
                         "key1" to "value1",
-                        "key2" to "value2"
+                        "key2" to "value2",
                     ),
                     "map2" to mapOf(
-                        "key3" to "value3"
-                    )
+                        "key3" to "value3",
+                    ),
                 )
 
                 val serializer = MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer()))
@@ -492,7 +492,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a map of strings to lists") {
                 val input = mapOf(
                     "list1" to listOf(1, 2, 3),
-                    "list2" to listOf(4, 5, 6)
+                    "list2" to listOf(4, 5, 6),
                 )
 
                 val serializer = MapSerializer(String.serializer(), ListSerializer(Int.serializer()))
@@ -516,7 +516,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a map of strings to objects") {
                 val input = mapOf(
                     "item1" to SimpleStructure("name1"),
-                    "item2" to SimpleStructure("name2")
+                    "item2" to SimpleStructure("name2"),
                 )
 
                 val serializer = MapSerializer(String.serializer(), SimpleStructure.serializer())
@@ -550,7 +550,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a nested object") {
                 val input = NestedObjects(
                     SimpleStructure("name1"),
-                    SimpleStructure("name2")
+                    SimpleStructure("name2"),
                 )
 
                 context("with default indentation") {
@@ -616,8 +616,8 @@ class YamlWritingTest : DescribeSpec({
                 val input = ThingWithMap(
                     mapOf(
                         "var1" to "value1",
-                        "var2" to "value2"
-                    )
+                        "var2" to "value2",
+                    ),
                 )
 
                 val output = Yaml.default.encodeToString(ThingWithMap.serializer(), input)
@@ -694,7 +694,7 @@ class YamlWritingTest : DescribeSpec({
                         TestSealedStructure.SimpleSealedString("some test"),
                         TestSealedStructure.SimpleSealedInt(-20),
                         TestSealedStructure.SimpleSealedString(null),
-                        null
+                        null,
                     )
 
                     val output = polymorphicYaml.encodeToString(ListSerializer(TestSealedStructure.serializer().nullable), input)
@@ -775,7 +775,7 @@ class YamlWritingTest : DescribeSpec({
                         TestSealedStructure.SimpleSealedString("some test"),
                         TestSealedStructure.SimpleSealedInt(-20),
                         TestSealedStructure.SimpleSealedString(null),
-                        null
+                        null,
                     )
 
                     val output = polymorphicYaml.encodeToString(ListSerializer(TestSealedStructure.serializer().nullable), input)
@@ -856,7 +856,7 @@ class YamlWritingTest : DescribeSpec({
                         TestSealedStructure.SimpleSealedString("some test"),
                         TestSealedStructure.SimpleSealedInt(-20),
                         TestSealedStructure.SimpleSealedString(null),
-                        null
+                        null,
                     )
 
                     val output = polymorphicYaml.encodeToString(ListSerializer(TestSealedStructure.serializer().nullable), input)
@@ -964,7 +964,7 @@ class YamlWritingTest : DescribeSpec({
 
 @Serializable
 private data class SimpleStructureWithDefault(
-    val name: String = "default"
+    val name: String = "default",
 )
 
 @Serializable
@@ -974,9 +974,9 @@ private data class SimpleStructureWithComments(
     val myInt: Int,
     @YamlComment(
         "Testing",
-        "multiline"
+        "multiline",
     )
-    val test: String
+    val test: String,
 )
 
 @Serializable

@@ -28,9 +28,9 @@ class YamlListTest : DescribeSpec({
             val list = YamlList(
                 listOf(
                     YamlScalar("item 1", YamlPath.root.withListEntry(0, Location(4, 5))),
-                    YamlScalar("item 2", YamlPath.root.withListEntry(1, Location(6, 7)))
+                    YamlScalar("item 2", YamlPath.root.withListEntry(1, Location(6, 7))),
                 ),
-                YamlPath.root
+                YamlPath.root,
             )
 
             describe("comparing it to the same instance") {
@@ -83,9 +83,9 @@ class YamlListTest : DescribeSpec({
             val list = YamlList(
                 listOf(
                     YamlScalar("item 1", firstItemPath),
-                    YamlScalar("item 2", secondItemPath)
+                    YamlScalar("item 2", secondItemPath),
                 ),
-                YamlPath.root
+                YamlPath.root,
             )
 
             describe("getting element in bounds") {
@@ -124,9 +124,9 @@ class YamlListTest : DescribeSpec({
                 val list = YamlList(
                     listOf(
                         YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
-                        YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
+                        YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1))),
                     ),
-                    YamlPath.root
+                    YamlPath.root,
                 )
 
                 it("returns all items separated by commas and surrounded by square brackets") {
@@ -139,9 +139,9 @@ class YamlListTest : DescribeSpec({
             val original = YamlList(
                 listOf(
                     YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
-                    YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1)))
+                    YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1))),
                 ),
-                YamlPath.root
+                YamlPath.root,
             )
 
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
@@ -149,9 +149,9 @@ class YamlListTest : DescribeSpec({
             val expected = YamlList(
                 listOf(
                     YamlScalar("hello", newPath.withListEntry(0, Location(1, 1))),
-                    YamlScalar("world", newPath.withListEntry(1, Location(2, 1)))
+                    YamlScalar("world", newPath.withListEntry(1, Location(2, 1))),
                 ),
-                newPath
+                newPath,
             )
 
             it("returns a new list node with the path for the node and its items updated to the new path") {

@@ -33,7 +33,7 @@ import kotlinx.serialization.modules.SerializersModule
 public sealed class YamlInput(
     public val node: YamlNode,
     override var serializersModule: SerializersModule,
-    public val configuration: YamlConfiguration
+    public val configuration: YamlConfiguration,
 ) : AbstractDecoder() {
     internal companion object {
         private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required for type with serial name '.*', but it was missing$""".toRegex()

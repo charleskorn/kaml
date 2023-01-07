@@ -22,22 +22,22 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SimpleStructure(
-    val name: String
+    val name: String,
 )
 
 @Serializable
 data class Team(
-    val members: List<String>
+    val members: List<String>,
 )
 
 @Serializable
 data class NestedObjects(
     val firstPerson: SimpleStructure,
-    val secondPerson: SimpleStructure
+    val secondPerson: SimpleStructure,
 )
 
 @Serializable
 enum class TestEnum {
     Value1,
-    Value2
+    Value2,
 }

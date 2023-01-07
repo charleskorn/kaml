@@ -30,5 +30,5 @@ import kotlinx.serialization.SerialInfo
 @Retention(AnnotationRetention.BINARY)
 @SerialInfo
 public annotation class YamlComment(
-    vararg val lines: String
+    vararg val lines: String,
 )

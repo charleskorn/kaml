@@ -44,7 +44,7 @@ class YamlMapTest : DescribeSpec({
                     shouldNotThrowAny {
                         YamlMap(
                             mapOf(YamlScalar("key", key1Path) to YamlScalar("value", key1ValuePath)),
-                            mapPath
+                            mapPath,
                         )
                     }
                 }
@@ -56,9 +56,9 @@ class YamlMapTest : DescribeSpec({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
-                                YamlScalar("key2", key2Path) to YamlScalar("value", key2ValuePath)
+                                YamlScalar("key2", key2Path) to YamlScalar("value", key2ValuePath),
                             ),
-                            mapPath
+                            mapPath,
                         )
                     }
                 }
@@ -70,9 +70,9 @@ class YamlMapTest : DescribeSpec({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", key1Path) to YamlScalar("value", key1ValuePath),
-                                YamlScalar("key1", key2Path) to YamlScalar("value", key2ValuePath)
+                                YamlScalar("key1", key2Path) to YamlScalar("value", key2ValuePath),
                             ),
-                            mapPath
+                            mapPath,
                         )
                     }
 
@@ -101,9 +101,9 @@ class YamlMapTest : DescribeSpec({
             val map = YamlMap(
                 mapOf(
                     YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
-                    YamlScalar("key2", key2Path) to YamlScalar("item 2", key2ValuePath)
+                    YamlScalar("key2", key2Path) to YamlScalar("item 2", key2ValuePath),
                 ),
-                mapPath
+                mapPath,
             )
 
             context("comparing it to the same instance") {
@@ -124,10 +124,10 @@ class YamlMapTest : DescribeSpec({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key2", key1Path) to YamlScalar("item 2", key1ValuePath),
-                                YamlScalar("key1", key2Path) to YamlScalar("item 1", key2ValuePath)
+                                YamlScalar("key1", key2Path) to YamlScalar("item 1", key2ValuePath),
                             ),
-                            mapPath
-                        )
+                            mapPath,
+                        ),
                     ) shouldBe true
                 }
             }
@@ -138,10 +138,10 @@ class YamlMapTest : DescribeSpec({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
-                                YamlScalar("key3", key2Path) to YamlScalar("item 2", key2ValuePath)
+                                YamlScalar("key3", key2Path) to YamlScalar("item 2", key2ValuePath),
                             ),
-                            mapPath
-                        )
+                            mapPath,
+                        ),
                     ) shouldBe false
                 }
             }
@@ -152,10 +152,10 @@ class YamlMapTest : DescribeSpec({
                         YamlMap(
                             mapOf(
                                 YamlScalar("key1", key1Path) to YamlScalar("item 1", key1ValuePath),
-                                YamlScalar("key2", key2Path) to YamlScalar("item 3", key2ValuePath)
+                                YamlScalar("key2", key2Path) to YamlScalar("item 3", key2ValuePath),
                             ),
-                            mapPath
-                        )
+                            mapPath,
+                        ),
                     ) shouldBe false
                 }
             }
@@ -202,9 +202,9 @@ class YamlMapTest : DescribeSpec({
             context("a map with a single entry") {
                 val map = YamlMap(
                     mapOf(
-                        YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath)
+                        YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
                     ),
-                    YamlPath.root
+                    YamlPath.root,
                 )
 
                 it("returns that item surrounded by curly brackets") {
@@ -216,9 +216,9 @@ class YamlMapTest : DescribeSpec({
                 val map = YamlMap(
                     mapOf(
                         YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
-                        YamlScalar("also", alsoKeyPath) to YamlScalar("thanks", alsoValuePath)
+                        YamlScalar("also", alsoKeyPath) to YamlScalar("thanks", alsoValuePath),
                     ),
-                    YamlPath.root
+                    YamlPath.root,
                 )
 
                 it("returns all items separated by commas and surrounded by curly brackets") {
@@ -236,9 +236,9 @@ class YamlMapTest : DescribeSpec({
             val map = YamlMap(
                 mapOf(
                     YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
-                    YamlScalar("also", alsoKeyPath) to YamlScalar("something", alsoValuePath)
+                    YamlScalar("also", alsoKeyPath) to YamlScalar("something", alsoValuePath),
                 ),
-                YamlPath.root
+                YamlPath.root,
             )
 
             context("the key is not in the map") {
@@ -264,9 +264,9 @@ class YamlMapTest : DescribeSpec({
             val map = YamlMap(
                 mapOf(
                     YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
-                    YamlScalar("also", alsoKeyPath) to YamlList(listOf(YamlScalar("something", alsoValueListEntryPath)), alsoValuePath)
+                    YamlScalar("also", alsoKeyPath) to YamlList(listOf(YamlScalar("something", alsoValueListEntryPath)), alsoValuePath),
                 ),
-                YamlPath.root
+                YamlPath.root,
             )
 
             context("the key is not in the map") {
@@ -304,9 +304,9 @@ class YamlMapTest : DescribeSpec({
             val map = YamlMap(
                 mapOf(
                     YamlScalar("hello", helloKeyPath) to YamlScalar("world", helloValuePath),
-                    YamlScalar("also", alsoKeyPath) to YamlScalar("something", alsoValuePath)
+                    YamlScalar("also", alsoKeyPath) to YamlScalar("something", alsoValuePath),
                 ),
-                YamlPath.root
+                YamlPath.root,
             )
 
             context("the key is not in the map") {
@@ -332,9 +332,9 @@ class YamlMapTest : DescribeSpec({
             val original = YamlMap(
                 mapOf(
                     YamlScalar("key1", originalKey1Path) to YamlScalar("value", originalKey1ValuePath),
-                    YamlScalar("key2", originalKey2Path) to YamlScalar("value", originalKey2ValuePath)
+                    YamlScalar("key2", originalKey2Path) to YamlScalar("value", originalKey2ValuePath),
                 ),
-                originalPath
+                originalPath,
             )
 
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
@@ -346,9 +346,9 @@ class YamlMapTest : DescribeSpec({
             val expected = YamlMap(
                 mapOf(
                     YamlScalar("key1", newKey1Path) to YamlScalar("value", newKey1ValuePath),
-                    YamlScalar("key2", newKey2Path) to YamlScalar("value", newKey2ValuePath)
+                    YamlScalar("key2", newKey2Path) to YamlScalar("value", newKey2ValuePath),
                 ),
-                newPath
+                newPath,
             )
 
             it("returns a new map node with the path for the node and its keys and values updated to the new path") {
@@ -362,9 +362,9 @@ class YamlMapTest : DescribeSpec({
             val valuePath = keyPath.withMapElementValue(Location(3, 7))
             val value = YamlMap(
                 mapOf(
-                    YamlScalar("something", keyPath) to YamlScalar("some value", valuePath)
+                    YamlScalar("something", keyPath) to YamlScalar("some value", valuePath),
                 ),
-                path
+                path,
             )
 
             it("returns a human-readable description of itself") {

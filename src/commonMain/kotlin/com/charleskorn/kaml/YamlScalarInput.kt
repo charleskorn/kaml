@@ -50,7 +50,7 @@ internal class YamlScalarInput(val scalar: YamlScalar, context: SerializersModul
         throw YamlScalarFormatException(
             "Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices",
             scalar.path,
-            scalar.content
+            scalar.content,
         )
     }
 
