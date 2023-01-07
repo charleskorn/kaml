@@ -52,7 +52,7 @@ internal class YamlObjectInput(map: YamlMap, context: SerializersModule, configu
                     entriesList[nextIndex].value,
                     serializersModule,
                     configuration,
-                    descriptor.getElementDescriptor(fieldDescriptorIndex)
+                    descriptor.getElementDescriptor(fieldDescriptorIndex),
                 )
             } catch (e: IncorrectTypeException) {
                 throw InvalidPropertyValueException(propertyName, e.message, e.path, e)

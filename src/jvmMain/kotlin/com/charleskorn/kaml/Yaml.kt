@@ -37,7 +37,7 @@ import java.nio.charset.Charset
 
 public actual class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
-    public actual val configuration: YamlConfiguration = YamlConfiguration()
+    public actual val configuration: YamlConfiguration = YamlConfiguration(),
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         return decodeFromReader(deserializer, StringReader(string))

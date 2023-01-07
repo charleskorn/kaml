@@ -93,7 +93,7 @@ class YamlPathTest : DescribeSpec({
                 val path = YamlPath(
                     YamlPathSegment.Root,
                     YamlPathSegment.ListEntry(2, Location(3, 4)),
-                    YamlPathSegment.MapElementKey("something", Location(5, 6))
+                    YamlPathSegment.MapElementKey("something", Location(5, 6)),
                 )
 
                 it("returns the location of the last element of the path") {

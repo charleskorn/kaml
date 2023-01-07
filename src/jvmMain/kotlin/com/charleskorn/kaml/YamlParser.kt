@@ -92,7 +92,8 @@ internal class YamlParser(reader: Reader) {
     private fun translateYamlEngineExceptionMessage(message: String): String = when (message) {
         "mapping values are not allowed here",
         "expected <block end>, but found '<block sequence start>'",
-        "expected <block end>, but found '<block mapping start>'" ->
+        "expected <block end>, but found '<block mapping start>'",
+        ->
             "$message (is the indentation level of this line or a line nearby incorrect?)"
         else -> message
     }

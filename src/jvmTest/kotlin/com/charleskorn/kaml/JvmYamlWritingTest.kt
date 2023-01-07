@@ -37,9 +37,9 @@ class JvmYamlWritingTest : DescribeSpec({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            multiLineStringStyle = MultiLineStringStyle.Literal
-                        )
-                    )
+                            multiLineStringStyle = MultiLineStringStyle.Literal,
+                        ),
+                    ),
                 ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
@@ -57,9 +57,9 @@ class JvmYamlWritingTest : DescribeSpec({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            multiLineStringStyle = MultiLineStringStyle.DoubleQuoted
-                        )
-                    )
+                            multiLineStringStyle = MultiLineStringStyle.DoubleQuoted,
+                        ),
+                    ),
                 ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello\nworld\nhow are | you?\n", output)
@@ -74,9 +74,9 @@ class JvmYamlWritingTest : DescribeSpec({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            singleLineStringStyle = SingleLineStringStyle.SingleQuoted
-                        )
-                    )
+                            singleLineStringStyle = SingleLineStringStyle.SingleQuoted,
+                        ),
+                    ),
                 ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)
@@ -90,9 +90,9 @@ class JvmYamlWritingTest : DescribeSpec({
                 with(
                     Yaml(
                         configuration = YamlConfiguration(
-                            singleLineStringStyle = SingleLineStringStyle.DoubleQuoted
-                        )
-                    )
+                            singleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
+                        ),
+                    ),
                 ) {
                     val output = ByteArrayOutputStream()
                     encodeToStream(String.serializer(), "hello, world", output)

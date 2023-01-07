@@ -29,7 +29,7 @@ import java.util.Optional
 
 internal actual class YamlNodeReader(
     private val parser: YamlParser,
-    private val extensionDefinitionPrefix: String? = null
+    private val extensionDefinitionPrefix: String? = null,
 ) {
     private val aliases = mutableMapOf<Anchor, YamlNode>()
 

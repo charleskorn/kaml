@@ -28,7 +28,7 @@ internal class YamlNullInput(val nullValue: YamlNode, context: SerializersModule
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.path)
     override fun decodeCollectionSize(descriptor: SerialDescriptor): Int = throw UnexpectedNullValueException(nullValue.path)
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = throw UnexpectedNullValueException(
-        nullValue.path
+        nullValue.path,
     )
 
     override fun getCurrentLocation(): Location = nullValue.location

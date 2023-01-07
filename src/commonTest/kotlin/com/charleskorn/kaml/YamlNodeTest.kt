@@ -39,7 +39,7 @@ class YamlNodeTest : DescribeSpec({
             Triple("YamlNull", YamlNode::yamlNull, testNull),
             Triple("YamlList", YamlNode::yamlList, testList),
             Triple("YamlMap", YamlNode::yamlMap, testMap),
-            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testTaggedNode)
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testTaggedNode),
         ).forEach { (type, method, value) ->
             it("successfully converts to $type") {
                 shouldNotThrowAny { method(value) }
@@ -67,7 +67,7 @@ class YamlNodeTest : DescribeSpec({
             Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testScalar),
             Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testNull),
             Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testList),
-            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testMap)
+            Triple("YamlTaggedNode", YamlNode::yamlTaggedNode, testMap),
         ).forEach { (type, method, value) ->
             val fromType = value::class.simpleName
             it("throws when converting from $fromType to $type") {

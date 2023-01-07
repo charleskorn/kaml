@@ -132,7 +132,7 @@ data class UnwrappedClass(val value: String, val otherValue: String) : Unwrapped
 @Serializable
 @SerialName("simpleEnum")
 enum class UnwrappedEnum : UnwrappedInterface {
-    TEST, TEST2;
+    TEST, TEST2
 }
 
 @OptIn(ExperimentalSerializationApi::class)

@@ -156,7 +156,7 @@ private fun Project.createSigningTasks() {
 }
 
 private fun Project.createReleaseTasks(
-    validateCredentialsTask: TaskProvider<Task>
+    validateCredentialsTask: TaskProvider<Task>,
 ) {
     setOf("closeSonatypeStagingRepository", "releaseSonatypeStagingRepository").forEach { taskName ->
         tasks.named(taskName).configure {
