@@ -116,6 +116,12 @@ public sealed class YamlInput(
 
     public abstract fun getCurrentLocation(): Location
     public abstract fun getCurrentPath(): YamlPath
+
+    public fun <T : Any?> decodeFromYamlNode(
+        node: YamlNode,
+        deserializer: DeserializationStrategy<T>,
+    ): T =
+        createFor(node, serializersModule, configuration, deserializer.descriptor).decodeSerializableValue(deserializer)
 }
 
 @OptIn(ExperimentalSerializationApi::class)

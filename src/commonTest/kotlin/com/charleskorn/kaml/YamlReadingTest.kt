@@ -2370,6 +2370,36 @@ class YamlReadingTest : DescribeSpec({
                     }
                 }
             }
+
+            describe("decoding from a YamlNode") {
+                val input = """
+                    keyA:
+                        host: A
+                    keyB:
+                        host: B
+                """.trimIndent()
+
+                val mapAsListSerializer = object : KSerializer<List<Database>> {
+                    override val descriptor = buildSerialDescriptor("DatabaseList", StructureKind.MAP) {
+                    }
+
+                    override fun deserialize(decoder: Decoder): List<Database> {
+                        check(decoder is YamlInput)
+                        return decoder.node.yamlMap.entries.map { (_, value) ->
+                            decoder.decodeFromYamlNode(value, Database.serializer())
+                        }
+                    }
+
+                    override fun serialize(encoder: Encoder, value: List<Database>) = throw UnsupportedOperationException()
+                }
+
+                val parser = Yaml.default
+                val result = parser.decodeFromString(mapAsListSerializer, input)
+
+                it("deserializes it using the dynamically installed serializer") {
+                    result shouldBe listOf(Database("A"), Database("B"))
+                }
+            }
         }
     }
 })
