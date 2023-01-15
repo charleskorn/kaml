@@ -32,7 +32,7 @@ import kotlinx.serialization.modules.SerializersModuleCollector
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class YamlPolymorphicInput(private val typeName: String, private val typeNamePath: YamlPath, private val contentNode: YamlNode, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(contentNode, context, configuration) {
+internal class YamlPolymorphicInput(private val typeName: String, private val typeNamePath: YamlPath, private val contentNode: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(contentNode, yaml, context, configuration) {
     private var currentField = CurrentField.NotStarted
     private lateinit var contentDecoder: YamlInput
 
@@ -47,8 +47,8 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
             }
             CurrentField.Type -> {
                 when (contentNode) {
-                    is YamlScalar -> contentDecoder = YamlScalarInput(contentNode, serializersModule, configuration)
-                    is YamlNull -> contentDecoder = YamlNullInput(contentNode, serializersModule, configuration)
+                    is YamlScalar -> contentDecoder = YamlScalarInput(contentNode, yaml, serializersModule, configuration)
+                    is YamlNull -> contentDecoder = YamlNullInput(contentNode, yaml, serializersModule, configuration)
                     else -> {
                         // Nothing to do here - contentDecoder is set in beginStructure() for non-scalar values.
                     }
@@ -78,7 +78,7 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
         return when (currentField) {
             CurrentField.NotStarted, CurrentField.Type -> super.beginStructure(descriptor)
             CurrentField.Content -> {
-                contentDecoder = createFor(contentNode, serializersModule, configuration, descriptor)
+                contentDecoder = createFor(contentNode, yaml, serializersModule, configuration, descriptor)
 
                 return contentDecoder
             }

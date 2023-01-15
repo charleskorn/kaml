@@ -2386,7 +2386,7 @@ class YamlReadingTest : DescribeSpec({
                     override fun deserialize(decoder: Decoder): List<Database> {
                         check(decoder is YamlInput)
                         return decoder.node.yamlMap.entries.map { (_, value) ->
-                            decoder.decodeFromYamlNode(value, Database.serializer())
+                            decoder.yaml.decodeFromYamlNode(Database.serializer(), value)
                         }
                     }
 

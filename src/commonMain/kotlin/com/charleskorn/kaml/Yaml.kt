@@ -18,10 +18,13 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.StringFormat
 
 public expect class Yaml : StringFormat {
     public val configuration: YamlConfiguration
+
+    public fun <T> decodeFromYamlNode(deserializer: DeserializationStrategy<T>, node: YamlNode): T
 
     public companion object {
         public val default: Yaml

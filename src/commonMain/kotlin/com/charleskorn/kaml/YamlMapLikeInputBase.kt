@@ -21,7 +21,7 @@ package com.charleskorn.kaml
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
 
-internal sealed class YamlMapLikeInputBase(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(map, context, configuration) {
+internal sealed class YamlMapLikeInputBase(map: YamlMap, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(map, yaml, context, configuration) {
     protected lateinit var currentValueDecoder: YamlInput
     protected lateinit var currentKey: YamlScalar
     protected var currentlyReadingValue = false
