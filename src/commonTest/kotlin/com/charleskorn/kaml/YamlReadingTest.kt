@@ -2396,8 +2396,25 @@ class YamlReadingTest : DescribeSpec({
                 val parser = Yaml.default
                 val result = parser.decodeFromString(mapAsListSerializer, input)
 
-                it("deserializes it using the dynamically installed serializer") {
+                it("decodes the map value as a list using the YamlNode") {
                     result shouldBe listOf(Database("A"), Database("B"))
+                }
+            }
+
+            describe("decoding from a YamlNode at a non-root node") {
+                val input = """
+                    databaseListing:
+                        keyA:
+                            host: A
+                        keyB:
+                            host: B
+                """.trimIndent()
+
+                val parser = Yaml(configuration = YamlConfiguration(strictMode = false))
+                val result = parser.decodeFromString(ServerConfig.serializer(), input)
+
+                it("decodes the map value as a list using the YamlNode") {
+                    result shouldBe ServerConfig(DatabaseListing(listOf(Database("A"), Database("B"))))
                 }
             }
         }
@@ -2509,6 +2526,12 @@ data class NullableNestedList(val members: List<String>?)
 @Serializable
 private data class Database(val host: String)
 
+@Serializable(with = DecodingFromYamlNodeSerializer::class)
+private data class DatabaseListing(val databases: List<Database>)
+
+@Serializable
+private data class ServerConfig(val databaseListing: DatabaseListing)
+
 private data class Inner(val name: String)
 
 @Serializable
@@ -2520,3 +2543,23 @@ private data class ObjectWithNestedContextualSerializer(@Serializable(with = Con
 @Serializable
 @JvmInline
 value class StringValue(val value: String)
+
+private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
+    override val descriptor: SerialDescriptor = buildSerialDescriptor("DecodingFromYamlNodeSerializer", StructureKind.MAP)
+
+    override fun deserialize(decoder: Decoder): DatabaseListing {
+        check(decoder is YamlInput)
+
+        val currentMap = decoder.node.yamlMap.get<YamlMap>("databaseListing")
+        checkNotNull(currentMap)
+
+        val list = currentMap.entries.map { (_, value) ->
+            println(value.path)
+            decoder.yaml.decodeFromYamlNode(Database.serializer(), value)
+        }
+
+        return DatabaseListing(list)
+    }
+
+    override fun serialize(encoder: Encoder, value: DatabaseListing) = throw UnsupportedOperationException()
+}
