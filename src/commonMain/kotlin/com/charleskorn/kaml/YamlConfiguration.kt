@@ -31,6 +31,7 @@ package com.charleskorn.kaml
  * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
  * * [breakScalarsAt]: maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines)
  * * [sequenceStyle]: how sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each
+ * * [ambiguousEscapeStyle]: how strings should be escaped when [singleLineStringStyle] is [SingleLineStringStyle.PlainExceptAmbiguous] and the value is ambiguous
  * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
  */
 public data class YamlConfiguration constructor(
@@ -44,6 +45,7 @@ public data class YamlConfiguration constructor(
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
+    internal val ambiguousEscapeStyle: AmbiguousEscapeStyle = AmbiguousEscapeStyle.DoubleQuoted,
     internal val sequenceBlockIndent: Int = 0,
 )
 
@@ -83,12 +85,18 @@ public enum class SingleLineStringStyle {
     DoubleQuoted,
     SingleQuoted,
     Plain,
-    ;
+    PlainExceptAmbiguous;
 
     public val multiLineStringStyle: MultiLineStringStyle
         get() = when (this) {
             DoubleQuoted -> MultiLineStringStyle.DoubleQuoted
             SingleQuoted -> MultiLineStringStyle.SingleQuoted
             Plain -> MultiLineStringStyle.Plain
+            PlainExceptAmbiguous -> MultiLineStringStyle.Plain
         }
+}
+
+public enum class AmbiguousEscapeStyle {
+    DoubleQuoted,
+    SingleQuoted,
 }

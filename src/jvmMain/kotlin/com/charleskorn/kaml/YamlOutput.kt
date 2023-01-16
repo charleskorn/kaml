@@ -88,6 +88,7 @@ internal class YamlOutput(
         } else {
             when {
                 value.contains('\n') -> emitQuotedScalar(value, configuration.multiLineStringStyle.scalarStyle)
+                configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous() -> emitQuotedScalar(value, configuration.ambiguousEscapeStyle.scalarStyle)
                 else -> emitQuotedScalar(value, configuration.singleLineStringStyle.scalarStyle)
             }
         }
@@ -180,6 +181,15 @@ internal class YamlOutput(
         return typeName
     }
 
+    private fun String.isAmbiguous(): Boolean {
+        return when {
+            toLongOrNull() != null -> true
+            toDoubleOrNull() != null -> true
+            toBooleanStrictOrNull() != null -> true
+            else -> false
+        }
+    }
+
     private val SequenceStyle.flowStyle: FlowStyle
         get() = when (this) {
             SequenceStyle.Block -> FlowStyle.BLOCK
@@ -199,6 +209,13 @@ internal class YamlOutput(
             SingleLineStringStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
             SingleLineStringStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
             SingleLineStringStyle.Plain -> ScalarStyle.PLAIN
+            SingleLineStringStyle.PlainExceptAmbiguous -> ScalarStyle.PLAIN
+        }
+
+    private val AmbiguousEscapeStyle.scalarStyle: ScalarStyle
+        get() = when (this) {
+            AmbiguousEscapeStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
+            AmbiguousEscapeStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
         }
 
     companion object {
