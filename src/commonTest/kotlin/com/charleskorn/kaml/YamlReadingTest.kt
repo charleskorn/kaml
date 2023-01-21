@@ -2410,7 +2410,7 @@ class YamlReadingTest : DescribeSpec({
                             host: B
                 """.trimIndent()
 
-                val parser = Yaml(configuration = YamlConfiguration(strictMode = false))
+                val parser = Yaml.default
                 val result = parser.decodeFromString(ServerConfig.serializer(), input)
 
                 it("decodes the map value as a list using the YamlNode") {
@@ -2554,7 +2554,6 @@ private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
         checkNotNull(currentMap)
 
         val list = currentMap.entries.map { (_, value) ->
-            println(value.path)
             decoder.yaml.decodeFromYamlNode(Database.serializer(), value)
         }
 
