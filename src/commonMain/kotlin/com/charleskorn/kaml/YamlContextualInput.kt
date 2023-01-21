@@ -22,12 +22,12 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
-internal class YamlContextualInput(node: YamlNode, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(node, context, configuration) {
+internal class YamlContextualInput(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(node, yaml, context, configuration) {
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
     override fun decodeValue(): Any = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
-        createFor(node, serializersModule, configuration, descriptor)
+        createFor(node, yaml, serializersModule, configuration, descriptor)
 
     override fun getCurrentLocation(): Location = node.location
     override fun getCurrentPath(): YamlPath = node.path

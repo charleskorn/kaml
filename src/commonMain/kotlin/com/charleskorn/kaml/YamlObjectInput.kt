@@ -24,7 +24,7 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class YamlObjectInput(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
+internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, yaml, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
 
@@ -50,6 +50,7 @@ internal class YamlObjectInput(map: YamlMap, context: SerializersModule, configu
             try {
                 currentValueDecoder = createFor(
                     entriesList[nextIndex].value,
+                    yaml,
                     serializersModule,
                     configuration,
                     descriptor.getElementDescriptor(fieldDescriptorIndex),
