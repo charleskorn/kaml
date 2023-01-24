@@ -85,6 +85,23 @@ public enum class SingleLineStringStyle {
     DoubleQuoted,
     SingleQuoted,
     Plain,
+
+    /**
+     * This is the same as [SingleLineStringStyle.Plain], except strings that are not strictly strings in YAML
+     * without quotes will be escaped with the escape style defined in [AmbiguousEscapeStyle].
+     *
+     * True -> Boolean -> Escaped
+     *
+     * 0xAB -> Hexadecimal -> Escaped
+     *
+     * 1 -> Int -> Escaped
+     *
+     * 1.2 -> Float -> Escaped
+     *
+     * 1.2.3 -> Unambiguously a string -> Not escaped
+     *
+     * @since 0.51.0
+     */
     PlainExceptAmbiguous;
 
     public val multiLineStringStyle: MultiLineStringStyle
