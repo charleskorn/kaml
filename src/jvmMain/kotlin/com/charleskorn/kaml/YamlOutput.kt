@@ -183,10 +183,16 @@ internal class YamlOutput(
 
     private fun String.isAmbiguous(): Boolean {
         return when {
-            toLongOrNull() != null -> true
+            isEmpty() -> true
+            toBigIntegerOrNull() != null -> true
+            startsWith("0x") && removePrefix("0x").toBigIntegerOrNull(16) != null -> true
+            startsWith("0o") && removePrefix("0o").toBigIntegerOrNull(8) != null -> true
             toDoubleOrNull() != null -> true
-            toBooleanStrictOrNull() != null -> true
-            else -> false
+            startsWith("#") -> true
+            else -> this in listOf(
+                "~", "-", ".inf", ".Inf", ".INF", "-.inf", "-.Inf", "-.INF", ".nan", ".NaN", ".NAN", "-.nan", "-.NaN",
+                "-.NAN", "null", "Null", "NULL", "true", "True", "TRUE", "false", "False", "FALSE"
+            )
         }
     }
 
