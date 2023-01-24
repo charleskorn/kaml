@@ -24,7 +24,7 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class YamlScalarInput(val scalar: YamlScalar, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(scalar, context, configuration) {
+internal class YamlScalarInput(val scalar: YamlScalar, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(scalar, yaml, context, configuration) {
     override fun decodeString(): String = scalar.content
     override fun decodeInt(): Int = scalar.toInt()
     override fun decodeLong(): Long = scalar.toLong()

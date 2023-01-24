@@ -32,49 +32,50 @@ import kotlinx.serialization.modules.SerializersModule
 @OptIn(ExperimentalSerializationApi::class)
 public sealed class YamlInput(
     public val node: YamlNode,
+    public val yaml: Yaml,
     override var serializersModule: SerializersModule,
     public val configuration: YamlConfiguration,
 ) : AbstractDecoder() {
     internal companion object {
         private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required for type with serial name '.*', but it was missing$""".toRegex()
 
-        internal fun createFor(node: YamlNode, context: SerializersModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
+        internal fun createFor(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
             is YamlNull -> when {
                 descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.path)
-                else -> YamlNullInput(node, context, configuration)
+                else -> YamlNullInput(node, yaml, context, configuration)
             }
 
             is YamlScalar -> when {
-                descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, context, configuration)
-                descriptor.kind is SerialKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
+                descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, yaml, context, configuration)
+                descriptor.kind is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
                 descriptor.kind is PolymorphicKind -> throw MissingTypeTagException(node.path)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.path)
             }
 
             is YamlList -> when (descriptor.kind) {
-                is StructureKind.LIST -> YamlListInput(node, context, configuration)
-                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
+                is StructureKind.LIST -> YamlListInput(node, yaml, context, configuration)
+                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.path)
             }
 
             is YamlMap -> when (descriptor.kind) {
-                is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, context, configuration)
-                is StructureKind.MAP -> YamlMapInput(node, context, configuration)
-                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, context, configuration)
+                is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, yaml, context, configuration)
+                is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
+                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
                 is PolymorphicKind -> when (configuration.polymorphismStyle) {
                     PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
-                    PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, context, configuration)
+                    PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
                 }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.path)
             }
 
             is YamlTaggedNode -> when {
-                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> YamlPolymorphicInput(node.tag, node.path, node.innerNode, context, configuration)
-                else -> createFor(node.innerNode, context, configuration, descriptor)
+                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> YamlPolymorphicInput(node.tag, node.path, node.innerNode, yaml, context, configuration)
+                else -> createFor(node.innerNode, yaml, context, configuration, descriptor)
             }
         }
 
-        private fun createPolymorphicMapDeserializer(node: YamlMap, context: SerializersModule, configuration: YamlConfiguration): YamlPolymorphicInput {
+        private fun createPolymorphicMapDeserializer(node: YamlMap, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration): YamlPolymorphicInput {
             val desiredKey = configuration.polymorphismPropertyName
             when (val typeName = node.getValue(desiredKey)) {
                 is YamlList -> throw InvalidPropertyValueException(desiredKey, "expected a string, but got a list", typeName.path)
@@ -84,7 +85,7 @@ public sealed class YamlInput(
                 is YamlScalar -> {
                     val remainingProperties = node.withoutKey(desiredKey)
 
-                    return YamlPolymorphicInput(typeName.content, typeName.path, remainingProperties, context, configuration)
+                    return YamlPolymorphicInput(typeName.content, typeName.path, remainingProperties, yaml, context, configuration)
                 }
             }
         }

@@ -24,7 +24,7 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class YamlMapInput(map: YamlMap, context: SerializersModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, context, configuration) {
+internal class YamlMapInput(map: YamlMap, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, yaml, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
     private lateinit var currentEntry: Map.Entry<YamlScalar, YamlNode>
@@ -42,12 +42,12 @@ internal class YamlMapInput(map: YamlMap, context: SerializersModule, configurat
         currentValueDecoder = when (currentlyReadingValue) {
             true ->
                 try {
-                    createFor(currentEntry.value, serializersModule, configuration, descriptor.getElementDescriptor(1))
+                    createFor(currentEntry.value, yaml, serializersModule, configuration, descriptor.getElementDescriptor(1))
                 } catch (e: IncorrectTypeException) {
                     throw InvalidPropertyValueException(propertyName, e.message, e.path, e)
                 }
 
-            false -> createFor(currentKey, serializersModule, configuration, descriptor.getElementDescriptor(0))
+            false -> createFor(currentKey, yaml, serializersModule, configuration, descriptor.getElementDescriptor(0))
         }
 
         return nextIndex++

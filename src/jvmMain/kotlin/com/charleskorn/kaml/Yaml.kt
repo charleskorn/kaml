@@ -50,7 +50,7 @@ public actual class Yaml(
     private fun <T> decodeFromReader(deserializer: DeserializationStrategy<T>, source: Reader): T {
         val rootNode = parseToYamlNodeFromReader(source)
 
-        val input = YamlInput.createFor(rootNode, serializersModule, configuration, deserializer.descriptor)
+        val input = YamlInput.createFor(rootNode, this, serializersModule, configuration, deserializer.descriptor)
         return input.decodeSerializableValue(deserializer)
     }
 
@@ -64,6 +64,11 @@ public actual class Yaml(
         val node = reader.read()
         parser.ensureEndOfStreamReached()
         return node
+    }
+
+    public actual fun <T> decodeFromYamlNode(deserializer: DeserializationStrategy<T>, node: YamlNode): T {
+        val input = YamlInput.createFor(node, this, serializersModule, configuration, deserializer.descriptor)
+        return input.decodeSerializableValue(deserializer)
     }
 
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
