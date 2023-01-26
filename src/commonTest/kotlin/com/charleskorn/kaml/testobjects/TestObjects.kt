@@ -52,5 +52,5 @@ enum class TestEnumWithExplicitNames {
     Beta,
 
     @SerialName("With space")
-    With_Space
+    WithSpace,
 }

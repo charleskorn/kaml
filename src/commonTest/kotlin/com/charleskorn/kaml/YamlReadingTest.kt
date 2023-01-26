@@ -249,7 +249,7 @@ class YamlReadingTest : DescribeSpec({
                 EnumFixture("Value2", TestEnum.serializer()) to TestEnum.Value2,
                 EnumFixture("A", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.Alpha,
                 EnumFixture("B", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.Beta,
-                EnumFixture("With space", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.With_Space,
+                EnumFixture("With space", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.WithSpace,
             ).forEach { (fixture, expectedValue) ->
                 val (input, serializer) = fixture
                 context("given the input '$input'") {
