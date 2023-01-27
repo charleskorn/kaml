@@ -88,7 +88,7 @@ internal class YamlOutput(
         } else {
             when {
                 value.contains('\n') -> emitQuotedScalar(value, configuration.multiLineStringStyle.scalarStyle)
-                configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous() -> emitQuotedScalar(value, configuration.ambiguousEscapeStyle.scalarStyle)
+                configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous() -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
                 else -> emitQuotedScalar(value, configuration.singleLineStringStyle.scalarStyle)
             }
         }
@@ -218,10 +218,10 @@ internal class YamlOutput(
             SingleLineStringStyle.PlainExceptAmbiguous -> ScalarStyle.PLAIN
         }
 
-    private val AmbiguousEscapeStyle.scalarStyle: ScalarStyle
+    private val AmbiguousQuoteStyle.scalarStyle: ScalarStyle
         get() = when (this) {
-            AmbiguousEscapeStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
-            AmbiguousEscapeStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
+            AmbiguousQuoteStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
+            AmbiguousQuoteStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
         }
 
     companion object {

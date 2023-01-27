@@ -261,7 +261,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(
                     configuration = YamlConfiguration(
                         singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
-                        ambiguousEscapeStyle = AmbiguousEscapeStyle.SingleQuoted
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted
                     )
                 ).encodeToString(String.serializer(), "12")
 
@@ -274,7 +274,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(
                     configuration = YamlConfiguration(
                         singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
-                        ambiguousEscapeStyle = AmbiguousEscapeStyle.SingleQuoted
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted
                     )
                 ).encodeToString(String.serializer(), "true")
 
@@ -287,7 +287,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(
                     configuration = YamlConfiguration(
                         singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
-                        ambiguousEscapeStyle = AmbiguousEscapeStyle.SingleQuoted
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted
                     )
                 ).encodeToString(String.serializer(), "1.2")
 
