@@ -93,7 +93,8 @@ public enum class SingleLineStringStyle {
      * For example, the strings "True", "0xAB", "1" and "1.2" would all be quoted,
      * while "1.2.3" and "abc" would not be quoted.
      */
-    PlainExceptAmbiguous;
+    PlainExceptAmbiguous,
+    ;
 
     public val multiLineStringStyle: MultiLineStringStyle
         get() = when (this) {

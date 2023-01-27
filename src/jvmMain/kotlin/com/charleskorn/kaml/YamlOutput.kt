@@ -191,7 +191,7 @@ internal class YamlOutput(
             startsWith("#") -> true
             else -> this in listOf(
                 "~", "-", ".inf", ".Inf", ".INF", "-.inf", "-.Inf", "-.INF", ".nan", ".NaN", ".NAN", "-.nan", "-.NaN",
-                "-.NAN", "null", "Null", "NULL", "true", "True", "TRUE", "false", "False", "FALSE"
+                "-.NAN", "null", "Null", "NULL", "true", "True", "TRUE", "false", "False", "FALSE",
             )
         }
     }

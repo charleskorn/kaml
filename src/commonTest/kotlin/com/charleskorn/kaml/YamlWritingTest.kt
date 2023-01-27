@@ -261,8 +261,8 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(
                     configuration = YamlConfiguration(
                         singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
-                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted
-                    )
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                    ),
                 ).encodeToString(String.serializer(), "12")
 
                 it("returns the value serialized in the expected YAML form, escaping the integer with single-quotes") {
@@ -274,8 +274,8 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(
                     configuration = YamlConfiguration(
                         singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
-                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted
-                    )
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                    ),
                 ).encodeToString(String.serializer(), "true")
 
                 it("returns the value serialized in the expected YAML form, escaping the boolean with single-quotes") {
@@ -287,8 +287,8 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(
                     configuration = YamlConfiguration(
                         singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
-                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted
-                    )
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                    ),
                 ).encodeToString(String.serializer(), "1.2")
 
                 it("returns the value serialized in the expected YAML form, escaping the float with single-quotes") {
