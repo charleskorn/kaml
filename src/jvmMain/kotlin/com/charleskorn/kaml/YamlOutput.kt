@@ -185,8 +185,8 @@ internal class YamlOutput(
         return when {
             isEmpty() -> true
             toBigIntegerOrNull() != null -> true
-            startsWith("0x") && removePrefix("0x").toBigIntegerOrNull(16) != null -> true
-            startsWith("0o") && removePrefix("0o").toBigIntegerOrNull(8) != null -> true
+            startsWith("0x") -> true
+            startsWith("0o") -> true
             toDoubleOrNull() != null -> true
             startsWith("#") -> true
             else -> this in listOf(
