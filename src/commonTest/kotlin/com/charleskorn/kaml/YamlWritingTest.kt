@@ -200,6 +200,101 @@ class YamlWritingTest : DescribeSpec({
                         """.trimMargin()
                 }
             }
+
+            context("serializing a string with the value of an integer using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "12")
+
+                it("returns the value serialized in the expected YAML form, escaping the integer") {
+                    output shouldBe """"12""""
+                }
+            }
+
+            context("serializing a string with the value of a boolean using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "true")
+
+                it("returns the value serialized in the expected YAML form, escaping the boolean") {
+                    output shouldBe """"true""""
+                }
+            }
+
+            context("serializing a string with the value of an float using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "1.2")
+
+                it("returns the value serialized in the expected YAML form, escaping the float") {
+                    output shouldBe """"1.2""""
+                }
+            }
+
+            context("serializing an unambiguous numerical string using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "1.2.3")
+
+                it("returns the value serialized in the expected YAML form, without being escaped") {
+                    output shouldBe "1.2.3"
+                }
+            }
+
+            context("serializing an int using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Int.serializer(), 123)
+
+                it("returns the value serialized in the expected YAML form, without being escaped") {
+                    output shouldBe "123"
+                }
+            }
+
+            context("serializing a float using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Float.serializer(), 1.2f)
+
+                it("returns the value serialized in the expected YAML form, without being escaped") {
+                    output shouldBe "1.2"
+                }
+            }
+
+            context("serializing a boolean using SingleLineStringStyle.PlainExceptAmbiguous") {
+                val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Boolean.serializer(), true)
+
+                it("returns the value serialized in the expected YAML form, without being escaped") {
+                    output shouldBe "true"
+                }
+            }
+
+            context("serializing a string with the value of an integer using SingleLineStringStyle.PlainExceptAmbiguous, escaping with single-quotes") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(
+                        singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                    ),
+                ).encodeToString(String.serializer(), "12")
+
+                it("returns the value serialized in the expected YAML form, escaping the integer with single-quotes") {
+                    output shouldBe """'12'"""
+                }
+            }
+
+            context("serializing a string with the value of a boolean using SingleLineStringStyle.PlainExceptAmbiguous, escaping with single-quotes") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(
+                        singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                    ),
+                ).encodeToString(String.serializer(), "true")
+
+                it("returns the value serialized in the expected YAML form, escaping the boolean with single-quotes") {
+                    output shouldBe """'true'"""
+                }
+            }
+
+            context("serializing a string with the value of an float using SingleLineStringStyle.PlainExceptAmbiguous, escaping with single-quotes") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(
+                        singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous,
+                        ambiguousQuoteStyle = AmbiguousQuoteStyle.SingleQuoted,
+                    ),
+                ).encodeToString(String.serializer(), "1.2")
+
+                it("returns the value serialized in the expected YAML form, escaping the float with single-quotes") {
+                    output shouldBe """'1.2'"""
+                }
+            }
         }
 
         describe("serializing enumeration values") {

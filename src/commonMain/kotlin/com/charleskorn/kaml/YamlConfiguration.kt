@@ -31,6 +31,7 @@ package com.charleskorn.kaml
  * * [encodingIndentationSize]: number of spaces to use as indentation when encoding objects as YAML
  * * [breakScalarsAt]: maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines)
  * * [sequenceStyle]: how sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each
+ * * [ambiguousQuoteStyle]: how strings should be escaped when [singleLineStringStyle] is [SingleLineStringStyle.PlainExceptAmbiguous] and the value is ambiguous
  * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
  */
 public data class YamlConfiguration constructor(
@@ -44,6 +45,7 @@ public data class YamlConfiguration constructor(
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
+    internal val ambiguousQuoteStyle: AmbiguousQuoteStyle = AmbiguousQuoteStyle.DoubleQuoted,
     internal val sequenceBlockIndent: Int = 0,
 )
 
@@ -83,6 +85,15 @@ public enum class SingleLineStringStyle {
     DoubleQuoted,
     SingleQuoted,
     Plain,
+
+    /**
+     * This is the same as [SingleLineStringStyle.Plain], except strings that could be misinterpreted as other types
+     * will be quoted with the escape style defined in [AmbiguousQuoteStyle].
+     *
+     * For example, the strings "True", "0xAB", "1" and "1.2" would all be quoted,
+     * while "1.2.3" and "abc" would not be quoted.
+     */
+    PlainExceptAmbiguous,
     ;
 
     public val multiLineStringStyle: MultiLineStringStyle
@@ -90,5 +101,11 @@ public enum class SingleLineStringStyle {
             DoubleQuoted -> MultiLineStringStyle.DoubleQuoted
             SingleQuoted -> MultiLineStringStyle.SingleQuoted
             Plain -> MultiLineStringStyle.Plain
+            PlainExceptAmbiguous -> MultiLineStringStyle.Plain
         }
+}
+
+public enum class AmbiguousQuoteStyle {
+    DoubleQuoted,
+    SingleQuoted,
 }
