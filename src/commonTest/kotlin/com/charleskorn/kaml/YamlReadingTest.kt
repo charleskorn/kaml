@@ -26,6 +26,7 @@ import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
+import com.charleskorn.kaml.testobjects.TestEnumWithExplicitNames
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.UnsealedClass
 import com.charleskorn.kaml.testobjects.UnsealedString
@@ -241,13 +242,19 @@ class YamlReadingTest : DescribeSpec({
                 }
             }
 
+            data class EnumFixture(val input: String, val serializer: KSerializer<*>)
+
             mapOf(
-                "Value1" to TestEnum.Value1,
-                "Value2" to TestEnum.Value2,
-            ).forEach { (input, expectedValue) ->
+                EnumFixture("Value1", TestEnum.serializer()) to TestEnum.Value1,
+                EnumFixture("Value2", TestEnum.serializer()) to TestEnum.Value2,
+                EnumFixture("A", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.Alpha,
+                EnumFixture("B", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.Beta,
+                EnumFixture("With space", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.WithSpace,
+            ).forEach { (fixture, expectedValue) ->
+                val (input, serializer) = fixture
                 context("given the input '$input'") {
                     context("parsing that input as an enumeration value") {
-                        val result = Yaml.default.decodeFromString(TestEnum.serializer(), input)
+                        val result = Yaml.default.decodeFromString(serializer, input)
 
                         it("deserializes it to the expected enumeration value") {
                             result shouldBe expectedValue

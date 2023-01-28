@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml.testobjects
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -40,4 +41,16 @@ data class NestedObjects(
 enum class TestEnum {
     Value1,
     Value2,
+}
+
+@Serializable
+enum class TestEnumWithExplicitNames {
+    @SerialName("A")
+    Alpha,
+
+    @SerialName("B")
+    Beta,
+
+    @SerialName("With space")
+    WithSpace,
 }
