@@ -39,7 +39,7 @@ jobs:
           key: batect-caches-${{ hashFiles('**/*.gradle.kts') }}
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1.0.5
+        uses: gradle/wrapper-validation-action@v1.0.6
 
       - name: Build
         run: ./batect build
