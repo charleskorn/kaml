@@ -107,7 +107,7 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
 
     private fun throwIfUnknownPolymorphicTypeException(e: Exception, deserializer: DeserializationStrategy<*>) {
         val message = e.message ?: return
-        val match = unknownPolymorphicTypeExceptionMessage.matchEntire(message) ?: return
+        val match = unknownPolymorphicTypeExceptionMessage.matchAt(message, 0) ?: return
         val unknownType = match.groupValues[1]
         val className = match.groupValues[2]
 
@@ -146,7 +146,7 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
             }
 
             @ExperimentalSerializationApi
-            override fun <Base : Any> polymorphicDefaultDeserializer(baseClass: KClass<Base>, defaultDeserializerProvider: (className: String?) -> DeserializationStrategy<out Base>?) {
+            override fun <Base : Any> polymorphicDefaultDeserializer(baseClass: KClass<Base>, defaultDeserializerProvider: (className: String?) -> DeserializationStrategy<Base>?) {
                 throw UnsupportedOperationException("This method should never be called")
             }
         })
@@ -161,6 +161,6 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
     }
 
     companion object {
-        private val unknownPolymorphicTypeExceptionMessage: Regex = """^Class '(.*)' is not registered for polymorphic serialization in the scope of '(.*)'.\nMark the base class as 'sealed' or register the serializer explicitly.$""".toRegex()
+        private val unknownPolymorphicTypeExceptionMessage: Regex = """^Class '(.*)' is not registered for polymorphic serialization in the scope of '(.*)'.\n.*""".toRegex()
     }
 }
