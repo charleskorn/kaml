@@ -26,13 +26,13 @@ jobs:
         uses: batect/batect-wrapper-validation-action@v0.4.0
 
       - name: Cache Batect
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.0
         with:
           path: ~/.batect/cache
           key: batect-${{ hashFiles('batect') }}
 
       - name: Cache dependencies
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.0
         id: cache-dependencies
         with:
           path: .batect/caches
