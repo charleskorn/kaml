@@ -212,8 +212,9 @@ internal class YamlOutput(
 
             this@toSnakeCase.forEach { c ->
                 if (c.isUpperCase()) {
-                    if (previousUpperCharsCount == 0 && isNotEmpty() && last() != '_')
+                    if (previousUpperCharsCount == 0 && isNotEmpty() && last() != '_') {
                         append('_')
+                    }
 
                     bufferedChar?.let(::append)
 
@@ -232,7 +233,7 @@ internal class YamlOutput(
                 }
             }
 
-            if(bufferedChar != null) {
+            if (bufferedChar != null) {
                 append(bufferedChar)
             }
         }
@@ -243,7 +244,6 @@ internal class YamlOutput(
     }
 
     private fun String.toCamelCase(): String = toPascalCase().replaceFirstChar(Char::lowercaseChar)
-
 
     private val SequenceStyle.flowStyle: FlowStyle
         get() = when (this) {
