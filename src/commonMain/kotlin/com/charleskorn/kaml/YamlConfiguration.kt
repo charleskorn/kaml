@@ -47,6 +47,7 @@ public data class YamlConfiguration constructor(
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
     internal val ambiguousQuoteStyle: AmbiguousQuoteStyle = AmbiguousQuoteStyle.DoubleQuoted,
     internal val sequenceBlockIndent: Int = 0,
+    internal val yamlNamingStrategy: YamlNamingStrategy? = null,
 )
 
 public enum class PolymorphismStyle {
@@ -108,4 +109,21 @@ public enum class SingleLineStringStyle {
 public enum class AmbiguousQuoteStyle {
     DoubleQuoted,
     SingleQuoted,
+}
+
+public enum class YamlNamingStrategy {
+    /**
+     * snake_case
+     */
+    SnakeCase,
+
+    /**
+     * PascalCase
+     */
+    PascalCase,
+
+    /**
+     * camelCase
+     */
+    CamelCase,
 }

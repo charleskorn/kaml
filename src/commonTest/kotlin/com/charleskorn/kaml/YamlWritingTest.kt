@@ -295,6 +295,96 @@ class YamlWritingTest : DescribeSpec({
                     output shouldBe """'1.2'"""
                 }
             }
+
+            context("serializing a PascalCase string using YamlNamingStrategy.SnakeCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).encodeToString(String.serializer(), "FirstSecond")
+
+                it("returns the value serialized in snake_case") {
+                    output shouldBe """"first_second""""
+                }
+            }
+
+            context("serializing a camelCase string using YamlNamingStrategy.SnakeCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).encodeToString(String.serializer(), "firstSecond")
+
+                it("returns the value serialized in snake_case") {
+                    output shouldBe """"first_second""""
+                }
+            }
+
+            context("serializing a snake_case string using YamlNamingStrategy.SnakeCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).encodeToString(String.serializer(), "first_second")
+
+                it("returns the value serialized in snake_case") {
+                    output shouldBe """"first_second""""
+                }
+            }
+
+            context("serializing a PascalCase string using YamlNamingStrategy.PascalCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(String.serializer(), "FirstSecond")
+
+                it("returns the value serialized in PascalCase") {
+                    output shouldBe """"FirstSecond""""
+                }
+            }
+
+            context("serializing a camelCase string using YamlNamingStrategy.PascalCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(String.serializer(), "firstSecond")
+
+                it("returns the value serialized in PascalCase") {
+                    output shouldBe """"FirstSecond""""
+                }
+            }
+
+            context("serializing a snake_case string using YamlNamingStrategy.PascalCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(String.serializer(), "first_second")
+
+                it("returns the value serialized in PascalCase") {
+                    output shouldBe """"FirstSecond""""
+                }
+            }
+
+            context("serializing a PascalCase string using YamlNamingStrategy.CamelCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
+                ).encodeToString(String.serializer(), "FirstSecond")
+
+                it("returns the value serialized in PascalCase") {
+                    output shouldBe """"firstSecond""""
+                }
+            }
+
+            context("serializing a camelCase string using YamlNamingStrategy.CamelCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
+                ).encodeToString(String.serializer(), "firstSecond")
+
+                it("returns the value serialized in PascalCase") {
+                    output shouldBe """"firstSecond""""
+                }
+            }
+
+            context("serializing a snake_case string using YamlNamingStrategy.CamelCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
+                ).encodeToString(String.serializer(), "first_second")
+
+                it("returns the value serialized in PascalCase") {
+                    output shouldBe """"firstSecond""""
+                }
+            }
         }
 
         describe("serializing enumeration values") {
