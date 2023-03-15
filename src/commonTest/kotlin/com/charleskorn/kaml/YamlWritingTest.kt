@@ -385,6 +385,16 @@ class YamlWritingTest : DescribeSpec({
                     output shouldBe """"firstSecond""""
                 }
             }
+
+            context("serializing a snake_case string using custom YamlNamingStrategy that converts to uppercase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = String::uppercase),
+                ).encodeToString(String.serializer(), "first_second")
+
+                it("returns the value serialized uppercase") {
+                    output shouldBe """"FIRST_SECOND""""
+                }
+            }
         }
 
         describe("serializing enumeration values") {

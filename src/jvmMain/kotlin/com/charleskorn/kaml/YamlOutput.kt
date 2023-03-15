@@ -172,7 +172,7 @@ internal class YamlOutput(
         }
 
         val implicit = if (tag.isPresent) ALL_EXPLICIT else ALL_IMPLICIT
-        emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, value.applyNamingStrategy(yamlNamingStrategy), style))
+        emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, yamlNamingStrategy?.serialNameForYaml(value) ?: value, style))
     }
 
     private fun getAndClearTypeName(): Optional<String> {
@@ -195,55 +195,6 @@ internal class YamlOutput(
             )
         }
     }
-
-    private fun String.applyNamingStrategy(yamlNamingStrategy: YamlNamingStrategy?): String {
-        return when (yamlNamingStrategy) {
-            YamlNamingStrategy.SnakeCase -> toSnakeCase()
-            YamlNamingStrategy.PascalCase -> toPascalCase()
-            YamlNamingStrategy.CamelCase -> toCamelCase()
-            else -> this
-        }
-    }
-
-    private fun String.toSnakeCase(): String {
-        return buildString(this.length * 2) {
-            var bufferedChar: Char? = null
-            var previousUpperCharsCount = 0
-
-            this@toSnakeCase.forEach { c ->
-                if (c.isUpperCase()) {
-                    if (previousUpperCharsCount == 0 && isNotEmpty() && last() != '_') {
-                        append('_')
-                    }
-
-                    bufferedChar?.let(::append)
-
-                    previousUpperCharsCount++
-                    bufferedChar = c.lowercaseChar()
-                } else {
-                    if (bufferedChar != null) {
-                        if (previousUpperCharsCount > 1 && c.isLetter()) {
-                            append('_')
-                        }
-                        append(bufferedChar)
-                        previousUpperCharsCount = 0
-                        bufferedChar = null
-                    }
-                    append(c)
-                }
-            }
-
-            if (bufferedChar != null) {
-                append(bufferedChar)
-            }
-        }
-    }
-
-    private fun String.toPascalCase(): String {
-        return split("[^a-zA-Z0-9]+".toRegex()).joinToString("") { it.replaceFirstChar(Char::titlecaseChar) }
-    }
-
-    private fun String.toCamelCase(): String = toPascalCase().replaceFirstChar(Char::lowercaseChar)
 
     private val SequenceStyle.flowStyle: FlowStyle
         get() = when (this) {

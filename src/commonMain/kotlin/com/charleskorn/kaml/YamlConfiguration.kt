@@ -110,20 +110,3 @@ public enum class AmbiguousQuoteStyle {
     DoubleQuoted,
     SingleQuoted,
 }
-
-public enum class YamlNamingStrategy {
-    /**
-     * snake_case
-     */
-    SnakeCase,
-
-    /**
-     * PascalCase
-     */
-    PascalCase,
-
-    /**
-     * camelCase
-     */
-    CamelCase,
-}
