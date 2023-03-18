@@ -60,7 +60,7 @@ public actual class Yaml(
 
     private fun parseToYamlNodeFromReader(source: Reader): YamlNode {
         val parser = YamlParser(source)
-        val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix)
+        val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
         val node = reader.read()
         parser.ensureEndOfStreamReached()
         return node

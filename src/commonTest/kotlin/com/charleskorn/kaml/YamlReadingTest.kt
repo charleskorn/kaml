@@ -1170,8 +1170,23 @@ class YamlReadingTest : DescribeSpec({
                     name: *name
                 """.trimIndent()
 
-                context("parsing that input") {
-                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".")
+                context("parsing anchors and aliases is disabled") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", allowAnchorsAndAliases = false)
+                    val yaml = Yaml(configuration = configuration)
+
+                    it("throws an appropriate exception") {
+                        val exception = shouldThrow<ForbiddenAnchorOrAliasException> { yaml.decodeFromString(SimpleStructure.serializer(), input) }
+
+                        exception.asClue {
+                            it.message shouldBe "Parsing anchors and aliases is disabled."
+                            it.line shouldBe 1
+                            it.column shouldBe 18
+                        }
+                    }
+                }
+
+                context("parsing anchors and aliases is enabled") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", allowAnchorsAndAliases = true)
                     val yaml = Yaml(configuration = configuration)
                     val result = yaml.decodeFromString(SimpleStructure.serializer(), input)
 

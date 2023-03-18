@@ -98,3 +98,5 @@ public class NoAnchorForExtensionException(
     path: YamlPath,
 ) :
     YamlException("The key '$key' starts with the extension definition prefix '$extensionDefinitionPrefix' but does not define an anchor.", path)
+
+public class ForbiddenAnchorOrAliasException(message: String, path: YamlPath) : YamlException(message, path)

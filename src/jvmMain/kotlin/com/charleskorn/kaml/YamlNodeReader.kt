@@ -30,6 +30,7 @@ import java.util.Optional
 internal actual class YamlNodeReader(
     private val parser: YamlParser,
     private val extensionDefinitionPrefix: String? = null,
+    private val allowAnchorsAndAliases: Boolean = false,
 ) {
     private val aliases = mutableMapOf<Anchor, YamlNode>()
 
@@ -43,6 +44,10 @@ internal actual class YamlNodeReader(
 
         if (event is NodeEvent) {
             event.anchor.ifPresent {
+                if (!allowAnchorsAndAliases) {
+                    throw ForbiddenAnchorOrAliasException("Parsing anchors and aliases is disabled.", path)
+                }
+
                 aliases.put(it, node.withPath(YamlPath.forAliasDefinition(it.value, event.location)))
             }
 
@@ -186,6 +191,10 @@ internal actual class YamlNodeReader(
     }
 
     private fun readAlias(event: AliasEvent, path: YamlPath): YamlNode {
+        if (!allowAnchorsAndAliases) {
+            throw ForbiddenAnchorOrAliasException("Parsing anchors and aliases is disabled.", path)
+        }
+
         val anchor = event.anchor.get()
 
         val resolvedNode = aliases.getOrElse(anchor) {

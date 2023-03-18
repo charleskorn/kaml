@@ -312,7 +312,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
 
                 it("returns the expected list") {
                     result shouldBe
@@ -339,7 +339,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
 
                 it("returns the expected list, using the most-recently defined value each time the alias is referenced") {
                     result shouldBe
@@ -363,11 +363,11 @@ class YamlNodeReaderTest : DescribeSpec({
                 - *thing
             """.trimIndent()
 
-            describe("parsing that input") {
+            describe("parsing that input with anchor and alias parsing enabled") {
                 it("throws an appropriate exception") {
                     val exception = shouldThrow<UnknownAnchorException> {
                         val parser = YamlParser(input)
-                        YamlNodeReader(parser).read()
+                        YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
                     }
 
                     exception.asClue {
@@ -375,6 +375,21 @@ class YamlNodeReaderTest : DescribeSpec({
                         it.line shouldBe 2
                         it.column shouldBe 3
                         it.path shouldBe YamlPath.root.withListEntry(1, Location(2, 3)).withError(Location(2, 3))
+                    }
+                }
+            }
+
+            describe("parsing that input with anchor and alias parsing disabled") {
+                it("throws an appropriate exception") {
+                    val exception = shouldThrow<ForbiddenAnchorOrAliasException> {
+                        val parser = YamlParser(input)
+                        YamlNodeReader(parser, allowAnchorsAndAliases = false).read()
+                    }
+
+                    exception.asClue {
+                        it.message shouldBe "Parsing anchors and aliases is disabled."
+                        it.line shouldBe 2
+                        it.column shouldBe 3
                     }
                 }
             }
@@ -652,7 +667,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
                 val key1Path = YamlPath.root.withMapElementKey("key1", Location(1, 1))
                 val value1Path = key1Path.withMapElementValue(Location(1, 7))
                 val key2Path = YamlPath.root.withMapElementKey("key2", Location(2, 1))
@@ -1156,7 +1171,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
 
                 val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
                 val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 13))
@@ -1206,7 +1221,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
 
                 val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
                 val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 13))
@@ -1302,7 +1317,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
 
                 val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
                 val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 13))
@@ -1365,7 +1380,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser).read()
+                val result = YamlNodeReader(parser, allowAnchorsAndAliases = true).read()
 
                 val firstItemPath = YamlPath.root.withListEntry(0, Location(1, 3))
                 val firstXPath = firstItemPath.withMapElementKey("x", Location(1, 11))
@@ -1531,7 +1546,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input with an extension definition prefix defined") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
+                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".", allowAnchorsAndAliases = true).read()
 
                 val fooKeyPath = YamlPath.root.withMapElementKey("foo", Location(3, 1))
                 val fooValuePath = fooKeyPath.withMapElementValue(Location(4, 5))
@@ -1598,7 +1613,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
             describe("parsing that input with an extension definition prefix defined") {
                 val parser = YamlParser(input)
-                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".").read()
+                val result = YamlNodeReader(parser, extensionDefinitionPrefix = ".", allowAnchorsAndAliases = true).read()
 
                 val keyPath = YamlPath.root
                     .withMerge(Location(4, 6))
