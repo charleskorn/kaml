@@ -22,8 +22,7 @@ public fun interface YamlNamingStrategy {
     public fun serialNameForYaml(serialName: String): String
 
     public companion object Builtins {
-        public val SnakeCase: YamlNamingStrategy = object :
-            YamlNamingStrategy {
+        public val SnakeCase: YamlNamingStrategy = object : YamlNamingStrategy {
             override fun serialNameForYaml(serialName: String): String =
                 buildString(serialName.length * 2) {
                     var bufferedChar: Char? = null
@@ -60,8 +59,7 @@ public fun interface YamlNamingStrategy {
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.SnakeCase"
         }
 
-        public val PascalCase: YamlNamingStrategy = object :
-            YamlNamingStrategy {
+        public val PascalCase: YamlNamingStrategy = object : YamlNamingStrategy {
             override fun serialNameForYaml(serialName: String): String = serialName
                 .split("[^a-zA-Z0-9]+".toRegex())
                 .joinToString("") { it.replaceFirstChar(Char::titlecaseChar) }
@@ -69,11 +67,9 @@ public fun interface YamlNamingStrategy {
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.PascalCase"
         }
 
-        public val CamelCase: YamlNamingStrategy = object :
-            YamlNamingStrategy {
-            override fun serialNameForYaml(serialName: String): String = serialName
-                .split("[^a-zA-Z0-9]+".toRegex())
-                .joinToString("") { it.replaceFirstChar(Char::titlecaseChar) }
+        public val CamelCase: YamlNamingStrategy = object : YamlNamingStrategy {
+            override fun serialNameForYaml(serialName: String): String = PascalCase
+                .serialNameForYaml(serialName)
                 .replaceFirstChar(Char::lowercaseChar)
 
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.CamelCase"
