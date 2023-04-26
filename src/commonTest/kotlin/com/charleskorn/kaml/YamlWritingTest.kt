@@ -326,7 +326,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
                 ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
 
-                it("returns the serial name serialized in snake_case") {
+                it("returns the serial name serialized in camelCase") {
                     output shouldBe """serialName: "value""""
                 }
             }

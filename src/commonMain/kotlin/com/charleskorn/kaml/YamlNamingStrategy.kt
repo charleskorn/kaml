@@ -23,40 +23,15 @@ public fun interface YamlNamingStrategy {
 
     public companion object Builtins {
         public val SnakeCase: YamlNamingStrategy = object : YamlNamingStrategy {
-            override fun serialNameForYaml(serialName: String): String =
-                buildString(serialName.length * 2) {
-                    var bufferedChar: Char? = null
-                    var previousUpperCharsCount = 0
-
-                    serialName.forEach { c ->
-                        if (c.isUpperCase()) {
-                            if (previousUpperCharsCount == 0 && isNotEmpty() && last() != '_') {
-                                append('_')
-                            }
-
-                            bufferedChar?.let(::append)
-
-                            previousUpperCharsCount++
-                            bufferedChar = c.lowercaseChar()
-                        } else {
-                            if (bufferedChar != null) {
-                                if (previousUpperCharsCount > 1 && c.isLetter()) {
-                                    append('_')
-                                }
-                                append(bufferedChar)
-                                previousUpperCharsCount = 0
-                                bufferedChar = null
-                            }
-                            append(c)
-                        }
-                    }
-
-                    if (bufferedChar != null) {
-                        append(bufferedChar)
-                    }
-                }
+            override fun serialNameForYaml(serialName: String): String = serialName.toDelimitedCase('_')
 
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.SnakeCase"
+        }
+
+        public val KebabCase: YamlNamingStrategy = object : YamlNamingStrategy {
+            override fun serialNameForYaml(serialName: String): String = serialName.toDelimitedCase('-')
+
+            override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.KebabCase"
         }
 
         public val PascalCase: YamlNamingStrategy = object : YamlNamingStrategy {
@@ -73,6 +48,38 @@ public fun interface YamlNamingStrategy {
                 .replaceFirstChar(Char::lowercaseChar)
 
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.CamelCase"
+        }
+
+        private fun String.toDelimitedCase(delimiter: Char): String = buildString(length * 2) {
+            var bufferedChar: Char? = null
+            var previousCaseCharsCount = 0
+
+            for (character in this@toDelimitedCase) {
+                if (character.isUpperCase()) {
+                    if (previousCaseCharsCount == 0 && isNotEmpty() && last() != delimiter) {
+                        append(delimiter)
+                    }
+
+                    bufferedChar?.let(::append)
+
+                    previousCaseCharsCount++
+                    bufferedChar = character.lowercaseChar()
+                } else {
+                    if (bufferedChar != null) {
+                        if (previousCaseCharsCount > 1 && character.isLetter()) {
+                            append(delimiter)
+                        }
+                        append(bufferedChar)
+                        previousCaseCharsCount = 0
+                        bufferedChar = null
+                    }
+                    append(character)
+                }
+            }
+
+            if (bufferedChar != null) {
+                append(bufferedChar)
+            }
         }
     }
 }
