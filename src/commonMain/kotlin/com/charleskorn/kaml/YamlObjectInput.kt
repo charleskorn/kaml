@@ -45,13 +45,10 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
                     elementName to yamlName
                 }
 
-            var fieldDescriptorIndex = descriptor.getElementIndex(propertyName)
-
-            if (fieldDescriptorIndex == CompositeDecoder.UNKNOWN_NAME) {
-                pairedPropertyNames
-                    .find { (_, namingStrategyName) -> propertyName == namingStrategyName }
-                    ?.let { (originalName, _) -> fieldDescriptorIndex = descriptor.getElementIndex(originalName) }
-            }
+            val fieldDescriptorIndex = pairedPropertyNames
+                .find { (_, strategyName) -> propertyName == strategyName }
+                ?.let { (descriptorName, _) -> descriptor.getElementIndex(descriptorName) }
+                ?: CompositeDecoder.UNKNOWN_NAME
 
             if (fieldDescriptorIndex == CompositeDecoder.UNKNOWN_NAME) {
                 if (configuration.strictMode) {
