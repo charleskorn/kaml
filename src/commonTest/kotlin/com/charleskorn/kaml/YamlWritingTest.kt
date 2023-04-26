@@ -297,6 +297,51 @@ class YamlWritingTest : DescribeSpec({
             }
         }
 
+        context("serializing serial names using YamlNamingStrategies") {
+            @Serializable
+            data class NamingStrategyTestData(val serialName: String)
+
+            context("serializing a serial name using YamlNamingStrategy.SnakeCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
+
+                it("returns the serial name serialized in snake_case") {
+                    output shouldBe """serial_name: "value""""
+                }
+            }
+
+            context("serializing a serial name using YamlNamingStrategy.PascalCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
+
+                it("returns the serial name serialized in PascalCase") {
+                    output shouldBe """SerialName: "value""""
+                }
+            }
+
+            context("serializing a serial name using YamlNamingStrategy.CamelCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
+                ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
+
+                it("returns the serial name serialized in snake_case") {
+                    output shouldBe """serialName: "value""""
+                }
+            }
+
+            context("serializing a serial name using a YamlNamingStrategy only applies it to the serial name") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value_with_several_words"))
+
+                it("returns only the name serialized in PascalCase and not the value too") {
+                    output shouldBe """SerialName: "value_with_several_words""""
+                }
+            }
+        }
+
         describe("serializing enumeration values") {
             val output = Yaml.default.encodeToString(TestEnum.serializer(), TestEnum.Value1)
 
