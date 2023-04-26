@@ -58,7 +58,7 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
                     throw UnknownPropertyException(
                         propertyName,
                         pairedPropertyNames.map { (_, convertedName) -> convertedName }.toSet(),
-                        currentKey.path
+                        currentKey.path,
                     )
                 } else {
                     nextIndex++
