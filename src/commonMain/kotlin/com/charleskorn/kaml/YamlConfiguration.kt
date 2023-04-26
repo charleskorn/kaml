@@ -33,6 +33,7 @@ package com.charleskorn.kaml
  * * [sequenceStyle]: how sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each
  * * [ambiguousQuoteStyle]: how strings should be escaped when [singleLineStringStyle] is [SingleLineStringStyle.PlainExceptAmbiguous] and the value is ambiguous
  * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
+ * * [allowAnchorsAndAliases]: set to true to allow anchors and aliases when decoding YAML (defaults to `false`)
  */
 public data class YamlConfiguration constructor(
     internal val encodeDefaults: Boolean = true,
@@ -47,6 +48,7 @@ public data class YamlConfiguration constructor(
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
     internal val ambiguousQuoteStyle: AmbiguousQuoteStyle = AmbiguousQuoteStyle.DoubleQuoted,
     internal val sequenceBlockIndent: Int = 0,
+    internal val allowAnchorsAndAliases: Boolean = false,
     internal val yamlNamingStrategy: YamlNamingStrategy? = null,
 )
 
