@@ -96,14 +96,16 @@ internal class YamlOutput(
 
     override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index), configuration.singleLineStringStyle.scalarStyle)
 
-    private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN, configuration.yamlNamingStrategy)
-    private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle, configuration.yamlNamingStrategy)
+    private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
+    private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         encodeComment(descriptor, index)
 
         if (descriptor.kind is StructureKind.CLASS) {
-            emitPlainScalar(descriptor.getElementName(index))
+            val elementName = descriptor.getElementName(index)
+            val serializedName = configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
+            emitPlainScalar(serializedName)
         }
 
         return super.encodeElement(descriptor, index)
@@ -164,7 +166,7 @@ internal class YamlOutput(
         }
     }
 
-    private fun emitScalar(value: String, style: ScalarStyle, yamlNamingStrategy: YamlNamingStrategy?) {
+    private fun emitScalar(value: String, style: ScalarStyle) {
         val tag = getAndClearTypeName()
 
         if (tag.isPresent && configuration.polymorphismStyle != PolymorphismStyle.Tag) {
@@ -172,7 +174,7 @@ internal class YamlOutput(
         }
 
         val implicit = if (tag.isPresent) ALL_EXPLICIT else ALL_IMPLICIT
-        emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, yamlNamingStrategy?.serialNameForYaml(value) ?: value, style))
+        emitter.emit(ScalarEvent(Optional.empty(), tag, implicit, value, style))
     }
 
     private fun getAndClearTypeName(): Optional<String> {
