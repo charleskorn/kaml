@@ -38,12 +38,12 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
             currentKey = currentEntry.key
 
             val pairedPropertyNames = (0 until descriptor.elementsCount)
+                .asSequence()
                 .map(descriptor::getElementName)
                 .map { elementName ->
                     val yamlName = configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
                     elementName to yamlName
                 }
-                .toSet()
 
             var fieldDescriptorIndex = descriptor.getElementIndex(propertyName)
 
