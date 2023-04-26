@@ -36,11 +36,30 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
 
             val currentEntry = entriesList[nextIndex]
             currentKey = currentEntry.key
-            val fieldDescriptorIndex = descriptor.getElementIndex(propertyName)
+
+            val pairedPropertyNames = (0 until descriptor.elementsCount)
+                .map(descriptor::getElementName)
+                .map { elementName ->
+                    val yamlName = configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
+                    elementName to yamlName
+                }
+                .toSet()
+
+            var fieldDescriptorIndex = descriptor.getElementIndex(propertyName)
+
+            if (fieldDescriptorIndex == CompositeDecoder.UNKNOWN_NAME) {
+                pairedPropertyNames
+                    .find { (_, namingStrategyName) -> propertyName == namingStrategyName }
+                    ?.let { (originalName, _) -> fieldDescriptorIndex = descriptor.getElementIndex(originalName) }
+            }
 
             if (fieldDescriptorIndex == CompositeDecoder.UNKNOWN_NAME) {
                 if (configuration.strictMode) {
-                    throwUnknownProperty(propertyName, currentKey.path, descriptor)
+                    throw UnknownPropertyException(
+                        propertyName,
+                        pairedPropertyNames.map { (_, convertedName) -> convertedName }.toSet(),
+                        currentKey.path
+                    )
                 } else {
                     nextIndex++
                     continue
@@ -64,14 +83,6 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
 
             return fieldDescriptorIndex
         }
-    }
-
-    private fun throwUnknownProperty(name: String, path: YamlPath, desc: SerialDescriptor): Nothing {
-        val knownPropertyNames = (0 until desc.elementsCount)
-            .map { desc.getElementName(it) }
-            .toSet()
-
-        throw UnknownPropertyException(name, knownPropertyNames, path)
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {

@@ -340,6 +340,36 @@ class YamlWritingTest : DescribeSpec({
                     output shouldBe """SerialName: "value_with_several_words""""
                 }
             }
+
+            context("deserializing a snake_case serial name using YamlNamingStrategy.SnakeCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).decodeFromString(NamingStrategyTestData.serializer(), "serial_name: value")
+
+                it("correctly serializes into the data class") {
+                    output shouldBe NamingStrategyTestData("value")
+                }
+            }
+
+            context("deserializing a PascalCase serial name using YamlNamingStrategy.PascalCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).decodeFromString(NamingStrategyTestData.serializer(), "SerialName: value")
+
+                it("correctly serializes into the data class") {
+                    output shouldBe NamingStrategyTestData("value")
+                }
+            }
+
+            context("deserializing a camelCase serial name using YamlNamingStrategy.CamelCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
+                ).decodeFromString(NamingStrategyTestData.serializer(), "serialName: value")
+
+                it("correctly serializes into the data class") {
+                    output shouldBe NamingStrategyTestData("value")
+                }
+            }
         }
 
         describe("serializing enumeration values") {
