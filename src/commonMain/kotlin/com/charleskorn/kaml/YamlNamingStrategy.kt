@@ -22,26 +22,38 @@ public fun interface YamlNamingStrategy {
     public fun serialNameForYaml(serialName: String): String
 
     public companion object Builtins {
+        /**
+         * A [YamlNamingStrategy] that converts property names to snake_case (lowercase words separated by underscores).
+         */
         public val SnakeCase: YamlNamingStrategy = object : YamlNamingStrategy {
             override fun serialNameForYaml(serialName: String): String = serialName.toDelimitedCase('_')
 
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.SnakeCase"
         }
 
+        /**
+         * A [YamlNamingStrategy] that converts property names to kebab-case (lowercase words separated by dashes).
+         */
         public val KebabCase: YamlNamingStrategy = object : YamlNamingStrategy {
             override fun serialNameForYaml(serialName: String): String = serialName.toDelimitedCase('-')
 
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.KebabCase"
         }
 
+        /**
+         * A [YamlNamingStrategy] that converts property names to PascalCase (capitalized words concatenated together).
+         */
         public val PascalCase: YamlNamingStrategy = object : YamlNamingStrategy {
             override fun serialNameForYaml(serialName: String): String = serialName
-                .split("[^a-zA-Z0-9]+".toRegex())
+                .split(Regex("[^a-zA-Z0-9]+"))
                 .joinToString("") { it.replaceFirstChar(Char::titlecaseChar) }
 
             override fun toString(): String = "com.charleskorn.kaml.YamlNamingStrategy.PascalCase"
         }
 
+        /**
+         * A [YamlNamingStrategy] that converts property names to camelCase (like [PascalCase] but with the first letter lowercase).
+         */
         public val CamelCase: YamlNamingStrategy = object : YamlNamingStrategy {
             override fun serialNameForYaml(serialName: String): String = PascalCase
                 .serialNameForYaml(serialName)
