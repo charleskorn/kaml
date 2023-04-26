@@ -46,7 +46,7 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
                 }
 
             val fieldDescriptorIndex = pairedPropertyNames
-                .find { (_, strategyName) -> propertyName == strategyName }
+                .find { (_, convertedName) -> propertyName == convertedName }
                 ?.let { (descriptorName, _) -> descriptor.getElementIndex(descriptorName) }
                 ?: CompositeDecoder.UNKNOWN_NAME
 
