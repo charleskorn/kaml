@@ -37,24 +37,18 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
             val currentEntry = entriesList[nextIndex]
             currentKey = currentEntry.key
 
-            val pairedPropertyNames = (0 until descriptor.elementsCount)
-                .asSequence()
-                .map(descriptor::getElementName)
-                .map { elementName ->
-                    val yamlName = configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
-                    elementName to yamlName
-                }
+            val pairedPropertyNames = (0 until descriptor.elementsCount).associateBy { index ->
+                val elementName = descriptor.getElementName(index)
+                configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
+            }
 
-            val fieldDescriptorIndex = pairedPropertyNames
-                .find { (_, convertedName) -> propertyName == convertedName }
-                ?.let { (descriptorName, _) -> descriptor.getElementIndex(descriptorName) }
-                ?: CompositeDecoder.UNKNOWN_NAME
+            val fieldDescriptorIndex = pairedPropertyNames[propertyName] ?: CompositeDecoder.UNKNOWN_NAME
 
             if (fieldDescriptorIndex == CompositeDecoder.UNKNOWN_NAME) {
                 if (configuration.strictMode) {
                     throw UnknownPropertyException(
                         propertyName,
-                        pairedPropertyNames.map { (_, convertedName) -> convertedName }.toSet(),
+                        pairedPropertyNames.keys,
                         currentKey.path,
                     )
                 } else {
