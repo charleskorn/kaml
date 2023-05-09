@@ -331,6 +331,16 @@ class YamlWritingTest : DescribeSpec({
                 }
             }
 
+            context("serializing a serial name using YamlNamingStrategy.KebabCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.KebabCase),
+                ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
+
+                it("returns the serial name serialized in camelCase") {
+                    output shouldBe """serial-name: "value""""
+                }
+            }
+
             context("serializing a serial name using a YamlNamingStrategy only applies it to the serial name") {
                 val output = Yaml(
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
@@ -338,6 +348,42 @@ class YamlWritingTest : DescribeSpec({
 
                 it("returns only the name serialized in PascalCase and not the value too") {
                     output shouldBe """SerialName: "value_with_several_words""""
+                }
+            }
+
+            context("serializing a long serial name with multiple words using a YamlNamingStrategy") {
+                @Serializable
+                data class LongSerialName(val reallyLongSerialName: String)
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).encodeToString(LongSerialName.serializer(), LongSerialName("value"))
+
+                it("returns the name serialized correctly") {
+                    output shouldBe """really_long_serial_name: "value""""
+                }
+            }
+
+            context("serializing a serial name of only one character using a YamlNamingStrategy") {
+                @Serializable
+                data class OneCharacterSerialName(val a: String)
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(OneCharacterSerialName.serializer(), OneCharacterSerialName("value"))
+
+                it("returns the name serialized correctly") {
+                    output shouldBe """A: "value""""
+                }
+            }
+
+            context("serializing a serial name of only one word using a YamlNamingStrategy") {
+                @Serializable
+                data class OneWordSerialName(val name: String)
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).encodeToString(OneWordSerialName.serializer(), OneWordSerialName("value"))
+
+                it("returns the name serialized correctly") {
+                    output shouldBe """Name: "value""""
                 }
             }
         }
