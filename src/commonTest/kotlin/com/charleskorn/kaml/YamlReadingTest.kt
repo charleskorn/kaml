@@ -1030,6 +1030,29 @@ class YamlReadingTest : DescribeSpec({
                 }
             }
 
+            context("given some input representing an object with an unknown key, using a naming strategy") {
+                val input = "oneTwoThree: something".trimIndent()
+
+                context("parsing that input") {
+                    it("throws an exception with the naming strategy applied") {
+                        val exception = shouldThrow<UnknownPropertyException> {
+                            Yaml(
+                                configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                            ).decodeFromString(ComplexStructure.serializer(), input)
+                        }
+
+                        exception.asClue {
+                            it.message shouldBe "Unknown property 'oneTwoThree'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string"
+                            it.line shouldBe 1
+                            it.column shouldBe 1
+                            it.propertyName shouldBe "oneTwoThree"
+                            it.validPropertyNames shouldBe setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")
+                            it.path shouldBe YamlPath.root.withMapElementKey("oneTwoThree", Location(1, 1))
+                        }
+                    }
+                }
+            }
+
             context("given some input representing an object with an invalid value for a field") {
                 mapOf(
                     "byte" to "Value 'xxx' is not a valid byte value.",
