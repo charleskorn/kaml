@@ -543,6 +543,41 @@ class YamlReadingTest : DescribeSpec({
             }
         }
 
+        context("deserializing serial names using YamlNamingStrategies") {
+            @Serializable
+            data class NamingStrategyTestData(val serialName: String)
+
+            context("deserializing a snake_case serial name using YamlNamingStrategy.SnakeCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                ).decodeFromString(NamingStrategyTestData.serializer(), "serial_name: value")
+
+                it("correctly serializes into the data class") {
+                    output shouldBe NamingStrategyTestData("value")
+                }
+            }
+
+            context("deserializing a PascalCase serial name using YamlNamingStrategy.PascalCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
+                ).decodeFromString(NamingStrategyTestData.serializer(), "SerialName: value")
+
+                it("correctly serializes into the data class") {
+                    output shouldBe NamingStrategyTestData("value")
+                }
+            }
+
+            context("deserializing a camelCase serial name using YamlNamingStrategy.CamelCase") {
+                val output = Yaml(
+                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
+                ).decodeFromString(NamingStrategyTestData.serializer(), "serialName: value")
+
+                it("correctly serializes into the data class") {
+                    output shouldBe NamingStrategyTestData("value")
+                }
+            }
+        }
+
         describe("parsing lists") {
             context("given a list of strings") {
                 val input = """
@@ -990,6 +1025,29 @@ class YamlReadingTest : DescribeSpec({
                             it.propertyName shouldBe "abc123"
                             it.validPropertyNames shouldBe setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")
                             it.path shouldBe YamlPath.root.withMapElementKey("abc123", Location(1, 1))
+                        }
+                    }
+                }
+            }
+
+            context("given some input representing an object with an unknown key, using a naming strategy") {
+                val input = "oneTwoThree: something".trimIndent()
+
+                context("parsing that input") {
+                    it("throws an exception with the naming strategy applied") {
+                        val exception = shouldThrow<UnknownPropertyException> {
+                            Yaml(
+                                configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                            ).decodeFromString(ComplexStructure.serializer(), input)
+                        }
+
+                        exception.asClue {
+                            it.message shouldBe "Unknown property 'oneTwoThree'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string"
+                            it.line shouldBe 1
+                            it.column shouldBe 1
+                            it.propertyName shouldBe "oneTwoThree"
+                            it.validPropertyNames shouldBe setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")
+                            it.path shouldBe YamlPath.root.withMapElementKey("oneTwoThree", Location(1, 1))
                         }
                     }
                 }

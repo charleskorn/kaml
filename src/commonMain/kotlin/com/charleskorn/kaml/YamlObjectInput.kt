@@ -27,8 +27,16 @@ import kotlinx.serialization.modules.SerializersModule
 internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlMapLikeInputBase(map, yaml, context, configuration) {
     private val entriesList = map.entries.entries.toList()
     private var nextIndex = 0
+    private lateinit var pairedPropertyNames: Map<String, Int>
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
+        if (!::pairedPropertyNames.isInitialized) {
+            pairedPropertyNames = (0 until descriptor.elementsCount).associateBy { index ->
+                val elementName = descriptor.getElementName(index)
+                configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
+            }
+        }
+
         while (true) {
             if (nextIndex == entriesList.size) {
                 return CompositeDecoder.DECODE_DONE
@@ -36,11 +44,16 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
 
             val currentEntry = entriesList[nextIndex]
             currentKey = currentEntry.key
-            val fieldDescriptorIndex = descriptor.getElementIndex(propertyName)
+
+            val fieldDescriptorIndex = pairedPropertyNames[propertyName] ?: CompositeDecoder.UNKNOWN_NAME
 
             if (fieldDescriptorIndex == CompositeDecoder.UNKNOWN_NAME) {
                 if (configuration.strictMode) {
-                    throwUnknownProperty(propertyName, currentKey.path, descriptor)
+                    throw UnknownPropertyException(
+                        propertyName,
+                        pairedPropertyNames.keys,
+                        currentKey.path,
+                    )
                 } else {
                     nextIndex++
                     continue
@@ -64,14 +77,6 @@ internal class YamlObjectInput(map: YamlMap, yaml: Yaml, context: SerializersMod
 
             return fieldDescriptorIndex
         }
-    }
-
-    private fun throwUnknownProperty(name: String, path: YamlPath, desc: SerialDescriptor): Nothing {
-        val knownPropertyNames = (0 until desc.elementsCount)
-            .map { desc.getElementName(it) }
-            .toSet()
-
-        throw UnknownPropertyException(name, knownPropertyNames, path)
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {

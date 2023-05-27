@@ -49,6 +49,7 @@ public data class YamlConfiguration constructor(
     internal val ambiguousQuoteStyle: AmbiguousQuoteStyle = AmbiguousQuoteStyle.DoubleQuoted,
     internal val sequenceBlockIndent: Int = 0,
     internal val allowAnchorsAndAliases: Boolean = false,
+    internal val yamlNamingStrategy: YamlNamingStrategy? = null,
 )
 
 public enum class PolymorphismStyle {

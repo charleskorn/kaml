@@ -103,7 +103,9 @@ internal class YamlOutput(
         encodeComment(descriptor, index)
 
         if (descriptor.kind is StructureKind.CLASS) {
-            emitPlainScalar(descriptor.getElementName(index))
+            val elementName = descriptor.getElementName(index)
+            val serializedName = configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
+            emitPlainScalar(serializedName)
         }
 
         return super.encodeElement(descriptor, index)
