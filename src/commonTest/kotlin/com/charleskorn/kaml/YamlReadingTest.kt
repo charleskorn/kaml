@@ -1031,23 +1031,48 @@ class YamlReadingTest : DescribeSpec({
             }
 
             context("given some input representing an object with an unknown key, using a naming strategy") {
-                val input = "oneTwoThree: something".trimIndent()
+                context("given the unknown key does not match any of the known field names") {
+                    val input = "oneTwoThree: something".trimIndent()
 
-                context("parsing that input") {
-                    it("throws an exception with the naming strategy applied") {
-                        val exception = shouldThrow<UnknownPropertyException> {
-                            Yaml(
-                                configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
-                            ).decodeFromString(ComplexStructure.serializer(), input)
+                    context("parsing that input") {
+                        it("throws an exception") {
+                            val exception = shouldThrow<UnknownPropertyException> {
+                                Yaml(
+                                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                                ).decodeFromString(NestedObjects.serializer(), input)
+                            }
+
+                            exception.asClue {
+                                it.message shouldBe "Unknown property 'oneTwoThree'. Known properties are: first_person, second_person"
+                                it.line shouldBe 1
+                                it.column shouldBe 1
+                                it.propertyName shouldBe "oneTwoThree"
+                                it.validPropertyNames shouldBe setOf("first_person", "second_person")
+                                it.path shouldBe YamlPath.root.withMapElementKey("oneTwoThree", Location(1, 1))
+                            }
                         }
+                    }
+                }
 
-                        exception.asClue {
-                            it.message shouldBe "Unknown property 'oneTwoThree'. Known properties are: boolean, byte, char, double, enum, float, int, long, nullable, short, string"
-                            it.line shouldBe 1
-                            it.column shouldBe 1
-                            it.propertyName shouldBe "oneTwoThree"
-                            it.validPropertyNames shouldBe setOf("boolean", "byte", "char", "double", "enum", "float", "int", "long", "nullable", "short", "string")
-                            it.path shouldBe YamlPath.root.withMapElementKey("oneTwoThree", Location(1, 1))
+                context("given the unknown key uses the Kotlin name of the field, rather than the name from the naming strategy") {
+                    val input = "firstPerson: something".trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an exception") {
+                            val exception = shouldThrow<UnknownPropertyException> {
+                                Yaml(
+                                    configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
+                                ).decodeFromString(NestedObjects.serializer(), input)
+                            }
+
+                            exception.asClue {
+                                it.message shouldBe "Unknown property 'firstPerson'. Known properties are: first_person, second_person"
+                                it.line shouldBe 1
+                                it.column shouldBe 1
+                                it.propertyName shouldBe "firstPerson"
+                                it.validPropertyNames shouldBe setOf("first_person", "second_person")
+                                it.path shouldBe YamlPath.root.withMapElementKey("firstPerson", Location(1, 1))
+                            }
                         }
                     }
                 }
