@@ -49,13 +49,13 @@ kotlin {
             languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
             }
         }
 
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation("io.kotest:kotest-assertions-core:5.6.2")
                 implementation("io.kotest:kotest-framework-api:5.6.2")
@@ -63,13 +63,13 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
+        named("jvmMain") {
             dependencies {
                 implementation("org.snakeyaml:snakeyaml-engine:2.6")
             }
         }
 
-        val jvmTest by getting {
+        named("jvmTest") {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.6.2")
             }
