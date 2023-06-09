@@ -35,6 +35,15 @@ group = "com.charleskorn.kaml"
 
 repositories {
     mavenCentral()
+
+    maven("https://raw.githubusercontent.com/krzema12/snakeyaml-engine-kmp/artifacts/m2/") {
+        name = "SnakeYAML Engine KMP Snapshots"
+        mavenContent {
+            // only include the relevant snapshots
+            includeGroup("org.snakeyaml")
+            snapshotsOnly()
+        }
+    }
 }
 
 kotlin {
@@ -42,6 +51,11 @@ kotlin {
 
     jvm {
         withJava()
+    }
+
+    js(IR) {
+        browser()
+        binaries.executable()
     }
 
     sourceSets {
@@ -72,6 +86,12 @@ kotlin {
         named("jvmTest") {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.6.2")
+            }
+        }
+
+        named("jsTest") {
+            dependencies {
+                implementation("org.snakeyaml:snakeyaml-engine-kmp:2.7-SNAPSHOT")
             }
         }
     }
