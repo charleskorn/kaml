@@ -18,18 +18,17 @@
 
 package com.charleskorn.kaml
 
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class YamlExceptionTest : DescribeSpec({
-    describe("a YAML exception") {
-        describe("formatting it as a string") {
-            val path = YamlPath.root.withMapElementKey("colours", Location(3, 4)).withMapElementValue(Location(4, 1)).withListEntry(2, Location(123, 456))
-            val exception = YamlException("Something went wrong", path)
+class YamlExceptionTest : FunSpec({
+    test("Formatting a YAML exception as a string") {
+        val path = YamlPath.root
+            .withMapElementKey("colours", Location(3, 4))
+            .withMapElementValue(Location(4, 1))
+            .withListEntry(2, Location(123, 456))
+        val exception = YamlException("Something went wrong", path)
 
-            it("includes the class name, location information and message") {
-                exception.toString() shouldBe "com.charleskorn.kaml.YamlException at colours[2] on line 123, column 456: Something went wrong"
-            }
-        }
+        exception.toString() shouldBe "com.charleskorn.kaml.YamlException at colours[2] on line 123, column 456: Something went wrong"
     }
 })
