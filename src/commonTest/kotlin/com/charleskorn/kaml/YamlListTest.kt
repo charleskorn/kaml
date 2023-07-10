@@ -19,159 +19,121 @@
 package com.charleskorn.kaml
 
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class YamlListTest : DescribeSpec({
-    describe("a YAML list") {
-        describe("testing equivalence") {
-            val list = YamlList(
-                listOf(
-                    YamlScalar("item 1", YamlPath.root.withListEntry(0, Location(4, 5))),
-                    YamlScalar("item 2", YamlPath.root.withListEntry(1, Location(6, 7))),
-                ),
-                YamlPath.root,
-            )
+class YamlListTest : FunSpec({
 
-            describe("comparing it to the same instance") {
-                it("indicates that they are equivalent") {
-                    list.equivalentContentTo(list) shouldBe true
-                }
-            }
+    val list = YamlList(
+        listOf(
+            YamlScalar("item 1", YamlPath.root.withListEntry(0, Location(4, 5))),
+            YamlScalar("item 2", YamlPath.root.withListEntry(1, Location(6, 7))),
+        ),
+        YamlPath.root,
+    )
 
-            describe("comparing it to another list with the same items in the same order with a different path") {
-                it("indicates that they are equivalent") {
-                    list.equivalentContentTo(YamlList(list.items, YamlPath.root.withMapElementValue(Location(5, 6)))) shouldBe true
-                }
-            }
+    test("list equivalence with same instance") {
+        list.equivalentContentTo(list) shouldBe true
+    }
 
-            describe("comparing it to another list with the same items in a different order with the same path") {
-                it("indicates that they are not equivalent") {
-                    list.equivalentContentTo(YamlList(list.items.reversed(), list.path)) shouldBe false
-                }
-            }
+    test("list equivalence with same items but different path") {
+        list.equivalentContentTo(YamlList(list.items, YamlPath.root.withMapElementValue(Location(5, 6)))) shouldBe true
+    }
 
-            describe("comparing it to another list with different items with the same path") {
-                it("indicates that they are not equivalent") {
-                    list.equivalentContentTo(YamlList(emptyList(), list.path)) shouldBe false
-                }
-            }
+    test("list equivalence with same items in different order") {
+        list.equivalentContentTo(YamlList(list.items.reversed(), list.path)) shouldBe false
+    }
 
-            describe("comparing it to a scalar value") {
-                it("indicates that they are not equivalent") {
-                    list.equivalentContentTo(YamlScalar("some content", list.path)) shouldBe false
-                }
-            }
+    test("list equivalence with different items") {
+        list.equivalentContentTo(YamlList(emptyList(), list.path)) shouldBe false
+    }
 
-            describe("comparing it to a null value") {
-                it("indicates that they are not equivalent") {
-                    list.equivalentContentTo(YamlNull(list.path)) shouldBe false
-                }
-            }
+    test("list equivalence with scalar value") {
+        list.equivalentContentTo(YamlScalar("some content", list.path)) shouldBe false
+    }
 
-            describe("comparing it to a map") {
-                it("indicates that they are not equivalent") {
-                    list.equivalentContentTo(YamlMap(emptyMap(), list.path)) shouldBe false
-                }
-            }
-        }
+    test("list equivalence with null value") {
+        list.equivalentContentTo(YamlNull(list.path)) shouldBe false
+    }
 
-        describe("getting elements from a list") {
-            val firstItemPath = YamlPath.root.withListEntry(0, Location(4, 5))
-            val secondItemPath = YamlPath.root.withListEntry(1, Location(6, 7))
+    test("list equivalence with map") {
+        list.equivalentContentTo(YamlMap(emptyMap(), list.path)) shouldBe false
+    }
 
-            val list = YamlList(
-                listOf(
-                    YamlScalar("item 1", firstItemPath),
-                    YamlScalar("item 2", secondItemPath),
-                ),
-                YamlPath.root,
-            )
+    val firstItemPath = YamlPath.root.withListEntry(0, Location(4, 5))
+    val secondItemPath = YamlPath.root.withListEntry(1, Location(6, 7))
 
-            describe("getting element in bounds") {
-                it("returns element") {
-                    list[0] shouldBe YamlScalar("item 1", firstItemPath)
-                    list[1] shouldBe YamlScalar("item 2", secondItemPath)
-                }
-            }
+    val listElements = YamlList(
+        listOf(
+            YamlScalar("item 1", firstItemPath),
+            YamlScalar("item 2", secondItemPath),
+        ),
+        YamlPath.root,
+    )
 
-            describe("getting element out of bounds") {
-                it("throws IndexOutOfBoundsException") {
-                    shouldThrow<IndexOutOfBoundsException> { list[2] }
-                    shouldThrow<IndexOutOfBoundsException> { list[10] }
-                }
-            }
-        }
+    test("getting element in bounds from list") {
+        listElements[0] shouldBe YamlScalar("item 1", firstItemPath)
+        listElements[1] shouldBe YamlScalar("item 2", secondItemPath)
+    }
 
-        describe("converting the content to a human-readable string") {
-            context("an empty list") {
-                val list = YamlList(emptyList(), YamlPath.root)
+    test("getting element out of bounds from list") {
+        shouldThrow<IndexOutOfBoundsException> { listElements[2] }
+        shouldThrow<IndexOutOfBoundsException> { listElements[10] }
+    }
 
-                it("returns empty square brackets") {
-                    list.contentToString() shouldBe "[]"
-                }
-            }
+    test("converting content of an empty list to a human-readable string") {
+        val listEmpty = YamlList(emptyList(), YamlPath.root)
+        listEmpty.contentToString() shouldBe "[]"
+    }
 
-            context("a list with a single entry") {
-                val list = YamlList(listOf(YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1)))), YamlPath.root)
+    test("converting content of a list with a single entry to a human-readable string") {
+        val listSingleEntry = YamlList(listOf(YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1)))), YamlPath.root)
+        listSingleEntry.contentToString() shouldBe "['hello']"
+    }
 
-                it("returns that item surrounded by square brackets") {
-                    list.contentToString() shouldBe "['hello']"
-                }
-            }
+    test("converting content of a list with multiple entries to a human-readable string") {
+        val listMultipleEntries = YamlList(
+            listOf(
+                YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
+                YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1))),
+            ),
+            YamlPath.root,
+        )
+        listMultipleEntries.contentToString() shouldBe "['hello', 'world']"
+    }
 
-            context("a list with multiple entries") {
-                val list = YamlList(
-                    listOf(
-                        YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
-                        YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1))),
-                    ),
-                    YamlPath.root,
-                )
+    test("replacing list's path") {
+        val original = YamlList(
+            listOf(
+                YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
+                YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1))),
+            ),
+            YamlPath.root,
+        )
 
-                it("returns all items separated by commas and surrounded by square brackets") {
-                    list.contentToString() shouldBe "['hello', 'world']"
-                }
-            }
-        }
+        val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
 
-        describe("replacing its path") {
-            val original = YamlList(
-                listOf(
-                    YamlScalar("hello", YamlPath.root.withListEntry(0, Location(1, 1))),
-                    YamlScalar("world", YamlPath.root.withListEntry(1, Location(2, 1))),
-                ),
-                YamlPath.root,
-            )
+        val expected = YamlList(
+            listOf(
+                YamlScalar("hello", newPath.withListEntry(0, Location(1, 1))),
+                YamlScalar("world", newPath.withListEntry(1, Location(2, 1))),
+            ),
+            newPath,
+        )
 
-            val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
+        original.withPath(newPath) shouldBe expected
+    }
 
-            val expected = YamlList(
-                listOf(
-                    YamlScalar("hello", newPath.withListEntry(0, Location(1, 1))),
-                    YamlScalar("world", newPath.withListEntry(1, Location(2, 1))),
-                ),
-                newPath,
-            )
+    test("converting list to a string") {
+        val path = YamlPath.root.withMapElementKey("test", Location(2, 1)).withMapElementValue(Location(2, 7))
+        val elementPath = path.withListEntry(0, Location(3, 3))
+        val value = YamlList(listOf(YamlScalar("hello", elementPath)), path)
 
-            it("returns a new list node with the path for the node and its items updated to the new path") {
-                original.withPath(newPath) shouldBe expected
-            }
-        }
-
-        describe("converting it to a string") {
-            val path = YamlPath.root.withMapElementKey("test", Location(2, 1)).withMapElementValue(Location(2, 7))
-            val elementPath = path.withListEntry(0, Location(3, 3))
-            val value = YamlList(listOf(YamlScalar("hello", elementPath)), path)
-
-            it("returns a human-readable description of itself") {
-                value.toString() shouldBe
-                    """
-                        list @ $path (size: 1)
-                        - item 0:
-                          scalar @ $elementPath : hello
-                    """.trimIndent()
-            }
-        }
+        value.toString() shouldBe
+            """
+                list @ $path (size: 1)
+                - item 0:
+                  scalar @ $elementPath : hello
+            """.trimIndent()
     }
 })
