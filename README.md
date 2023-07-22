@@ -9,7 +9,7 @@
 
 This library adds YAML support to [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization/).
 
-Currently, only Kotlin/JVM is fully supported. 
+Currently, only Kotlin/JVM is fully supported.
 
 Kotlin/JS support is considered highly experimental. It is not yet fully functional, and may be removed or modified at any time.
 
