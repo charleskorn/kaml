@@ -2552,7 +2552,7 @@ private data class CustomSerializedValue(val thing: String)
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 private object LocationThrowingSerializer : KSerializer<Any> {
-    override val descriptor = buildSerialDescriptor(LocationThrowingSerializer::class.qualifiedName!!, SerialKind.CONTEXTUAL)
+    override val descriptor = buildSerialDescriptor(LocationThrowingSerializer::class.simpleName!!, SerialKind.CONTEXTUAL)
 
     override fun deserialize(decoder: Decoder): Any {
         val location = (decoder as YamlInput).getCurrentLocation()

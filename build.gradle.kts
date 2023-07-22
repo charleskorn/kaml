@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
+    id("io.kotest.multiplatform") version "5.6.2"
 }
 
 group = "com.charleskorn.kaml"
@@ -42,6 +43,19 @@ kotlin {
 
     jvm {
         withJava()
+    }
+
+    js(IR) {
+        browser {
+            testTask {
+                // TODO: enable once the tests work with Kotlin/JS.
+                //  The main problem noticed so far is that the DescribeSpec isn't supported by Kotlin/JS.
+                //  See https://github.com/kotest/kotest/blob/71c1826e5b404359ad8efe7cd360a2db3af5436b/kotest-framework/kotest-framework-engine/src/commonMain/kotlin/io/kotest/engine/spec/interceptor/IgnoreNestedSpecStylesInterceptor.kt#L47
+                enabled = false
+            }
+        }
+        nodejs()
+        binaries.executable()
     }
 
     sourceSets {
@@ -72,6 +86,13 @@ kotlin {
         named("jvmTest") {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.6.2")
+            }
+        }
+
+        named("jsMain") {
+            dependencies {
+                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7")
+                implementation("com.squareup.okio:okio:3.3.0")
             }
         }
     }

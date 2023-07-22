@@ -29,6 +29,6 @@ class YamlExceptionTest : FunSpec({
             .withListEntry(2, Location(123, 456))
         val exception = YamlException("Something went wrong", path)
 
-        exception.toString() shouldBe "com.charleskorn.kaml.YamlException at colours[2] on line 123, column 456: Something went wrong"
+        exception.toString() shouldBe "YamlException at colours[2] on line 123, column 456: Something went wrong"
     }
 })

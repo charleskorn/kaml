@@ -29,7 +29,7 @@ public open class YamlException(
     public val line: Int = location.line
     public val column: Int = location.column
 
-    override fun toString(): String = "${this::class.qualifiedName} at ${path.toHumanReadableString()} on line $line, column $column: $message"
+    override fun toString(): String = "${this::class.simpleName} at ${path.toHumanReadableString()} on line $line, column $column: $message"
 }
 
 public class DuplicateKeyException(
