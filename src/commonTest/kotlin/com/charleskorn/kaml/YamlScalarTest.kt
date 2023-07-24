@@ -20,397 +20,273 @@ package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 
-class YamlScalarTest : DescribeSpec({
-    describe("a YAML scalar") {
-        mapOf(
-            "0" to 0,
-            "1" to 1,
-            "-1" to -1,
-            "0x11" to 17,
-            "-0x11" to -17,
-            "0o11" to 9,
-            "-0o11" to -9,
-        ).forEach { (content, expectedValue) ->
-            context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, YamlPath.root)
+class YamlScalarTest : FunSpec({
+    val index1Line2Column3Path = YamlPath.root.withListEntry(1, Location(2, 3))
+    val index1Line2Column4Path = YamlPath.root.withListEntry(1, Location(2, 4))
 
-                context("retrieving the value as an integer") {
-                    val result = scalar.toInt()
+    withData(
+        nameFn = { "validNumberScalar_$it" },
+        "0" to 0,
+        "1" to 1,
+        "-1" to -1,
+        "0x11" to 17,
+        "-0x11" to -17,
+        "0o11" to 9,
+        "-0o11" to -9,
+    ) { (content, expectedValue) ->
+        val scalar = YamlScalar(content, YamlPath.root)
 
-                    it("converts it to the expected integer") {
-                        result shouldBe expectedValue
-                    }
-                }
+        scalar.toInt() shouldBe expectedValue
+        scalar.toLong() shouldBe expectedValue.toLong()
+        scalar.toShort() shouldBe expectedValue.toShort()
+        scalar.toByte() shouldBe expectedValue.toByte()
+    }
 
-                context("retrieving the value as a long") {
-                    val result = scalar.toLong()
+    withData(
+        nameFn = { "invalidNumberScalar_$it" },
+        "a",
+        ".",
+        "1.",
+        ".1",
+        "1.5",
+        "+",
+        "0x",
+        "0o",
+        "",
+    ) { content ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
 
-                    it("converts it to the expected long") {
-                        result shouldBe expectedValue.toLong()
-                    }
-                }
+        val intException = shouldThrow<YamlScalarFormatException>(scalar::toInt)
 
-                context("retrieving the value as a short") {
-                    val result = scalar.toShort()
-
-                    it("converts it to the expected short") {
-                        result shouldBe expectedValue.toShort()
-                    }
-                }
-
-                context("retrieving the value as a byte") {
-                    val result = scalar.toByte()
-
-                    it("converts it to the expected byte") {
-                        result shouldBe expectedValue.toByte()
-                    }
-                }
-            }
+        intException.asClue {
+            it.message shouldBe "Value '$content' is not a valid integer value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
         }
 
-        context("when reading invalid integer values") {
-            listOf(
-                "a",
-                ".",
-                "1.",
-                ".1",
-                "1.5",
-                "+",
-                "0x",
-                "0o",
-                "",
-            ).forEach { content ->
-                context("given a scalar with the content '$content'") {
-                    val path = YamlPath.root.withListEntry(1, Location(2, 4))
-                    val scalar = YamlScalar(content, path)
+        val longException = shouldThrow<YamlScalarFormatException>(scalar::toLong)
 
-                    context("retrieving the value as an integer") {
-                        it("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toInt() }
-
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid integer value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
-                            }
-                        }
-                    }
-
-                    context("retrieving the value as a long") {
-                        it("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toLong() }
-
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid long value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
-                            }
-                        }
-                    }
-
-                    context("retrieving the value as a short") {
-                        it("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toShort() }
-
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid short value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
-                            }
-                        }
-                    }
-
-                    context("retrieving the value as a byte") {
-                        it("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toByte() }
-
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid byte value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
-                            }
-                        }
-                    }
-                }
-            }
+        longException.asClue {
+            it.message shouldBe "Value '$content' is not a valid long value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
         }
 
-        context("when converting values to doubles") {
-            mapOf(
-                "1" to 1.0,
-                ".5" to 0.5,
-                "1.5" to 1.5,
-                "1.5e2" to 150.0,
-                "1.5E2" to 150.0,
-                "1.5e+2" to 150.0,
-                "1.5e-2" to 0.015,
-                "-1.5e2" to -150.0,
-                "-1.5e+2" to -150.0,
-                "-1.5e-2" to -0.015,
-                ".nan" to Double.NaN,
-                ".NaN" to Double.NaN,
-                ".NAN" to Double.NaN,
-                ".inf" to Double.POSITIVE_INFINITY,
-                ".Inf" to Double.POSITIVE_INFINITY,
-                ".INF" to Double.POSITIVE_INFINITY,
-                "-.inf" to Double.NEGATIVE_INFINITY,
-                "-.Inf" to Double.NEGATIVE_INFINITY,
-                "-.INF" to Double.NEGATIVE_INFINITY,
-            ).forEach { (content, expectedResult) ->
-                context("given a scalar with the content '$content'") {
-                    val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
+        val shortException = shouldThrow<YamlScalarFormatException>(scalar::toShort)
 
-                    context("retrieving the value as a double") {
-                        val result = scalar.toDouble()
-
-                        it("converts it to the expected double") {
-                            result shouldBe expectedResult
-                        }
-                    }
-                }
-            }
+        shortException.asClue {
+            it.message shouldBe "Value '$content' is not a valid short value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
         }
 
-        context("when converting values to floats") {
-            mapOf(
-                "1" to 1.0f,
-                ".5" to 0.5f,
-                "1.5" to 1.5f,
-                "1.5e2" to 150f,
-                "1.5E2" to 150f,
-                "1.5e+2" to 150f,
-                "1.5e-2" to 0.015f,
-                "-1.5e2" to -150f,
-                "-1.5e+2" to -150f,
-                "-1.5e-2" to -0.015f,
-                ".nan" to Float.NaN,
-                ".NaN" to Float.NaN,
-                ".NAN" to Float.NaN,
-                ".inf" to Float.POSITIVE_INFINITY,
-                ".Inf" to Float.POSITIVE_INFINITY,
-                ".INF" to Float.POSITIVE_INFINITY,
-                "-.inf" to Float.NEGATIVE_INFINITY,
-                "-.Inf" to Float.NEGATIVE_INFINITY,
-                "-.INF" to Float.NEGATIVE_INFINITY,
-            ).forEach { (content, expectedResult) ->
-                context("given a scalar with the content '$content'") {
-                    val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
+        val byteException = shouldThrow<YamlScalarFormatException>(scalar::toByte)
 
-                    context("retrieving the value as a float") {
-                        val result = scalar.toFloat()
+        byteException.asClue {
+            it.message shouldBe "Value '$content' is not a valid byte value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
+        }
+    }
 
-                        it("converts it to the expected float") {
-                            result shouldBe expectedResult
-                        }
-                    }
-                }
-            }
+    withData(
+        nameFn = { "validDoubleScalar_$it" },
+        "1" to 1.0,
+        ".5" to 0.5,
+        "1.5" to 1.5,
+        "1.5e2" to 150.0,
+        "1.5E2" to 150.0,
+        "1.5e+2" to 150.0,
+        "1.5e-2" to 0.015,
+        "-1.5e2" to -150.0,
+        "-1.5e+2" to -150.0,
+        "-1.5e-2" to -0.015,
+        ".nan" to Double.NaN,
+        ".NaN" to Double.NaN,
+        ".NAN" to Double.NaN,
+        ".inf" to Double.POSITIVE_INFINITY,
+        ".Inf" to Double.POSITIVE_INFINITY,
+        ".INF" to Double.POSITIVE_INFINITY,
+        "-.inf" to Double.NEGATIVE_INFINITY,
+        "-.Inf" to Double.NEGATIVE_INFINITY,
+        "-.INF" to Double.NEGATIVE_INFINITY,
+    ) { (content, expectedResult) ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
+        scalar.toDouble() shouldBe expectedResult
+    }
+
+    withData(
+        nameFn = { "validFloatScalar_$it" },
+        "1" to 1.0f,
+        ".5" to 0.5f,
+        "1.5" to 1.5f,
+        "1.5e2" to 150f,
+        "1.5E2" to 150f,
+        "1.5e+2" to 150f,
+        "1.5e-2" to 0.015f,
+        "-1.5e2" to -150f,
+        "-1.5e+2" to -150f,
+        "-1.5e-2" to -0.015f,
+        ".nan" to Float.NaN,
+        ".NaN" to Float.NaN,
+        ".NAN" to Float.NaN,
+        ".inf" to Float.POSITIVE_INFINITY,
+        ".Inf" to Float.POSITIVE_INFINITY,
+        ".INF" to Float.POSITIVE_INFINITY,
+        "-.inf" to Float.NEGATIVE_INFINITY,
+        "-.Inf" to Float.NEGATIVE_INFINITY,
+        "-.INF" to Float.NEGATIVE_INFINITY,
+    ) { (content, expectedResult) ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
+        scalar.toFloat() shouldBe expectedResult
+    }
+
+    withData(
+        nameFn = { "invalidFloatScalar_$it" },
+        ".",
+        "0x2",
+        "0o2",
+        "1e",
+        "1e-",
+        "1e+",
+        "+",
+        "",
+    ) { content ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
+
+        val floatException = shouldThrow<YamlScalarFormatException>(scalar::toFloat)
+
+        floatException.asClue {
+            it.message shouldBe "Value '$content' is not a valid floating point value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
         }
 
-        context("when reading invalid floating point values") {
-            listOf(
-                ".",
-                "0x2",
-                "0o2",
-                "1e",
-                "1e-",
-                "1e+",
-                "+",
-                "",
-            ).forEach { content ->
-                context("given a scalar with the content '$content'") {
-                    val path = YamlPath.root.withListEntry(1, Location(2, 4))
-                    val scalar = YamlScalar(content, path)
+        val doubleException = shouldThrow<YamlScalarFormatException>(scalar::toDouble)
 
-                    context("retrieving the value as a float") {
-                        it("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toFloat() }
-
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid floating point value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
-                            }
-                        }
-                    }
-
-                    context("retrieving the value as a double") {
-                        it("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toDouble() }
-
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid floating point value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
-                            }
-                        }
-                    }
-                }
-            }
+        doubleException.asClue {
+            it.message shouldBe "Value '$content' is not a valid floating point value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
         }
+    }
 
-        mapOf(
-            "true" to true,
-            "True" to true,
-            "TRUE" to true,
-            "false" to false,
-            "False" to false,
-            "FALSE" to false,
-        ).forEach { (content, expectedValue) ->
-            context("given a scalar with the content '$content'") {
-                val scalar = YamlScalar(content, YamlPath.root.withListEntry(1, Location(2, 4)))
+    withData(
+        nameFn = { "validBooleanScalar_$it" },
+        "true" to true,
+        "True" to true,
+        "TRUE" to true,
+        "false" to false,
+        "False" to false,
+        "FALSE" to false,
+    ) { (content, expectedValue) ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
+        scalar.toBoolean() shouldBe expectedValue
+    }
 
-                context("retrieving the value as a boolean") {
-                    val result = scalar.toBoolean()
+    test("Throws appropriate exception when retrieving boolean from scalar with 'nonsense' content") {
+        val scalar = YamlScalar("nonsense", index1Line2Column4Path)
 
-                    it("converts it to the expected value") {
-                        result shouldBe expectedValue
-                    }
-                }
-            }
+        val exception = shouldThrow<YamlScalarFormatException>(scalar::toBoolean)
+
+        exception.asClue {
+            it.message shouldBe "Value 'nonsense' is not a valid boolean, permitted choices are: true or false"
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe "nonsense"
         }
+    }
 
-        context("given a scalar with the content 'nonsense'") {
-            val path = YamlPath.root.withListEntry(1, Location(2, 4))
-            val scalar = YamlScalar("nonsense", path)
+    test("Successfully retrieves character value from a scalar with content 'b'") {
+        val scalar = YamlScalar("b", index1Line2Column4Path)
+        val result = scalar.toChar()
+        result shouldBe 'b'
+    }
 
-            context("retrieving the value as a boolean") {
-                it("throws an appropriate exception") {
-                    val exception = shouldThrow<YamlScalarFormatException> { scalar.toBoolean() }
+    withData(
+        nameFn = { "invalidCharacterScalar_$it" },
+        "aa",
+        "",
+    ) { content ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
 
-                    exception.asClue {
-                        it.message shouldBe "Value 'nonsense' is not a valid boolean, permitted choices are: true or false"
-                        it.line shouldBe 2
-                        it.column shouldBe 4
-                        it.path shouldBe path
-                        it.originalValue shouldBe "nonsense"
-                    }
-                }
-            }
+        val exception = shouldThrow<YamlScalarFormatException>(scalar::toChar)
+
+        exception.asClue {
+            it.message shouldBe "Value '$content' is not a valid character value."
+            it.line shouldBe 2
+            it.column shouldBe 4
+            it.path shouldBe index1Line2Column4Path
+            it.originalValue shouldBe content
         }
+    }
 
-        context("given a scalar with the content 'b'") {
-            val scalar = YamlScalar("b", YamlPath.root.withListEntry(1, Location(2, 4)))
+    test("Scalar is equivalent when compared to same instance") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        scalar.equivalentContentTo(scalar) shouldBe true
+    }
 
-            context("retrieving the value as a character value") {
-                val result = scalar.toChar()
+    test("Scalar is equivalent when compared to another scalar with same content and path") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        scalar.equivalentContentTo(YamlScalar("some content", index1Line2Column3Path)) shouldBe true
+    }
 
-                it("converts it to the expected value") {
-                    result shouldBe 'b'
-                }
-            }
-        }
+    test("Scalar is equivalent when compared to another scalar with same content but different path") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        val otherPath = YamlPath.root.withListEntry(1, Location(2, 4))
+        scalar.equivalentContentTo(YamlScalar("some content", otherPath)) shouldBe true
+    }
 
-        listOf(
-            "aa",
-            "",
-        ).forEach { content ->
-            context("given a scalar with the content '$content'") {
-                val path = YamlPath.root.withListEntry(1, Location(2, 4))
-                val scalar = YamlScalar(content, path)
+    test("Scalar is not equivalent when compared to another scalar with same path but different content") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        scalar.equivalentContentTo(YamlScalar("some other content", index1Line2Column3Path)) shouldBe false
+    }
 
-                context("retrieving the value as a character value") {
-                    it("throws an appropriate exception") {
-                        val exception = shouldThrow<YamlScalarFormatException> { scalar.toChar() }
+    test("Scalar is not equivalent when compared to a null value") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        scalar.equivalentContentTo(YamlNull(index1Line2Column3Path)) shouldBe false
+    }
 
-                        exception.asClue {
-                            it.message shouldBe "Value '$content' is not a valid character value."
-                            it.line shouldBe 2
-                            it.column shouldBe 4
-                            it.path shouldBe path
-                            it.originalValue shouldBe content
-                        }
-                    }
-                }
-            }
-        }
+    test("Scalar is not equivalent when compared to a list") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        scalar.equivalentContentTo(YamlList(emptyList(), index1Line2Column3Path)) shouldBe false
+    }
 
-        describe("testing equivalence") {
-            val path = YamlPath.root.withListEntry(1, Location(2, 3))
-            val scalar = YamlScalar("some content", path)
+    test("Scalar is not equivalent when compared to a map") {
+        val scalar = YamlScalar("some content", index1Line2Column3Path)
+        scalar.equivalentContentTo(YamlMap(emptyMap(), index1Line2Column3Path)) shouldBe false
+    }
 
-            context("comparing it to the same instance") {
-                it("indicates that they are equivalent") {
-                    scalar.equivalentContentTo(scalar) shouldBe true
-                }
-            }
+    test("Scalar content conversion to a human-readable string returns content in single quotes") {
+        YamlScalar("thing", YamlPath.root).contentToString() shouldBe "'thing'"
+    }
 
-            context("comparing it to another scalar with the same content and path") {
-                it("indicates that they are equivalent") {
-                    scalar.equivalentContentTo(YamlScalar("some content", path)) shouldBe true
-                }
-            }
+    test("Replacing scalar path returns a scalar with the new provided path") {
+        val original = YamlScalar("abc123", YamlPath.root)
+        val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
+        original.withPath(newPath) shouldBe YamlScalar("abc123", newPath)
+    }
 
-            context("comparing it to another scalar with the same content but a different path") {
-                val otherPath = YamlPath.root.withListEntry(1, Location(2, 4))
-
-                it("indicates that they are equivalent") {
-                    scalar.equivalentContentTo(YamlScalar("some content", otherPath)) shouldBe true
-                }
-            }
-
-            context("comparing it to another scalar with the same path but different content") {
-                it("indicates that they are not equivalent") {
-                    scalar.equivalentContentTo(YamlScalar("some other content", path)) shouldBe false
-                }
-            }
-
-            context("comparing it to a null value") {
-                it("indicates that they are not equivalent") {
-                    scalar.equivalentContentTo(YamlNull(path)) shouldBe false
-                }
-            }
-
-            context("comparing it to a list") {
-                it("indicates that they are not equivalent") {
-                    scalar.equivalentContentTo(YamlList(emptyList(), path)) shouldBe false
-                }
-            }
-
-            context("comparing it to a map") {
-                it("indicates that they are not equivalent") {
-                    scalar.equivalentContentTo(YamlMap(emptyMap(), path)) shouldBe false
-                }
-            }
-        }
-
-        describe("converting the content to a human-readable string") {
-            it("returns the content surrounded by single quotes") {
-                YamlScalar("thing", YamlPath.root).contentToString() shouldBe "'thing'"
-            }
-        }
-
-        describe("replacing its path") {
-            val original = YamlScalar("abc123", YamlPath.root)
-            val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
-
-            it("returns a scalar value with the provided path") {
-                original.withPath(newPath) shouldBe YamlScalar("abc123", newPath)
-            }
-        }
-
-        describe("converting it to a string") {
-            val path = YamlPath.root.withListEntry(2, Location(3, 4))
-            val value = YamlScalar("hello world", path)
-
-            it("returns a human-readable description of itself") {
-                value.toString() shouldBe "scalar @ $path : hello world"
-            }
-        }
+    test("Scalar conversion to string returns a human-readable description of itself") {
+        val index2Line3Column4Path = YamlPath.root.withListEntry(2, Location(3, 4))
+        val value = YamlScalar("hello world", index2Line3Column4Path)
+        value.toString() shouldBe "scalar @ $index2Line3Column4Path : hello world"
     }
 })
