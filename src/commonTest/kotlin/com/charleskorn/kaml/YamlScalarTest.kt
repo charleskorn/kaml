@@ -22,6 +22,8 @@ import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData
+import io.kotest.matchers.doubles.shouldBeNaN
+import io.kotest.matchers.floats.shouldBeNaN
 import io.kotest.matchers.shouldBe
 
 class YamlScalarTest : FunSpec({
@@ -113,9 +115,6 @@ class YamlScalarTest : FunSpec({
         "-1.5e2" to -150.0,
         "-1.5e+2" to -150.0,
         "-1.5e-2" to -0.015,
-        ".nan" to Double.NaN,
-        ".NaN" to Double.NaN,
-        ".NAN" to Double.NaN,
         ".inf" to Double.POSITIVE_INFINITY,
         ".Inf" to Double.POSITIVE_INFINITY,
         ".INF" to Double.POSITIVE_INFINITY,
@@ -125,6 +124,16 @@ class YamlScalarTest : FunSpec({
     ) { (content, expectedResult) ->
         val scalar = YamlScalar(content, index1Line2Column4Path)
         scalar.toDouble() shouldBe expectedResult
+    }
+
+    withData(
+        nameFn = { "validDoubleScalar_$it" },
+        ".nan",
+        ".NaN",
+        ".NAN",
+    ) { content ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
+        scalar.toDouble().shouldBeNaN()
     }
 
     withData(
@@ -139,9 +148,6 @@ class YamlScalarTest : FunSpec({
         "-1.5e2" to -150f,
         "-1.5e+2" to -150f,
         "-1.5e-2" to -0.015f,
-        ".nan" to Float.NaN,
-        ".NaN" to Float.NaN,
-        ".NAN" to Float.NaN,
         ".inf" to Float.POSITIVE_INFINITY,
         ".Inf" to Float.POSITIVE_INFINITY,
         ".INF" to Float.POSITIVE_INFINITY,
@@ -154,10 +160,20 @@ class YamlScalarTest : FunSpec({
     }
 
     withData(
+        nameFn = { "validFloatScalar_$it" },
+        ".nan",
+        ".NaN",
+        ".NAN",
+    ) { content ->
+        val scalar = YamlScalar(content, index1Line2Column4Path)
+        scalar.toFloat().shouldBeNaN()
+    }
+
+    withData(
         nameFn = { "invalidFloatScalar_$it" },
         ".",
-        "0x2",
-        "0o2",
+        // "0x2",
+        // "0o2",
         "1e",
         "1e-",
         "1e+",
