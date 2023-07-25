@@ -172,8 +172,8 @@ class YamlScalarTest : FunSpec({
     withData(
         nameFn = { "invalidFloatScalar_$it" },
         ".",
-        // "0x2",
-        // "0o2",
+        "0x2", // Fails in JavaScript
+        "0o2", // Fails in JavaScript
         "1e",
         "1e-",
         "1e+",
