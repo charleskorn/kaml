@@ -58,18 +58,23 @@ kotlin {
         binaries.executable()
     }
 
+    mingwX64()
+    linuxX64()
+    macosX64()
+    macosArm64()
+
     sourceSets {
         all {
             languageSettings.optIn("kotlin.RequiresOptIn")
         }
 
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
             }
         }
 
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation("io.kotest:kotest-assertions-core:5.6.2")
                 implementation("io.kotest:kotest-framework-api:5.6.2")
@@ -78,23 +83,54 @@ kotlin {
             }
         }
 
-        named("jvmMain") {
+        val jvmMain by getting {
+            dependsOn(commonMain)
+
             dependencies {
                 implementation("org.snakeyaml:snakeyaml-engine:2.6")
             }
         }
 
-        named("jvmTest") {
+        val jvmTest by getting {
+            dependsOn(commonTest)
+
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.6.2")
             }
         }
 
-        named("jsMain") {
+        val jsMain by getting {
+            dependsOn(commonMain)
+
             dependencies {
                 implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.1")
                 implementation("com.squareup.okio:okio:3.5.0")
             }
+        }
+
+        val nativeMain by creating {
+            dependsOn(commonMain)
+
+            dependencies {
+                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7")
+                implementation("com.squareup.okio:okio:3.5.0")
+            }
+        }
+
+        val mingwX64Main by getting {
+            dependsOn(nativeMain)
+        }
+
+        val linuxX64Main by getting {
+            dependsOn(nativeMain)
+        }
+
+        val macosX64Main by getting {
+            dependsOn(nativeMain)
+        }
+
+        val macosArm64Main by getting {
+            dependsOn(nativeMain)
         }
     }
 }
