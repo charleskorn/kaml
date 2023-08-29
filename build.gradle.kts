@@ -99,7 +99,7 @@ kotlin {
             }
         }
 
-        val jsMain by getting {
+        val nonJVMMain by creating {
             dependsOn(commonMain)
 
             dependencies {
@@ -108,29 +108,24 @@ kotlin {
             }
         }
 
-        val nativeMain by creating {
-            dependsOn(commonMain)
-
-            dependencies {
-                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7")
-                implementation("com.squareup.okio:okio:3.5.0")
-            }
+        val jsMain by getting {
+            dependsOn(nonJVMMain)
         }
 
         val mingwX64Main by getting {
-            dependsOn(nativeMain)
+            dependsOn(nonJVMMain)
         }
 
         val linuxX64Main by getting {
-            dependsOn(nativeMain)
+            dependsOn(nonJVMMain)
         }
 
         val macosX64Main by getting {
-            dependsOn(nativeMain)
+            dependsOn(nonJVMMain)
         }
 
         val macosArm64Main by getting {
-            dependsOn(nativeMain)
+            dependsOn(nonJVMMain)
         }
     }
 }
