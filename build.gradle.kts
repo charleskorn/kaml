@@ -84,7 +84,6 @@ kotlin {
         }
 
         val jvmMain by getting {
-            dependsOn(commonMain)
 
             dependencies {
                 implementation("org.snakeyaml:snakeyaml-engine:2.6")
