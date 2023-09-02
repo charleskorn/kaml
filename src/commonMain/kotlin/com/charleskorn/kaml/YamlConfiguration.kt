@@ -23,7 +23,7 @@ package com.charleskorn.kaml
  *
  * * [encodeDefaults]: set to false to not write default property values to YAML (defaults to `true`)
  * * [strictMode]: set to true to throw an exception when reading an object that has an unknown property, or false to ignore unknown properties (defaults to `true`)
- * * [extensionDefinitionPrefix]: prefix used on root-level keys (where document root is an object) to define extensions that can later be merged (defaults to `null`, which disables extensions altogether). See https://batect.charleskorn.com/config/Overview.html#anchors-aliases-extensions-and-merging for example.
+ * * [extensionDefinitionPrefix]: prefix used on root-level keys (where document root is an object) to define extensions that can later be merged (defaults to `null`, which disables extensions altogether). See https://batect.dev/docs/reference/config#anchors-aliases-extensions-and-merging for example.
  * * [polymorphismStyle]: how to read or write the type of a polymorphic object:
  *    * [PolymorphismStyle.Tag]: use a YAML tag (eg. `!<typeOfThing> { property: value }`)
  *    * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
