@@ -209,13 +209,11 @@ to reference the library in other build systems.
 
 Pull requests and bug reports are always welcome!
 
-kaml uses [Batect](https://batect.dev) to simplify development environment setup:
+kaml uses Gradle for builds and testing:
 
-* To build the library: `./batect build`
-* To run the tests and static analysis tools: `./batect check`
-* To run the tests and static analysis tools continuously: `./batect continuousCheck`
-
-Other commands are available by running `./batect --list-tasks`
+* To build the library: `./gradlew assemble`
+* To run the tests and static analysis tools: `./gradlew check`
+* To run the tests and static analysis tools continuously: `./gradlew --continuous check`
 
 ## Reference links
 

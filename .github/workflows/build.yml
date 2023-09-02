@@ -8,10 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TERM: xterm-256color
-      BATECT_CACHE_TYPE: directory
-      BATECT_ENABLE_TELEMETRY: true
-      GPG_KEY_ID: 6D76AD03
+      GPG_KEY_ID: 6D76AD03 # Run `gpg -K` to get this, take last eight characters
       OSSRH_USERNAME: kaml-github-actions
+      GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
 
     permissions:
       contents: write # Required to be able to publish releases, see https://docs.github.com/en/rest/reference/permissions-required-for-github-apps#permission-on-contents
@@ -22,57 +21,61 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate Batect wrapper scripts
-        uses: batect/batect-wrapper-validation-action@v0.4.0
-
-      - name: Cache Batect
-        uses: actions/cache@v3.3.1
-        with:
-          path: ~/.batect/cache
-          key: batect-${{ hashFiles('batect') }}
-
-      - name: Cache dependencies
-        uses: actions/cache@v3.3.1
-        id: cache-dependencies
-        with:
-          path: .batect/caches
-          key: batect-caches-${{ hashFiles('**/*.gradle.kts') }}
-
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1.1.0
 
+      - name: Set up JDK
+        uses: actions/setup-java@v3.12.0
+        with:
+          java-version: 18
+
+      - name: Cache Gradle
+        id: cache-gradle
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.gradle/wrapper/dists
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/*') }}
+
+      - name: Cache packages
+        id: cache-packages
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.gradle/caches
+          key: gradle-packages-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/wrapper/*') }}
+          restore-keys: gradle-packages-${{ runner.os }}
+
       - name: Build
-        run: ./batect build
+        run: ./gradlew assemble
 
       - name: Check
-        run: ./batect check
+        run: ./gradlew check
 
       - name: Generate code coverage report
-        run: ./batect generateCodeCoverageReport
+        run: ./gradlew jacocoTestReport
 
       - name: Upload coverage to codecov.io
         uses: codecov/codecov-action@v3.1.4
 
       - name: Assemble release
-        run: ./batect assembleRelease
+        run: ./gradlew assembleRelease
         env:
-          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }}
+          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
         if: github.repository == 'charleskorn/kaml' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
 
       - name: Publish snapshot
-        run: ./batect publishSnapshot
+        run: ./gradlew publishSnapshot
         env:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }}
+          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
         if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
 
       - name: Publish release
-        run: ./batect publishRelease
+        run: ./gradlew publishRelease
         env:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }}
+          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
         if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
 
@@ -87,21 +90,21 @@ jobs:
         if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
 
       - name: Clean up dependencies before caching
-        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        if: steps.cache-packages.outputs.cache-hit != 'true'
         run: |
-          rm -rf .batect/caches/gradle-cache/caches/modules-2/modules-2.lock
-          rm -rf .batect/caches/gradle-cache/caches/*/plugin-resolution/
-          rm -rf .batect/caches/gradle-cache/caches/*/scripts/
-          rm -rf .batect/caches/gradle-cache/caches/*/scripts-remapped/
-          rm -rf .batect/caches/gradle-cache/caches/*/fileHashes/
-          rm -rf .batect/caches/gradle-cache/caches/*/fileContent/*.lock
-          rm -rf .batect/caches/gradle-cache/caches/*/javaCompile/*.lock
-          rm -rf .batect/caches/gradle-cache/caches/*/executionHistory/*.lock
-          rm -rf .batect/caches/gradle-cache/caches/*/generated-gradle-jars/*.lock
-          rm -rf .batect/caches/gradle-cache/caches/jars-*/*.lock
-          rm -rf .batect/caches/gradle-cache/caches/transforms-1/transforms-1.lock
-          rm -rf .batect/caches/gradle-cache/caches/journal-1/file-access.bin
-          rm -rf .batect/caches/gradle-cache/caches/journal-1/*.lock
-          rm -rf .batect/caches/gradle-cache/daemon/*/*.lock
-          rm -rf .batect/caches/gradle-cache/daemon/*/*.log
-          rm -rf .batect/caches/gradle-cache/kotlin-profile/*
+          rm -rf ~/.gradle/caches/gradle-cache/caches/modules-2/modules-2.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/plugin-resolution/
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/scripts/
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/scripts-remapped/
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/fileHashes/
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/fileContent/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/javaCompile/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/executionHistory/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/*/generated-gradle-jars/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/jars-*/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/transforms-1/transforms-1.lock
+          rm -rf ~/.gradle/caches/gradle-cache/caches/journal-1/file-access.bin
+          rm -rf ~/.gradle/caches/gradle-cache/caches/journal-1/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/daemon/*/*.lock
+          rm -rf ~/.gradle/caches/gradle-cache/daemon/*/*.log
+          rm -rf ~/.gradle/caches/gradle-cache/kotlin-profile/*
