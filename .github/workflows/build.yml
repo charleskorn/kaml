@@ -32,14 +32,14 @@ jobs:
 
       - name: Cache Gradle
         id: cache-gradle
-        uses: actions/cache@v3.3.1
+        uses: actions/cache@v3.3.2
         with:
           path: ~/.gradle/wrapper/dists
           key: gradle-wrapper-${{ hashFiles('gradle/wrapper/*') }}
 
       - name: Cache packages
         id: cache-packages
-        uses: actions/cache@v3.3.1
+        uses: actions/cache@v3.3.2
         with:
           path: ~/.gradle/caches
           key: gradle-packages-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/wrapper/*') }}
