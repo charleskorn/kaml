@@ -5,7 +5,11 @@ on: [push, pull_request]
 jobs:
   build:
     name: "Build, Test and Publish"
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     env:
       TERM: xterm-256color
       GPG_KEY_ID: 6D76AD03 # Run `gpg -K` to get this, take last eight characters
