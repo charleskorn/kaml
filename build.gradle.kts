@@ -84,15 +84,12 @@ kotlin {
         }
 
         val jvmMain by getting {
-
             dependencies {
                 implementation("org.snakeyaml:snakeyaml-engine:2.6")
             }
         }
 
         val jvmTest by getting {
-            dependsOn(commonTest)
-
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.6.2")
             }

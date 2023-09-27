@@ -11,9 +11,9 @@ This library adds YAML support to [kotlinx.serialization](https://github.com/Kot
 
 Currently, only Kotlin/JVM is fully supported.
 
-Kotlin/JS support is considered highly experimental. It is not yet fully functional, and may be removed or modified at any time.
+Kotlin/JS and Kotlin/Native support is currently experimental. It has not been tested to the same extent as Kotlin/JVM and may be modified at any time.
 
-(Follow [this issue](https://github.com/charleskorn/kaml/issues/232) for a discussion of adding support for other targets.)
+(Follow [this issue](https://github.com/charleskorn/kaml/issues/232) for a discussion and progress on the stability of Kotlin/JS and Kotlin/Native.)
 
 YAML version 1.2 is supported.
 
@@ -88,8 +88,8 @@ Add the following to your Gradle build script:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.20'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.20'
+    id 'org.jetbrains.kotlin.multiplatform' version '1.9.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.10'
 }
 
 dependencies {
@@ -101,8 +101,8 @@ dependencies {
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.4.20"
-    kotlin("plugin.serialization") version "1.4.20"
+    kotlin("multiplatform") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
 }
 
 dependencies {
