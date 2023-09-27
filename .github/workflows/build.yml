@@ -60,7 +60,7 @@ jobs:
         env:
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push' && matrix.os == 'ubuntu-latest'
 
       - name: Publish snapshot
         run: ./gradlew publishSnapshot
@@ -68,7 +68,7 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push' && matrix.os == 'ubuntu-latest'
 
       - name: Publish release
         run: ./gradlew publishRelease
@@ -76,7 +76,7 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push' && matrix.os == 'ubuntu-latest'
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v0.1.15
@@ -86,7 +86,7 @@ jobs:
           draft: true # Update draft release with matching tag, if there is one.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push' && matrix.os == 'ubuntu-latest'
 
       - name: Clean up dependencies before caching
         if: steps.cache-packages.outputs.cache-hit != 'true'
