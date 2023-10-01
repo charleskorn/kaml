@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        uses: actions/checkout@v4.1.0
         with:
           fetch-depth: 0
 
@@ -30,20 +30,8 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Cache Gradle
-        id: cache-gradle
-        uses: actions/cache@v3.3.2
-        with:
-          path: ~/.gradle/wrapper/dists
-          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/*') }}
-
-      - name: Cache packages
-        id: cache-packages
-        uses: actions/cache@v3.3.2
-        with:
-          path: ~/.gradle/caches
-          key: gradle-packages-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/wrapper/*') }}
-          restore-keys: gradle-packages-${{ runner.os }}
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2.8.1
 
       - name: Build
         run: ./gradlew assemble
@@ -83,23 +71,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-
-      - name: Clean up dependencies before caching
-        if: steps.cache-packages.outputs.cache-hit != 'true'
-        run: |
-          rm -rf ~/.gradle/caches/gradle-cache/caches/modules-2/modules-2.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/plugin-resolution/
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/scripts/
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/scripts-remapped/
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/fileHashes/
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/fileContent/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/javaCompile/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/executionHistory/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/*/generated-gradle-jars/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/jars-*/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/transforms-1/transforms-1.lock
-          rm -rf ~/.gradle/caches/gradle-cache/caches/journal-1/file-access.bin
-          rm -rf ~/.gradle/caches/gradle-cache/caches/journal-1/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/daemon/*/*.lock
-          rm -rf ~/.gradle/caches/gradle-cache/daemon/*/*.log
-          rm -rf ~/.gradle/caches/gradle-cache/kotlin-profile/*
