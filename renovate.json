@@ -53,16 +53,6 @@
       ],
       "datasourceTemplate": "maven",
       "depNameTemplate": "com.pinterest:ktlint"
-    },
-    {
-      "fileMatch": [
-        "JacocoConfiguration.kt$"
-      ],
-      "matchStrings": [
-        "configure<JacocoPluginExtension> {\\s+toolVersion = \"(?<currentValue>[\\d.]*?)\""
-      ],
-      "datasourceTemplate": "maven",
-      "depNameTemplate": "org.jacoco:jacoco"
     }
   ]
 }
