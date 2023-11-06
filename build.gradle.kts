@@ -17,7 +17,6 @@
 */
 
 import com.charleskorn.kaml.build.configureAssemble
-import com.charleskorn.kaml.build.configureJacoco
 import com.charleskorn.kaml.build.configurePublishing
 import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
@@ -111,7 +110,6 @@ java {
 }
 
 configureAssemble()
-configureJacoco()
 configurePublishing()
 configureSpotless()
 configureTesting()
