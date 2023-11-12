@@ -156,11 +156,11 @@ to reference the library in other build systems.
   sealed class Server {
     @SerialName("frontend")
     @Serializable
-    data class Frontend(val hostname: String)
+    data class Frontend(val hostname: String) : Server()
 
     @SerialName("backend")
     @Serializable
-    data class Backend(val database: String)
+    data class Backend(val database: String) : Server()
   }
 
   @Serializable
