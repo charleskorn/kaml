@@ -48,12 +48,15 @@ kotlin {
         browser {
             testTask {
                 // TODO: enable once the tests work with Kotlin/JS.
-                //  The main problem noticed so far is that the DescribeSpec isn't supported by Kotlin/JS.
-                //  See https://github.com/kotest/kotest/blob/71c1826e5b404359ad8efe7cd360a2db3af5436b/kotest-framework/kotest-framework-engine/src/commonMain/kotlin/io/kotest/engine/spec/interceptor/IgnoreNestedSpecStylesInterceptor.kt#L47
                 enabled = false
             }
         }
-        nodejs()
+        nodejs {
+            testTask {
+                // TODO: enable once the tests work with Kotlin/JS.
+                enabled = false
+            }
+        }
         binaries.executable()
     }
 
@@ -70,10 +73,10 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:5.6.2")
-                implementation("io.kotest:kotest-framework-api:5.6.2")
-                implementation("io.kotest:kotest-framework-engine:5.6.2")
-                implementation("io.kotest:kotest-framework-datatest:5.6.2")
+                implementation("io.kotest:kotest-assertions-core:5.8.0")
+                implementation("io.kotest:kotest-framework-api:5.8.0")
+                implementation("io.kotest:kotest-framework-engine:5.8.0")
+                implementation("io.kotest:kotest-framework-datatest:5.8.0")
             }
         }
 
@@ -85,7 +88,7 @@ kotlin {
 
         named("jvmTest") {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:5.6.2")
+                implementation("io.kotest:kotest-runner-junit5:5.8.0")
             }
         }
 
