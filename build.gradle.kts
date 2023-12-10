@@ -64,7 +64,7 @@ kotlin {
 
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
             }
         }
 

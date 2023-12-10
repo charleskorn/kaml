@@ -161,6 +161,6 @@ internal class YamlPolymorphicInput(private val typeName: String, private val ty
     }
 
     companion object {
-        private val unknownPolymorphicTypeExceptionMessage: Regex = """^Class '(.*)' is not registered for polymorphic serialization in the scope of '(.*)'.\n.*""".toRegex()
+        private val unknownPolymorphicTypeExceptionMessage: Regex = """^Serializer for subclass '(.*)' is not found in the polymorphic scope of '(.*)'.\n.*""".toRegex()
     }
 }
