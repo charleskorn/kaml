@@ -62,7 +62,7 @@ fun Project.configureAssemble() {
                 )
             }
 
-        into(buildDir.toPath().resolve("release"))
+        into(layout.buildDirectory.dir("release"))
 
         duplicatesStrategy = DuplicatesStrategy.FAIL
     }
