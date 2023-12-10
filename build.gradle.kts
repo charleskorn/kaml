@@ -48,12 +48,15 @@ kotlin {
         browser {
             testTask {
                 // TODO: enable once the tests work with Kotlin/JS.
-                //  The main problem noticed so far is that the DescribeSpec isn't supported by Kotlin/JS.
-                //  See https://github.com/kotest/kotest/blob/71c1826e5b404359ad8efe7cd360a2db3af5436b/kotest-framework/kotest-framework-engine/src/commonMain/kotlin/io/kotest/engine/spec/interceptor/IgnoreNestedSpecStylesInterceptor.kt#L47
                 enabled = false
             }
         }
-        nodejs()
+        nodejs {
+            testTask {
+                // TODO: enable once the tests work with Kotlin/JS.
+                enabled = false
+            }
+        }
         binaries.executable()
     }
 
