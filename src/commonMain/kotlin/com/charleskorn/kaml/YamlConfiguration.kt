@@ -35,7 +35,7 @@ package com.charleskorn.kaml
  * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
  * * [allowAnchorsAndAliases]: set to true to allow anchors and aliases when decoding YAML (defaults to `false`)
  */
-public data class YamlConfiguration constructor(
+public data class YamlConfiguration(
     internal val encodeDefaults: Boolean = true,
     internal val strictMode: Boolean = true,
     internal val extensionDefinitionPrefix: String? = null,
@@ -55,6 +55,7 @@ public data class YamlConfiguration constructor(
 public enum class PolymorphismStyle {
     Tag,
     Property,
+    None,
 }
 
 public enum class SequenceStyle {

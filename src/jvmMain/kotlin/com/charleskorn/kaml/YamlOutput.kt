@@ -131,6 +131,9 @@ internal class YamlOutput(
                             emitQuotedScalar(typeName.get(), SingleLineStringStyle.DoubleQuoted.scalarStyle)
                         }
                     }
+                    PolymorphismStyle.None -> {
+                        emitter.emit(MappingStartEvent(Optional.empty(), Optional.empty(), true, FlowStyle.BLOCK))
+                    }
                 }
             }
             else -> {
