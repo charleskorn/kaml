@@ -65,7 +65,7 @@ public sealed class YamlInput(
                 is PolymorphicKind -> when (configuration.polymorphismStyle) {
                     PolymorphismStyle.None ->
                         throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
-                    PolymorphismStyle.Tag, -> throw MissingTypeTagException(node.path)
+                    PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
                     PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
                 }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.path)
