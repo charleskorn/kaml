@@ -70,7 +70,10 @@ public sealed class YamlInput(
             }
 
             is YamlTaggedNode -> when {
-                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle != PolymorphismStyle.Property -> {
+                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.None -> {
+                    throw IncorrectTypeException("Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'", node.path)
+                }
+                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> {
                     YamlPolymorphicInput(node.tag, node.path, node.innerNode, yaml, context, configuration)
                 }
                 else -> createFor(node.innerNode, yaml, context, configuration, descriptor)
