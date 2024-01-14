@@ -2033,7 +2033,7 @@ class YamlReadingTest : DescribeSpec({
             describe("given polymorphic inputs when PolymorphismStyle.None is used") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None))
 
-                context("given tagged input should fail") {
+                context("given tagged input") {
                     val input = """
                         !<sealedString>
                         value: "asdfg"
