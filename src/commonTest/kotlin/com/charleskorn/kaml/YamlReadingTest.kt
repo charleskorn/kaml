@@ -2052,7 +2052,7 @@ class YamlReadingTest : DescribeSpec({
                         }
                     }
                 }
-                context("given property polymorphism input should fail") {
+                context("given property polymorphism input") {
                     val input = """
                         type: sealedString
                         value: "asdfg"
