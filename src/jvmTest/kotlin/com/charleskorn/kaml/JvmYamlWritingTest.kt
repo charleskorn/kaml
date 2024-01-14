@@ -20,6 +20,7 @@ package com.charleskorn.kaml
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import java.io.ByteArrayOutputStream
 
@@ -103,6 +104,68 @@ class JvmYamlWritingTest : DescribeSpec({
                         """.trimMargin()
                 }
             }
+
+            it("should support polymorphic writing with property") {
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            polymorphismStyle = PolymorphismStyle.Property,
+                        ),
+                    ),
+                ) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(Animals.serializer(), Animals(listOf(Animal.Dog("Spock"))), output)
+
+                    output.toString(Charsets.UTF_8) shouldBe
+                        """
+                            animals:
+                            - type: "com.charleskorn.kaml.Animal.Dog"
+                              name: "Spock"
+
+                        """.trimIndent()
+                }
+            }
+
+            it("should support polymorphic writing with tag") {
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            polymorphismStyle = PolymorphismStyle.Tag,
+                        ),
+                    ),
+                ) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(Animals.serializer(), Animals(listOf(Animal.Dog("Spock"))), output)
+
+                    output.toString(Charsets.UTF_8) shouldBe
+                        """
+                            animals:
+                            - !<com.charleskorn.kaml.Animal.Dog>
+                              name: "Spock"
+
+                        """.trimIndent()
+                }
+            }
+
+            it("should support polymorphic writing no tag or property") {
+                with(
+                    Yaml(
+                        configuration = YamlConfiguration(
+                            polymorphismStyle = PolymorphismStyle.None,
+                        ),
+                    ),
+                ) {
+                    val output = ByteArrayOutputStream()
+                    encodeToStream(Animals.serializer(), Animals(listOf(Animal.Dog("Spock"))), output)
+
+                    output.toString(Charsets.UTF_8) shouldBe
+                        """
+                            animals:
+                            - name: "Spock"
+
+                        """.trimIndent()
+                }
+            }
         }
 
         describe("writing to a stream via generic extension function") {
@@ -115,3 +178,15 @@ class JvmYamlWritingTest : DescribeSpec({
         }
     }
 })
+
+@Serializable
+class Animals(val animals: List<Animal>)
+
+@Serializable
+sealed interface Animal {
+    @Serializable
+    data class Dog(val name: String) : Animal
+
+    @Serializable
+    data class Cat(val name: String) : Animal
+}

@@ -2029,6 +2029,49 @@ class YamlReadingTest : DescribeSpec({
                     }
                 }
             }
+
+            describe("given polymorphic inputs when PolymorphismStyle.None is used") {
+                val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None))
+
+                context("given tagged input") {
+                    val input = """
+                        !<sealedString>
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            val exception = shouldThrow<IncorrectTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
+
+                            exception.asClue {
+                                it.message shouldBe "Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'"
+                                it.line shouldBe 1
+                                it.column shouldBe 1
+                                it.path shouldBe YamlPath.root
+                            }
+                        }
+                    }
+                }
+                context("given property polymorphism input") {
+                    val input = """
+                        type: sealedString
+                        value: "asdfg"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        it("throws an appropriate exception") {
+                            val exception = shouldThrow<IncorrectTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
+
+                            exception.asClue {
+                                it.message shouldBe "Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'"
+                                it.line shouldBe 1
+                                it.column shouldBe 1
+                                it.path shouldBe YamlPath.root
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         describe("parsing values with a dynamically installed serializer") {

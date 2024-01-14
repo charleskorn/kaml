@@ -63,6 +63,8 @@ public sealed class YamlInput(
                 is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
                 is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
                 is PolymorphicKind -> when (configuration.polymorphismStyle) {
+                    PolymorphismStyle.None ->
+                        throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
                     PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
                     PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
                 }
@@ -70,7 +72,12 @@ public sealed class YamlInput(
             }
 
             is YamlTaggedNode -> when {
-                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> YamlPolymorphicInput(node.tag, node.path, node.innerNode, yaml, context, configuration)
+                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.None -> {
+                    throw IncorrectTypeException("Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'", node.path)
+                }
+                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> {
+                    YamlPolymorphicInput(node.tag, node.path, node.innerNode, yaml, context, configuration)
+                }
                 else -> createFor(node.innerNode, yaml, context, configuration, descriptor)
             }
         }
