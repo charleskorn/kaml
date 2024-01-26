@@ -21,16 +21,15 @@ package com.charleskorn.kaml
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import okio.Buffer
 import okio.ByteString.Companion.encodeUtf8
 import okio.Source
 import org.snakeyaml.engine.v2.api.StreamDataWriter
 
-public actual class Yaml(
-    override val serializersModule: SerializersModule = EmptySerializersModule(),
-    public actual val configuration: YamlConfiguration = YamlConfiguration(),
+public actual class Yaml actual constructor(
+    override val serializersModule: SerializersModule,
+    public actual val configuration: YamlConfiguration,
 ) : StringFormat {
     public actual fun <T> decodeFromYamlNode(
         deserializer: DeserializationStrategy<T>,

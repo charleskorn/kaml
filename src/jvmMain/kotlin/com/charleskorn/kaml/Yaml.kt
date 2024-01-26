@@ -21,7 +21,6 @@ package com.charleskorn.kaml
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
-import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
 import org.snakeyaml.engine.v2.api.StreamDataWriter
@@ -35,9 +34,9 @@ import java.io.StringReader
 import java.io.StringWriter
 import java.nio.charset.Charset
 
-public actual class Yaml(
-    override val serializersModule: SerializersModule = EmptySerializersModule(),
-    public actual val configuration: YamlConfiguration = YamlConfiguration(),
+public actual class Yaml actual constructor(
+    override val serializersModule: SerializersModule,
+    public actual val configuration: YamlConfiguration,
 ) : StringFormat {
     override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
         return decodeFromReader(deserializer, StringReader(string))
