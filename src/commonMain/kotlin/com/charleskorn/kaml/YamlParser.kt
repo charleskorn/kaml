@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import okio.Buffer
 import okio.Source
 import org.snakeyaml.engine.v2.api.LoadSettings
 import org.snakeyaml.engine.v2.events.Event
@@ -30,6 +31,8 @@ internal class YamlParser(reader: Source) {
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
     private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
+
+    internal constructor(source: String) : this(Buffer().write(source.encodeToByteArray()))
 
     init {
         consumeEventOfType(Event.ID.StreamStart, YamlPath.root)
