@@ -68,6 +68,8 @@ kotlin {
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
+                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.1")
+                implementation("com.squareup.okio:okio:3.7.0")
             }
         }
 
@@ -80,22 +82,9 @@ kotlin {
             }
         }
 
-        named("jvmMain") {
-            dependencies {
-                implementation("org.snakeyaml:snakeyaml-engine:2.7")
-            }
-        }
-
         named("jvmTest") {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.8.0")
-            }
-        }
-
-        named("jsMain") {
-            dependencies {
-                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.1")
-                implementation("com.squareup.okio:okio:3.7.0")
             }
         }
     }
