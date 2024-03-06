@@ -103,7 +103,7 @@ java {
 
 configureAssemble()
 configurePublishing()
-configureSpotless()
+//configureSpotless()
 configureTesting()
 configureVersioning()
 configureWrapper()

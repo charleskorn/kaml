@@ -16,26 +16,16 @@
 
 */
 
-package com.charleskorn.kaml
+package com.charleskorn.kaml.internal
 
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.serializer
-import okio.sink
-import java.io.OutputStream
-import java.nio.charset.Charset
+import okio.Buffer
+import okio.BufferedSource
+import okio.ByteString.Companion.encodeUtf8
 
-public fun <T> Yaml.encodeToStream(
-    serializer: SerializationStrategy<T>,
-    value: T,
-    stream: OutputStream,
-    charset: Charset = Charsets.UTF_8, // TODO convert charsets
-) {
-    encodeToSink(serializer, value, stream.sink())
-}
-
-public inline fun <reified T> Yaml.encodeToStream(
-    value: T,
-    stream: OutputStream,
-) {
-    encodeToStream(serializersModule.serializer(), value, stream)
-}
+/**
+ * Convert a UTF-8 String to a [BufferedSource].
+ */
+// https://github.com/square/okio/issues/774#issuecomment-703315013
+internal fun String.bufferedSource(
+//    charset: String = "utf8" // TODO convert charsets?
+): BufferedSource = Buffer().write(encodeUtf8())

@@ -21,13 +21,12 @@ package com.charleskorn.kaml
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.builtins.serializer
-import java.io.ByteArrayInputStream
 
 class JvmYamlReadingTest : DescribeSpec({
     describe("JVM-specific extensions for YAML reading") {
         describe("parsing from a stream") {
             val input = "123"
-            val result = Yaml.default.decodeFromStream(Int.serializer(), ByteArrayInputStream(input.toByteArray(Charsets.UTF_8)))
+            val result = Yaml.default.decodeFromStream(Int.serializer(), input.byteInputStream())
 
             it("successfully deserializes values from a stream") {
                 result shouldBe 123
@@ -36,7 +35,7 @@ class JvmYamlReadingTest : DescribeSpec({
 
         describe("parsing from a stream via generic extension function") {
             val input = "123"
-            val result = Yaml.default.decodeFromStream<Int>(ByteArrayInputStream(input.toByteArray(Charsets.UTF_8)))
+            val result = Yaml.default.decodeFromStream<Int>(input.byteInputStream())
 
             it("successfully deserializes values from a stream") {
                 result shouldBe 123
@@ -54,7 +53,7 @@ class JvmYamlReadingTest : DescribeSpec({
 
         describe("parsing into a YamlNode from a stream") {
             val input = "123"
-            val result = Yaml.default.parseToYamlNode(ByteArrayInputStream(input.toByteArray(Charsets.UTF_8)))
+            val result = Yaml.default.parseToYamlNode(input.byteInputStream())
 
             it("successfully deserializes values from a stream") {
                 result shouldBe YamlScalar("123", YamlPath.root)
