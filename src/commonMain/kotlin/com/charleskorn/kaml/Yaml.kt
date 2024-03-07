@@ -18,15 +18,16 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.internal.StringStreamDataWriter
+import com.charleskorn.kaml.internal.bufferedSource
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import okio.Buffer
-import okio.ByteString.Companion.encodeUtf8
+import okio.Sink
 import okio.Source
-import org.snakeyaml.engine.v2.api.StreamDataWriter
+import okio.buffer
 
 public class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
@@ -41,55 +42,60 @@ public class Yaml(
     }
 
     public companion object {
-        public val default: Yaml = Yaml() }
-
-    override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
-        return decodeFromReader(deserializer, Buffer().write(string.encodeUtf8()))
+        public val default: Yaml = Yaml()
     }
 
-    private fun <T> decodeFromReader(deserializer: DeserializationStrategy<T>, source: Source): T {
-        val rootNode = parseToYamlNodeFromReader(source)
+    override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
+        return decodeFromSource(deserializer, string.bufferedSource())
+    }
+
+    public fun <T> decodeFromSource(
+        deserializer: DeserializationStrategy<T>,
+        source: Source,
+    ): T {
+        val rootNode = parseToYamlNodeFromSource(source)
 
         val input = YamlInput.createFor(rootNode, this, serializersModule, configuration, deserializer.descriptor)
         return input.decodeSerializableValue(deserializer)
     }
 
-    private fun parseToYamlNodeFromReader(source: Source): YamlNode {
+    public fun parseToYamlNode(string: String): YamlNode = parseToYamlNodeFromSource(string.bufferedSource())
+
+    internal fun parseToYamlNodeFromSource(source: Source): YamlNode {
         val parser = YamlParser(source)
-        val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
+        val reader =
+            YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
         val node = reader.read()
         parser.ensureEndOfStreamReached()
         return node
     }
 
-    override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
-        val writer = object : StreamDataWriter {
-            private var stringBuilder = StringBuilder()
-
-            override fun flush() { }
-
-            override fun write(str: String) {
-                stringBuilder.append(str)
-            }
-
-            override fun write(str: String, off: Int, len: Int) {
-                stringBuilder.append(str.drop(off).subSequence(0, len))
-            }
-
-            override fun toString(): String {
-                return stringBuilder.toString()
-            }
-        }
-
-        encodeToStreamDataWriter(serializer, value, writer)
-
-        return writer.toString().trimEnd()
+    public fun <T> encodeToSink(
+        serializer: SerializationStrategy<T>,
+        value: T,
+        sink: Sink,
+    ) {
+        val writer = encodeToStreamDataWriter(serializer, value)
+        writer.buffer().readAll(sink)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    private fun <T> encodeToStreamDataWriter(serializer: SerializationStrategy<T>, value: T, writer: StreamDataWriter) {
+    override fun <T> encodeToString(
+        serializer: SerializationStrategy<T>,
+        value: T,
+    ): String {
+        val writer = encodeToStreamDataWriter(serializer, value)
+        return writer.buffer().readUtf8().trimEnd()
+    }
+
+    private fun <T> encodeToStreamDataWriter(
+        serializer: SerializationStrategy<T>,
+        value: T,
+    ): StringStreamDataWriter {
+        val writer = StringStreamDataWriter()
+        @OptIn(ExperimentalStdlibApi::class)
         YamlOutput(writer, serializersModule, configuration).use { output ->
             output.encodeSerializableValue(serializer, value)
         }
+        return writer
     }
 }

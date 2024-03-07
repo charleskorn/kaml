@@ -19,54 +19,43 @@
 package com.charleskorn.kaml
 
 import kotlinx.serialization.DeserializationStrategy
-import okio.Buffer
+import kotlinx.serialization.serializer
 import okio.Source
-import okio.Timeout
+import okio.source
 import java.io.InputStream
-import java.io.InputStreamReader
-import java.io.Reader
 import java.nio.charset.Charset
 
-public fun <T> Yaml.decodeFromStream(deserializer: DeserializationStrategy<T>, source: InputStream, charset: Charset = Charsets.UTF_8): T =
-    decodeFromReader(deserializer, InputStreamReader(source, charset))
-
-public inline fun <reified T> Yaml.decodeFromStream(stream: InputStream): T =
-    TODO()
-
-public fun Yaml.parseToYamlNode(string: String): YamlNode =
-    TODO()
-
-public fun Yaml.parseToYamlNode(source: InputStream): YamlNode =
-    TODO()
-
-private fun <T> Yaml.decodeFromReader(deserializer: DeserializationStrategy<T>, source: Reader): T {
-    val rootNode = parseToYamlNodeFromReader(source)
-
-    val input = YamlInput.createFor(rootNode, this, serializersModule, configuration, deserializer.descriptor)
-    return input.decodeSerializableValue(deserializer)
+public fun <T> Yaml.decodeFromStream(
+    deserializer: DeserializationStrategy<T>,
+    source: InputStream,
+    charset: Charset = Charsets.UTF_8,
+): T {
+    return decodeFromSource(
+        deserializer,
+        source.source(),
+        charset,
+    )
 }
 
-private fun Yaml.parseToYamlNodeFromReader(source: Reader): YamlNode {
-    val parser = YamlParser(source.toSource())
-    val reader = YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
-    val node = reader.read()
-    parser.ensureEndOfStreamReached()
-    return node
-}
+public inline fun <reified T> Yaml.decodeFromStream(
+    stream: InputStream
+): T =
+    decodeFromSource(
+        deserializer = serializersModule.serializer<T>(),
+        source = stream.source(),
+    )
 
-private fun Reader.toSource(): Source =
-    object : Source {
-        override fun read(sink: Buffer, byteCount: Long): Long {
-            val charArray = CharArray(byteCount.toInt())
-            return this@toSource.read(charArray, 0, byteCount.toInt()).toLong()
-        }
+public fun Yaml.parseToYamlNode(
+    source: InputStream
+): YamlNode =
+    parseToYamlNodeFromSource(source.source())
 
-        override fun timeout(): Timeout {
-            // TODO: use some sensible values here
-            return Timeout()
-        }
-
-        override fun close() {
-            this@toSource.close()
-        }
-    }
+public fun <T> Yaml.decodeFromSource(
+    deserializer: DeserializationStrategy<T>,
+    source: Source,
+    charset: Charset = Charsets.UTF_8, // TODO convert charsets to UTF8 https://kotlinlang.slack.com/archives/C5HT9AL7Q/p1685660615754469?thread_ts=1685549089.185459&cid=C5HT9AL7Q
+): T =
+    decodeFromSource(
+        deserializer,
+        source,
+    )
