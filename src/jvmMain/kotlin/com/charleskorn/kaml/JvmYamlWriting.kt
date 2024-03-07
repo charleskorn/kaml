@@ -22,20 +22,26 @@ import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.serializer
 import okio.sink
 import java.io.OutputStream
-import java.nio.charset.Charset
 
+/**
+ * Convert [value] to YAML, and output the result into an [OutputStream].
+ *
+ * The character encoding is UTF-8.
+ */
+// The character encoding is not configurable, because we use Okio which doesn't support converting
+// between UTF-8 and other encodings.
 public fun <T> Yaml.encodeToStream(
     serializer: SerializationStrategy<T>,
     value: T,
     stream: OutputStream,
-    charset: Charset = Charsets.UTF_8, // TODO convert charsets
-) {
-    encodeToSink(serializer, value, stream.sink())
-}
+): Unit = encodeToSink(serializer, value, stream.sink())
 
+/**
+ * Convert [value] to YAML, and output the result into an [OutputStream].
+ *
+ * The character encoding is UTF-8.
+ */
 public inline fun <reified T> Yaml.encodeToStream(
     value: T,
     stream: OutputStream,
-) {
-    encodeToStream(serializersModule.serializer(), value, stream)
-}
+): Unit = encodeToStream(serializersModule.serializer(), value, stream)

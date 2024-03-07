@@ -18,21 +18,27 @@
 
 package com.charleskorn.kaml
 
-import com.charleskorn.kaml.internal.StringStreamDataWriter
 import com.charleskorn.kaml.internal.bufferedSource
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import okio.Buffer
 import okio.Sink
 import okio.Source
-import okio.buffer
+import okio.use
+import org.snakeyaml.engine.v2.api.StreamDataWriter
 
 public class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
     public val configuration: YamlConfiguration = YamlConfiguration(),
 ) : StringFormat {
+
+    public companion object {
+        public val default: Yaml = Yaml()
+    }
+
     public fun <T> decodeFromYamlNode(
         deserializer: DeserializationStrategy<T>,
         node: YamlNode,
@@ -41,11 +47,10 @@ public class Yaml(
         return input.decodeSerializableValue(deserializer)
     }
 
-    public companion object {
-        public val default: Yaml = Yaml()
-    }
-
-    override fun <T> decodeFromString(deserializer: DeserializationStrategy<T>, string: String): T {
+    override fun <T> decodeFromString(
+        deserializer: DeserializationStrategy<T>,
+        string: String,
+    ): T {
         return decodeFromSource(deserializer, string.bufferedSource())
     }
 
@@ -59,7 +64,8 @@ public class Yaml(
         return input.decodeSerializableValue(deserializer)
     }
 
-    public fun parseToYamlNode(string: String): YamlNode = parseToYamlNodeFromSource(string.bufferedSource())
+    public fun parseToYamlNode(string: String): YamlNode =
+        parseToYamlNodeFromSource(string.bufferedSource())
 
     internal fun parseToYamlNodeFromSource(source: Source): YamlNode {
         val parser = YamlParser(source)
@@ -75,27 +81,46 @@ public class Yaml(
         value: T,
         sink: Sink,
     ) {
-        val writer = encodeToStreamDataWriter(serializer, value)
-        writer.buffer().readAll(sink)
+        encodeToBufferDataWriter(serializer, value).use { writer ->
+            writer.readAll(sink)
+        }
     }
 
     override fun <T> encodeToString(
         serializer: SerializationStrategy<T>,
         value: T,
     ): String {
-        val writer = encodeToStreamDataWriter(serializer, value)
-        return writer.buffer().readUtf8().trimEnd()
+        return encodeToBufferDataWriter(serializer, value).use { writer ->
+            writer.readUtf8().trimEnd()
+        }
     }
 
-    private fun <T> encodeToStreamDataWriter(
+    private fun <T> encodeToBufferDataWriter(
         serializer: SerializationStrategy<T>,
         value: T,
-    ): StringStreamDataWriter {
-        val writer = StringStreamDataWriter()
+    ): BufferDataWriter {
+        val writer = BufferDataWriter()
         @OptIn(ExperimentalStdlibApi::class)
         YamlOutput(writer, serializersModule, configuration).use { output ->
             output.encodeSerializableValue(serializer, value)
         }
         return writer
     }
+}
+
+private class BufferDataWriter(
+    private val buffer: Buffer = Buffer(),
+) : StreamDataWriter, Source by buffer {
+    override fun flush(): Unit = buffer.flush()
+
+    override fun write(str: String) {
+        buffer.writeUtf8(str)
+    }
+
+    override fun write(str: String, off: Int, len: Int) {
+        buffer.writeUtf8(string = str, beginIndex = off, endIndex = off + len)
+    }
+
+    fun readAll(sink: Sink): Long = buffer.readAll(sink)
+    fun readUtf8(): String = buffer.readUtf8()
 }

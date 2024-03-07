@@ -20,42 +20,43 @@ package com.charleskorn.kaml
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.serializer
-import okio.Source
 import okio.source
 import java.io.InputStream
-import java.nio.charset.Charset
 
+/**
+ * Decode a YAML value [T] from an [InputStream].
+ *
+ * [InputStream] must be encoded with UTF-8.
+ */
+// The character encoding is not configurable, because we use Okio which doesn't support converting
+// between UTF-8 and other encodings.
 public fun <T> Yaml.decodeFromStream(
     deserializer: DeserializationStrategy<T>,
     source: InputStream,
-    charset: Charset = Charsets.UTF_8,
-): T {
-    return decodeFromSource(
-        deserializer,
-        source.source(),
-        charset,
-    )
-}
+): T = decodeFromSource(
+    deserializer = deserializer,
+    source = source.source(),
+)
 
+/**
+ * Decode a YAML value [T] from an [InputStream].
+ *
+ * [InputStream] must be encoded with UTF-8.
+ */
 public inline fun <reified T> Yaml.decodeFromStream(
-    stream: InputStream
-): T =
-    decodeFromSource(
-        deserializer = serializersModule.serializer<T>(),
-        source = stream.source(),
-    )
+    stream: InputStream,
+): T = decodeFromSource(
+    deserializer = serializersModule.serializer<T>(),
+    source = stream.source(),
+)
 
+/**
+ *
+ * Decode a [YamlNode] from an [InputStream].
+ *
+ * [InputStream] must be encoded with UTF-8.
+ */
 public fun Yaml.parseToYamlNode(
-    source: InputStream
+    source: InputStream,
 ): YamlNode =
     parseToYamlNodeFromSource(source.source())
-
-public fun <T> Yaml.decodeFromSource(
-    deserializer: DeserializationStrategy<T>,
-    source: Source,
-    charset: Charset = Charsets.UTF_8, // TODO convert charsets to UTF8 https://kotlinlang.slack.com/archives/C5HT9AL7Q/p1685660615754469?thread_ts=1685549089.185459&cid=C5HT9AL7Q
-): T =
-    decodeFromSource(
-        deserializer,
-        source,
-    )

@@ -61,10 +61,6 @@ kotlin {
     }
 
     sourceSets {
-        all {
-            languageSettings.optIn("kotlin.RequiresOptIn")
-        }
-
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
@@ -82,7 +78,7 @@ kotlin {
             }
         }
 
-        named("jvmTest") {
+        jvmTest {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.8.0")
             }
@@ -90,7 +86,7 @@ kotlin {
     }
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
     }
@@ -103,7 +99,7 @@ java {
 
 configureAssemble()
 configurePublishing()
-//configureSpotless()
+configureSpotless()
 configureTesting()
 configureVersioning()
 configureWrapper()
