@@ -18,7 +18,7 @@
 
 package com.charleskorn.kaml
 
-import okio.Buffer
+import com.charleskorn.kaml.internal.bufferedSource
 import okio.Source
 import org.snakeyaml.engine.v2.api.LoadSettings
 import org.snakeyaml.engine.v2.events.Event
@@ -27,12 +27,12 @@ import org.snakeyaml.engine.v2.parser.ParserImpl
 import org.snakeyaml.engine.v2.scanner.StreamReader
 
 internal class YamlParser(reader: Source) {
+    internal constructor(source: String) : this(source.bufferedSource())
+
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
     private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
-
-    internal constructor(source: String) : this(Buffer().write(source.encodeToByteArray()))
 
     init {
         consumeEventOfType(Event.ID.StreamStart, YamlPath.root)
@@ -56,7 +56,10 @@ internal class YamlParser(reader: Source) {
         val event = consumeEvent(path)
 
         if (event.eventId != type) {
-            throw MalformedYamlException("Unexpected ${event.eventId}, expected $type", path.withError(Location(event.startMark!!.line, event.startMark!!.column)))
+            throw MalformedYamlException(
+                "Unexpected ${event.eventId}, expected $type",
+                path.withError(Location(event.startMark!!.line, event.startMark!!.column)),
+            )
         }
     }
 
@@ -69,6 +72,55 @@ internal class YamlParser(reader: Source) {
     }
 
     private fun translateYamlEngineException(e: MarkedYamlEngineException, path: YamlPath): MalformedYamlException {
-        return MalformedYamlException(e.message ?: "No message", path)
+        val updatedMessage = StringBuilder()
+
+        val context = e.context
+        val contextMark = e.contextMark
+
+        if (context != null && contextMark != null) {
+            val snippet = contextMark.createSnippet(4, Int.MAX_VALUE)
+            updatedMessage.append(
+                """
+                    |$context
+                    | at line ${contextMark.line + 1}, column ${contextMark.column + 1}:
+                    |$snippet
+                    |
+                """.trimMargin(),
+            )
+        }
+
+        val problemMark = e.problemMark
+        if (problemMark != null) {
+            val problem = translateYamlEngineExceptionMessage(e.problem)
+            val snippet = problemMark.createSnippet(4, Int.MAX_VALUE)
+            updatedMessage.append(
+                """
+                    |$problem
+                    | at line ${problemMark.line + 1}, column ${problemMark.column + 1}:
+                    |$snippet
+                """.trimMargin(),
+            )
+        }
+
+        val updatedPath =
+            if (problemMark != null) {
+                path.withError(Location(problemMark.line + 1, problemMark.column + 1))
+            } else {
+                path
+            }
+
+        return MalformedYamlException(
+            message = updatedMessage.toString(),
+            path = updatedPath,
+        )
+    }
+
+    private fun translateYamlEngineExceptionMessage(message: String): String = when (message) {
+        "mapping values are not allowed here",
+        "expected <block end>, but found '<block sequence start>'",
+        "expected <block end>, but found '<block mapping start>'",
+        ->
+            "$message (is the indentation level of this line or a line nearby incorrect?)"
+        else -> message
     }
 }
