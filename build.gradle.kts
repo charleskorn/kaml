@@ -94,7 +94,7 @@ kotlin {
 
         named("jsMain") {
             dependencies {
-                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.1")
+                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.3")
                 implementation("com.squareup.okio:okio:3.8.0")
             }
         }
