@@ -59,4 +59,4 @@ public inline fun <reified T> Yaml.decodeFromStream(
 public fun Yaml.parseToYamlNode(
     source: InputStream,
 ): YamlNode =
-    parseToYamlNodeFromSource(source.source())
+    parseToYamlNode(source.source())

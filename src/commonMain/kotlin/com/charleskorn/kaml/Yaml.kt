@@ -58,16 +58,16 @@ public class Yaml(
         deserializer: DeserializationStrategy<T>,
         source: Source,
     ): T {
-        val rootNode = parseToYamlNodeFromSource(source)
+        val rootNode = parseToYamlNode(source)
 
         val input = YamlInput.createFor(rootNode, this, serializersModule, configuration, deserializer.descriptor)
         return input.decodeSerializableValue(deserializer)
     }
 
     public fun parseToYamlNode(string: String): YamlNode =
-        parseToYamlNodeFromSource(string.bufferedSource())
+        parseToYamlNode(string.bufferedSource())
 
-    internal fun parseToYamlNodeFromSource(source: Source): YamlNode {
+    internal fun parseToYamlNode(source: Source): YamlNode {
         val parser = YamlParser(source)
         val reader =
             YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
