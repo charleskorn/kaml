@@ -25,9 +25,10 @@ import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import okio.Buffer
+import okio.BufferedSink
 import okio.Sink
 import okio.Source
-import okio.use
+import okio.buffer
 import org.snakeyaml.engine.v2.api.StreamDataWriter
 
 public class Yaml(
@@ -81,46 +82,47 @@ public class Yaml(
         value: T,
         sink: Sink,
     ) {
-        encodeToBufferDataWriter(serializer, value).use { writer ->
-            writer.readAll(sink)
-        }
+        encodeToBufferedSink(serializer, value, sink.buffer())
     }
 
     override fun <T> encodeToString(
         serializer: SerializationStrategy<T>,
         value: T,
     ): String {
-        return encodeToBufferDataWriter(serializer, value).use { writer ->
-            writer.readUtf8().trimEnd()
-        }
+        val buffer = Buffer()
+        encodeToBufferedSink(serializer, value, buffer)
+        return buffer.readUtf8().trimEnd()
     }
 
-    private fun <T> encodeToBufferDataWriter(
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun <T> encodeToBufferedSink(
         serializer: SerializationStrategy<T>,
         value: T,
-    ): BufferDataWriter {
-        val writer = BufferDataWriter()
-        @OptIn(ExperimentalStdlibApi::class)
-        YamlOutput(writer, serializersModule, configuration).use { output ->
-            output.encodeSerializableValue(serializer, value)
+        sink: BufferedSink,
+    ) {
+        BufferedSinkDataWriter(sink).use { writer ->
+            YamlOutput(writer, serializersModule, configuration).use { output ->
+                output.encodeSerializableValue(serializer, value)
+            }
         }
-        return writer
     }
 }
 
-private class BufferDataWriter(
-    private val buffer: Buffer = Buffer(),
-) : StreamDataWriter, Source by buffer {
-    override fun flush(): Unit = buffer.flush()
+@OptIn(ExperimentalStdlibApi::class)
+private class BufferedSinkDataWriter(
+    val sink: BufferedSink,
+) : StreamDataWriter, AutoCloseable {
+    override fun flush(): Unit = sink.flush()
 
     override fun write(str: String) {
-        buffer.writeUtf8(str)
+        sink.writeUtf8(str)
     }
 
     override fun write(str: String, off: Int, len: Int) {
-        buffer.writeUtf8(string = str, beginIndex = off, endIndex = off + len)
+        sink.writeUtf8(string = str, beginIndex = off, endIndex = off + len)
     }
 
-    fun readAll(sink: Sink): Long = buffer.readAll(sink)
-    fun readUtf8(): String = buffer.readUtf8()
+    override fun close() {
+        flush()
+    }
 }
