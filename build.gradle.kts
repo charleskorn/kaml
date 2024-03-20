@@ -61,13 +61,11 @@ kotlin {
     }
 
     sourceSets {
-        all {
-            languageSettings.optIn("kotlin.RequiresOptIn")
-        }
-
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.3")
+                implementation("com.squareup.okio:okio:3.8.0")
             }
         }
 
@@ -80,28 +78,15 @@ kotlin {
             }
         }
 
-        named("jvmMain") {
-            dependencies {
-                implementation("org.snakeyaml:snakeyaml-engine:2.7")
-            }
-        }
-
-        named("jvmTest") {
+        jvmTest {
             dependencies {
                 implementation("io.kotest:kotest-runner-junit5:5.8.1")
-            }
-        }
-
-        named("jsMain") {
-            dependencies {
-                implementation("it.krzeminski:snakeyaml-engine-kmp:2.7.3")
-                implementation("com.squareup.okio:okio:3.9.0")
             }
         }
     }
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
     }

@@ -18,16 +18,16 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.internal.bufferedSource
+import okio.Source
 import org.snakeyaml.engine.v2.api.LoadSettings
 import org.snakeyaml.engine.v2.events.Event
 import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v2.parser.ParserImpl
 import org.snakeyaml.engine.v2.scanner.StreamReader
-import java.io.Reader
-import java.io.StringReader
 
-internal class YamlParser(reader: Reader) {
-    internal constructor(source: String) : this(StringReader(source))
+internal class YamlParser(reader: Source) {
+    internal constructor(source: String) : this(source.bufferedSource())
 
     private val dummyFileName = "DUMMY_FILE_NAME"
     private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
@@ -56,7 +56,10 @@ internal class YamlParser(reader: Reader) {
         val event = consumeEvent(path)
 
         if (event.eventId != type) {
-            throw MalformedYamlException("Unexpected ${event.eventId}, expected $type", path.withError(Location(event.startMark.get().line, event.startMark.get().column)))
+            throw MalformedYamlException(
+                "Unexpected ${event.eventId}, expected $type",
+                path.withError(Location(event.startMark!!.line, event.startMark!!.column)),
+            )
         }
     }
 
@@ -69,24 +72,47 @@ internal class YamlParser(reader: Reader) {
     }
 
     private fun translateYamlEngineException(e: MarkedYamlEngineException, path: YamlPath): MalformedYamlException {
-        val contextMessage = if (e.context == null) {
-            ""
-        } else {
-            val contextMark = e.contextMark.get()
+        val updatedMessage = StringBuilder()
 
-            e.context + "\n" +
-                " at line ${contextMark.line + 1}, column ${contextMark.column + 1}:\n" +
-                contextMark.createSnippet(4, Int.MAX_VALUE) + "\n"
+        val context = e.context
+        val contextMark = e.contextMark
+
+        if (context != null && contextMark != null) {
+            val snippet = contextMark.createSnippet(4, Int.MAX_VALUE)
+            updatedMessage.append(
+                """
+                    |$context
+                    | at line ${contextMark.line + 1}, column ${contextMark.column + 1}:
+                    |$snippet
+                    |
+                """.trimMargin(),
+            )
         }
 
-        val problemMark = e.problemMark.get()
+        val problemMark = e.problemMark
+        if (problemMark != null) {
+            val problem = translateYamlEngineExceptionMessage(e.problem)
+            val snippet = problemMark.createSnippet(4, Int.MAX_VALUE)
+            updatedMessage.append(
+                """
+                    |$problem
+                    | at line ${problemMark.line + 1}, column ${problemMark.column + 1}:
+                    |$snippet
+                """.trimMargin(),
+            )
+        }
 
-        val message = contextMessage +
-            translateYamlEngineExceptionMessage(e.problem) + "\n" +
-            " at line ${problemMark.line + 1}, column ${problemMark.column + 1}:\n" +
-            problemMark.createSnippet(4, Int.MAX_VALUE)
+        val updatedPath =
+            if (problemMark != null) {
+                path.withError(Location(problemMark.line + 1, problemMark.column + 1))
+            } else {
+                path
+            }
 
-        return MalformedYamlException(message, path.withError(Location(problemMark.line + 1, problemMark.column + 1)))
+        return MalformedYamlException(
+            message = updatedMessage.toString(),
+            path = updatedPath,
+        )
     }
 
     private fun translateYamlEngineExceptionMessage(message: String): String = when (message) {
