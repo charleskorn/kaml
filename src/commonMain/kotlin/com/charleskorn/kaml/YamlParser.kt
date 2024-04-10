@@ -26,11 +26,14 @@ import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
 import org.snakeyaml.engine.v2.parser.ParserImpl
 import org.snakeyaml.engine.v2.scanner.StreamReader
 
-internal class YamlParser(reader: Source) {
+internal class YamlParser(reader: Source, codePointLimit: Int? = null) {
     internal constructor(source: String) : this(source.bufferedSource())
 
     private val dummyFileName = "DUMMY_FILE_NAME"
-    private val loadSettings = LoadSettings.builder().setLabel(dummyFileName).build()
+    private val loadSettings = LoadSettings.builder().apply {
+        if (codePointLimit != null) setCodePointLimit(codePointLimit)
+        setLabel(dummyFileName)
+    }.build()
     private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
 
