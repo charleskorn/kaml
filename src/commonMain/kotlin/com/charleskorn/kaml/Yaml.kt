@@ -69,7 +69,7 @@ public class Yaml(
         parseToYamlNode(string.bufferedSource())
 
     internal fun parseToYamlNode(source: Source): YamlNode {
-        val parser = YamlParser(source)
+        val parser = YamlParser(source, configuration.codePointLimit)
         val reader =
             YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
         val node = reader.read()

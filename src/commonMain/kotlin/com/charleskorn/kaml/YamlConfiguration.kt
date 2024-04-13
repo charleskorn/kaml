@@ -34,6 +34,7 @@ package com.charleskorn.kaml
  * * [ambiguousQuoteStyle]: how strings should be escaped when [singleLineStringStyle] is [SingleLineStringStyle.PlainExceptAmbiguous] and the value is ambiguous
  * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
  * * [allowAnchorsAndAliases]: set to true to allow anchors and aliases when decoding YAML (defaults to `false`)
+ * * [codePointLimit]: the maximum amount of code points allowed in the input YAML document (defaults to 3 MB)
  */
 public data class YamlConfiguration(
     internal val encodeDefaults: Boolean = true,
@@ -50,6 +51,7 @@ public data class YamlConfiguration(
     internal val sequenceBlockIndent: Int = 0,
     internal val allowAnchorsAndAliases: Boolean = false,
     internal val yamlNamingStrategy: YamlNamingStrategy? = null,
+    internal val codePointLimit: Int? = null,
 )
 
 public enum class PolymorphismStyle {
