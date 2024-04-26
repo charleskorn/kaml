@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v3.3.1
+        uses: gradle/wrapper-validation-action@v3.3.2
 
       - name: Set up JDK
         uses: actions/setup-java@v4.2.1
