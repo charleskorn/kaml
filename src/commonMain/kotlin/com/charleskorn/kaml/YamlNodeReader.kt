@@ -18,13 +18,13 @@
 
 package com.charleskorn.kaml
 
-import org.snakeyaml.engine.v2.common.Anchor
-import org.snakeyaml.engine.v2.events.AliasEvent
-import org.snakeyaml.engine.v2.events.Event
-import org.snakeyaml.engine.v2.events.MappingStartEvent
-import org.snakeyaml.engine.v2.events.NodeEvent
-import org.snakeyaml.engine.v2.events.ScalarEvent
-import org.snakeyaml.engine.v2.events.SequenceStartEvent
+import it.krzeminski.snakeyaml.engine.kmp.common.Anchor
+import it.krzeminski.snakeyaml.engine.kmp.events.AliasEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.Event
+import it.krzeminski.snakeyaml.engine.kmp.events.MappingStartEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.NodeEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.ScalarEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.SequenceStartEvent
 
 internal class YamlNodeReader(
     private val parser: YamlParser,

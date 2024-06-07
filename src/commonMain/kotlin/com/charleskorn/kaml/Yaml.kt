@@ -19,6 +19,7 @@
 package com.charleskorn.kaml
 
 import com.charleskorn.kaml.internal.bufferedSource
+import it.krzeminski.snakeyaml.engine.kmp.api.StreamDataWriter
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
@@ -29,7 +30,6 @@ import okio.BufferedSink
 import okio.Sink
 import okio.Source
 import okio.buffer
-import org.snakeyaml.engine.v2.api.StreamDataWriter
 
 public class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
