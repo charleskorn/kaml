@@ -19,12 +19,12 @@
 package com.charleskorn.kaml
 
 import com.charleskorn.kaml.internal.bufferedSource
+import it.krzeminski.snakeyaml.engine.kmp.api.LoadSettings
+import it.krzeminski.snakeyaml.engine.kmp.events.Event
+import it.krzeminski.snakeyaml.engine.kmp.exceptions.MarkedYamlEngineException
+import it.krzeminski.snakeyaml.engine.kmp.parser.ParserImpl
+import it.krzeminski.snakeyaml.engine.kmp.scanner.StreamReader
 import okio.Source
-import org.snakeyaml.engine.v2.api.LoadSettings
-import org.snakeyaml.engine.v2.events.Event
-import org.snakeyaml.engine.v2.exceptions.MarkedYamlEngineException
-import org.snakeyaml.engine.v2.parser.ParserImpl
-import org.snakeyaml.engine.v2.scanner.StreamReader
 
 internal class YamlParser(reader: Source, codePointLimit: Int? = null) {
     internal constructor(source: String) : this(source.bufferedSource())

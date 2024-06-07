@@ -18,6 +18,23 @@
 
 package com.charleskorn.kaml
 
+import it.krzeminski.snakeyaml.engine.kmp.api.DumpSettings
+import it.krzeminski.snakeyaml.engine.kmp.api.StreamDataWriter
+import it.krzeminski.snakeyaml.engine.kmp.comments.CommentType
+import it.krzeminski.snakeyaml.engine.kmp.common.FlowStyle
+import it.krzeminski.snakeyaml.engine.kmp.common.ScalarStyle
+import it.krzeminski.snakeyaml.engine.kmp.emitter.Emitter
+import it.krzeminski.snakeyaml.engine.kmp.events.CommentEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.DocumentEndEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.DocumentStartEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.ImplicitTuple
+import it.krzeminski.snakeyaml.engine.kmp.events.MappingEndEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.MappingStartEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.ScalarEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.SequenceEndEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.SequenceStartEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.StreamEndEvent
+import it.krzeminski.snakeyaml.engine.kmp.events.StreamStartEvent
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -25,23 +42,6 @@ import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.SerializersModule
-import org.snakeyaml.engine.v2.api.DumpSettings
-import org.snakeyaml.engine.v2.api.StreamDataWriter
-import org.snakeyaml.engine.v2.comments.CommentType
-import org.snakeyaml.engine.v2.common.FlowStyle
-import org.snakeyaml.engine.v2.common.ScalarStyle
-import org.snakeyaml.engine.v2.emitter.Emitter
-import org.snakeyaml.engine.v2.events.CommentEvent
-import org.snakeyaml.engine.v2.events.DocumentEndEvent
-import org.snakeyaml.engine.v2.events.DocumentStartEvent
-import org.snakeyaml.engine.v2.events.ImplicitTuple
-import org.snakeyaml.engine.v2.events.MappingEndEvent
-import org.snakeyaml.engine.v2.events.MappingStartEvent
-import org.snakeyaml.engine.v2.events.ScalarEvent
-import org.snakeyaml.engine.v2.events.SequenceEndEvent
-import org.snakeyaml.engine.v2.events.SequenceStartEvent
-import org.snakeyaml.engine.v2.events.StreamEndEvent
-import org.snakeyaml.engine.v2.events.StreamStartEvent
 
 @OptIn(ExperimentalSerializationApi::class, ExperimentalStdlibApi::class)
 internal class YamlOutput(
