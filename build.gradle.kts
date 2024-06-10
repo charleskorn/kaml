@@ -23,6 +23,7 @@ import com.charleskorn.kaml.build.configureTesting
 import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -62,18 +63,8 @@ kotlin {
 
     wasmJs {
         binaries.library()
-        browser {
-            testTask {
-                // TODO: enable once the tests work with Kotlin/Wasm.
-                enabled = false
-            }
-        }
-        nodejs {
-            testTask {
-                // TODO: enable once the tests work with Kotlin/Wasm.
-                enabled = false
-            }
-        }
+        browser()
+        nodejs()
     }
 
     sourceSets {
@@ -105,6 +96,15 @@ kotlin {
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
+    }
+}
+
+tasks.withType<KotlinJsIrLink>().configureEach {
+    compilerOptions {
+        // Catching IndexOutOfBoundsException in Kotlin/Wasm is impossible by default,
+        // unless we enable "-Xwasm-enable-array-range-checks" compiler flag.
+        // See https://youtrack.jetbrains.com/issue/KT-59081/
+        freeCompilerArgs.add("-Xwasm-enable-array-range-checks")
     }
 }
 

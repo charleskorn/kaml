@@ -31,6 +31,7 @@ import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
@@ -119,7 +120,9 @@ class YamlWritingTest : DescribeSpec({
             val output = Yaml.default.encodeToString(Float.serializer(), 45.6f)
 
             it("returns the value serialized in the expected YAML form") {
-                output shouldBe "45.6"
+                // See a bug in Kotlin/Wasm:
+                // https://youtrack.jetbrains.com/issue/KT-68948/
+                output shouldBeIn setOf("45.6", "45.599998474121094")
             }
         }
 
@@ -245,7 +248,9 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Float.serializer(), 1.2f)
 
                 it("returns the value serialized in the expected YAML form, without being escaped") {
-                    output shouldBe "1.2"
+                    // See a bug in Kotlin/Wasm:
+                    // https://youtrack.jetbrains.com/issue/KT-68948/
+                    output shouldBeIn setOf("1.2", "1.2000000476837158")
                 }
             }
 
