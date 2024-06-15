@@ -103,6 +103,7 @@ tasks.withType<KotlinJsIrLink>().configureEach {
     compilerOptions {
         // Catching IndexOutOfBoundsException in Kotlin/Wasm is impossible by default,
         // unless we enable "-Xwasm-enable-array-range-checks" compiler flag.
+        // We rely on it in the tests, see https://github.com/charleskorn/kaml/blob/108b48fb560559f0d0724559bb8c7fff631503f9/src/commonTest/kotlin/com/charleskorn/kaml/YamlListTest.kt#L79
         // See https://youtrack.jetbrains.com/issue/KT-59081/
         freeCompilerArgs.add("-Xwasm-enable-array-range-checks")
     }
