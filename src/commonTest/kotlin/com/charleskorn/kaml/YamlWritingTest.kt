@@ -30,7 +30,6 @@ import com.charleskorn.kaml.testobjects.UnwrappedInterface
 import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
@@ -39,27 +38,27 @@ import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
 
-class YamlWritingTest : DescribeSpec({
-    describe("a YAML serializer") {
+class YamlWritingTest : FlatFunSpec({
+    context("a YAML serializer") {
         val yamlWithCustomisedIndentation = Yaml(configuration = YamlConfiguration(encodingIndentationSize = 3))
 
-        describe("serializing null values") {
+        context("serializing null values") {
             val input = null as String?
 
             context("serializing a null string value") {
                 val output = Yaml.default.encodeToString(String.serializer().nullable, input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe "null"
                 }
             }
         }
 
-        describe("serializing boolean values") {
+        context("serializing boolean values") {
             context("serializing a true value") {
                 val output = Yaml.default.encodeToString(Boolean.serializer(), true)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe "true"
                 }
             }
@@ -67,25 +66,25 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a false value") {
                 val output = Yaml.default.encodeToString(Boolean.serializer(), false)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe "false"
                 }
             }
         }
 
-        describe("serializing byte values") {
+        context("serializing byte values") {
             val output = Yaml.default.encodeToString(Byte.serializer(), 12)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe "12"
             }
         }
 
-        describe("serializing character values") {
+        context("serializing character values") {
             context("serializing a alphanumeric character") {
                 val output = Yaml.default.encodeToString(Char.serializer(), 'A')
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe """"A""""
                 }
             }
@@ -93,7 +92,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a double-quote character") {
                 val output = Yaml.default.encodeToString(Char.serializer(), '"')
 
-                it("returns the value serialized in the expected YAML form, escaping the double-quote character") {
+                test("returns the value serialized in the expected YAML form, escaping the double-quote character") {
                     output shouldBe """"\"""""
                 }
             }
@@ -101,24 +100,24 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a newline character") {
                 val output = Yaml.default.encodeToString(Char.serializer(), '\n')
 
-                it("returns the value serialized in the expected YAML form, escaping the newline character") {
+                test("returns the value serialized in the expected YAML form, escaping the newline character") {
                     output shouldBe """"\n""""
                 }
             }
         }
 
-        describe("serializing double values") {
+        context("serializing double values") {
             val output = Yaml.default.encodeToString(Double.serializer(), 12.3)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe "12.3"
             }
         }
 
-        describe("serializing floating point values") {
+        context("serializing floating point values") {
             val output = Yaml.default.encodeToString(Float.serializer(), 45.6f)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe when (kotlinTarget) {
                     // See a bug in Kotlin/Wasm:
                     // https://youtrack.jetbrains.com/issue/KT-68948/
@@ -128,35 +127,35 @@ class YamlWritingTest : DescribeSpec({
             }
         }
 
-        describe("serializing integer values") {
+        context("serializing integer values") {
             val output = Yaml.default.encodeToString(Int.serializer(), 12)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe "12"
             }
         }
 
-        describe("serializing long integer values") {
+        context("serializing long integer values") {
             val output = Yaml.default.encodeToString(Long.serializer(), 12)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe "12"
             }
         }
 
-        describe("serializing short integer values") {
+        context("serializing short integer values") {
             val output = Yaml.default.encodeToString(Short.serializer(), 12)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe "12"
             }
         }
 
-        describe("serializing string values") {
+        context("serializing string values") {
             context("serializing a string without any special characters") {
                 val output = Yaml.default.encodeToString(String.serializer(), "hello world")
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe """"hello world""""
                 }
             }
@@ -165,7 +164,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml.default.encodeToString(String.serializer(), "")
 
                 // The '---' is necessary as explained here: https://bitbucket.org/asomov/snakeyaml-engine/issues/23/emitting-only-an-empty-string-adds-to
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe """--- """""
                 }
             }
@@ -173,7 +172,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing the string 'null'") {
                 val output = Yaml.default.encodeToString(String.serializer(), "null")
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe """"null""""
                 }
             }
@@ -181,7 +180,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a multi-line string") {
                 val output = Yaml.default.encodeToString(String.serializer(), "This is line 1\nThis is line 2")
 
-                it("returns the value serialized in the expected YAML form, escaping the newline character") {
+                test("returns the value serialized in the expected YAML form, escaping the newline character") {
                     output shouldBe """"This is line 1\nThis is line 2""""
                 }
             }
@@ -189,7 +188,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a string containing a double-quote character") {
                 val output = Yaml.default.encodeToString(String.serializer(), """They said "hello" to me""")
 
-                it("returns the value serialized in the expected YAML form, escaping the double-quote characters") {
+                test("returns the value serialized in the expected YAML form, escaping the double-quote characters") {
                     output shouldBe """"They said \"hello\" to me""""
                 }
             }
@@ -197,7 +196,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a string longer than the maximum scalar width") {
                 val output = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80)).encodeToString(String.serializer(), "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters")
 
-                it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
+                test("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
                     output shouldBe
                         """
                         |"Hello world this is a string that is much, much, much (ok, not that much) longer\
@@ -209,7 +208,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a string with the value of an integer using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "12")
 
-                it("returns the value serialized in the expected YAML form, escaping the integer") {
+                test("returns the value serialized in the expected YAML form, escaping the integer") {
                     output shouldBe """"12""""
                 }
             }
@@ -217,7 +216,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a string with the value of a boolean using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "true")
 
-                it("returns the value serialized in the expected YAML form, escaping the boolean") {
+                test("returns the value serialized in the expected YAML form, escaping the boolean") {
                     output shouldBe """"true""""
                 }
             }
@@ -225,7 +224,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a string with the value of an float using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "1.2")
 
-                it("returns the value serialized in the expected YAML form, escaping the float") {
+                test("returns the value serialized in the expected YAML form, escaping the float") {
                     output shouldBe """"1.2""""
                 }
             }
@@ -233,7 +232,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing an unambiguous numerical string using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(String.serializer(), "1.2.3")
 
-                it("returns the value serialized in the expected YAML form, without being escaped") {
+                test("returns the value serialized in the expected YAML form, without being escaped") {
                     output shouldBe "1.2.3"
                 }
             }
@@ -241,7 +240,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing an int using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Int.serializer(), 123)
 
-                it("returns the value serialized in the expected YAML form, without being escaped") {
+                test("returns the value serialized in the expected YAML form, without being escaped") {
                     output shouldBe "123"
                 }
             }
@@ -249,7 +248,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a float using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Float.serializer(), 1.2f)
 
-                it("returns the value serialized in the expected YAML form, without being escaped") {
+                test("returns the value serialized in the expected YAML form, without being escaped") {
                     output shouldBe when (kotlinTarget) {
                         // See a bug in Kotlin/Wasm:
                         // https://youtrack.jetbrains.com/issue/KT-68948/
@@ -262,7 +261,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a boolean using SingleLineStringStyle.PlainExceptAmbiguous") {
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Boolean.serializer(), true)
 
-                it("returns the value serialized in the expected YAML form, without being escaped") {
+                test("returns the value serialized in the expected YAML form, without being escaped") {
                     output shouldBe "true"
                 }
             }
@@ -275,7 +274,7 @@ class YamlWritingTest : DescribeSpec({
                     ),
                 ).encodeToString(String.serializer(), "12")
 
-                it("returns the value serialized in the expected YAML form, escaping the integer with single-quotes") {
+                test("returns the value serialized in the expected YAML form, escaping the integer with single-quotes") {
                     output shouldBe """'12'"""
                 }
             }
@@ -288,7 +287,7 @@ class YamlWritingTest : DescribeSpec({
                     ),
                 ).encodeToString(String.serializer(), "true")
 
-                it("returns the value serialized in the expected YAML form, escaping the boolean with single-quotes") {
+                test("returns the value serialized in the expected YAML form, escaping the boolean with single-quotes") {
                     output shouldBe """'true'"""
                 }
             }
@@ -301,7 +300,7 @@ class YamlWritingTest : DescribeSpec({
                     ),
                 ).encodeToString(String.serializer(), "1.2")
 
-                it("returns the value serialized in the expected YAML form, escaping the float with single-quotes") {
+                test("returns the value serialized in the expected YAML form, escaping the float with single-quotes") {
                     output shouldBe """'1.2'"""
                 }
             }
@@ -316,7 +315,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
                 ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
 
-                it("returns the serial name serialized in snake_case") {
+                test("returns the serial name serialized in snake_case") {
                     output shouldBe """serial_name: "value""""
                 }
             }
@@ -326,7 +325,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
                 ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
 
-                it("returns the serial name serialized in PascalCase") {
+                test("returns the serial name serialized in PascalCase") {
                     output shouldBe """SerialName: "value""""
                 }
             }
@@ -336,7 +335,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
                 ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
 
-                it("returns the serial name serialized in camelCase") {
+                test("returns the serial name serialized in camelCase") {
                     output shouldBe """serialName: "value""""
                 }
             }
@@ -346,7 +345,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.KebabCase),
                 ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value"))
 
-                it("returns the serial name serialized in camelCase") {
+                test("returns the serial name serialized in camelCase") {
                     output shouldBe """serial-name: "value""""
                 }
             }
@@ -356,7 +355,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
                 ).encodeToString(NamingStrategyTestData.serializer(), NamingStrategyTestData("value_with_several_words"))
 
-                it("returns only the name serialized in PascalCase and not the value too") {
+                test("returns only the name serialized in PascalCase and not the value too") {
                     output shouldBe """SerialName: "value_with_several_words""""
                 }
             }
@@ -368,7 +367,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
                 ).encodeToString(LongSerialName.serializer(), LongSerialName("value"))
 
-                it("returns the name serialized correctly") {
+                test("returns the name serialized correctly") {
                     output shouldBe """really_long_serial_name: "value""""
                 }
             }
@@ -380,7 +379,7 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
                 ).encodeToString(OneCharacterSerialName.serializer(), OneCharacterSerialName("value"))
 
-                it("returns the name serialized correctly") {
+                test("returns the name serialized correctly") {
                     output shouldBe """A: "value""""
                 }
             }
@@ -392,25 +391,25 @@ class YamlWritingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
                 ).encodeToString(OneWordSerialName.serializer(), OneWordSerialName("value"))
 
-                it("returns the name serialized correctly") {
+                test("returns the name serialized correctly") {
                     output shouldBe """Name: "value""""
                 }
             }
         }
 
-        describe("serializing enumeration values") {
+        context("serializing enumeration values") {
             val output = Yaml.default.encodeToString(TestEnum.serializer(), TestEnum.Value1)
 
-            it("returns the value serialized in the expected YAML form") {
+            test("returns the value serialized in the expected YAML form") {
                 output shouldBe """"Value1""""
             }
         }
 
-        describe("serializing lists") {
+        context("serializing lists") {
             context("serializing a list of integers") {
                 val output = Yaml.default.encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             - 1
@@ -423,7 +422,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
                     .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe "[1, 2, 3]"
                 }
             }
@@ -431,7 +430,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a list of nullable integers") {
                 val output = Yaml.default.encodeToString(ListSerializer(Int.serializer().nullable), listOf(1, null, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             - 1
@@ -445,7 +444,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow, sequenceBlockIndent = 2))
                     .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe "[1, 2, 3]"
                 }
             }
@@ -454,7 +453,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 0))
                     .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                         |- 1
@@ -468,7 +467,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2))
                     .encodeToString(ListSerializer(Int.serializer()), listOf(1, 2, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                         |  - 1
@@ -485,7 +484,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceBlockIndent = 2))
                     .encodeToString(ListSerializer(Foo.serializer()), listOf(Foo("baz")))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                         |  - bar: "baz"
@@ -497,7 +496,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
                     .encodeToString(ListSerializer(Int.serializer().nullable), listOf(1, null, 3))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe "[1, null, 3]"
                 }
             }
@@ -505,7 +504,7 @@ class YamlWritingTest : DescribeSpec({
             context("serializing a list of strings") {
                 val output = Yaml.default.encodeToString(ListSerializer(String.serializer()), listOf("item1", "item2"))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             - "item1"
@@ -518,7 +517,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
                     .encodeToString(ListSerializer(String.serializer()), listOf("item1", "item2"))
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe """["item1", "item2"]"""
                 }
             }
@@ -527,7 +526,7 @@ class YamlWritingTest : DescribeSpec({
                 val yamlWithScalarLimit = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80))
                 val output = yamlWithScalarLimit.encodeToString(ListSerializer(String.serializer()), listOf("item1", "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters"))
 
-                it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
+                test("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
                     output shouldBe
                         """
                         |- "item1"
@@ -541,7 +540,7 @@ class YamlWritingTest : DescribeSpec({
                 val yamlWithScalarLimit = Yaml(configuration = YamlConfiguration(breakScalarsAt = 80, sequenceStyle = SequenceStyle.Flow))
                 val output = yamlWithScalarLimit.encodeToString(ListSerializer(String.serializer()), listOf("item1", "Hello world this is a string that is much, much, much (ok, not that much) longer than 80 characters"))
 
-                it("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
+                test("returns the value serialized in the expected YAML form, broken onto a new line at the maximum scalar width") {
                     output shouldBe
                         """
                             ["item1", "Hello world this is a string that is much, much, much (ok, not that much)\
@@ -558,7 +557,7 @@ class YamlWritingTest : DescribeSpec({
 
                 val output = Yaml.default.encodeToString(ListSerializer(ListSerializer(Int.serializer())), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             - - 1
@@ -579,7 +578,7 @@ class YamlWritingTest : DescribeSpec({
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow))
                     .encodeToString(ListSerializer(ListSerializer(Int.serializer())), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe """[[1, 2, 3], [4, 5]]"""
                 }
             }
@@ -598,7 +597,7 @@ class YamlWritingTest : DescribeSpec({
                 val serializer = ListSerializer(MapSerializer(String.serializer(), String.serializer()))
                 val output = Yaml.default.encodeToString(serializer, input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             - "key1": "value1"
@@ -616,7 +615,7 @@ class YamlWritingTest : DescribeSpec({
 
                 val output = Yaml.default.encodeToString(ListSerializer(SimpleStructure.serializer()), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             - name: "name1"
@@ -632,7 +631,7 @@ class YamlWritingTest : DescribeSpec({
 
                 val output = Yaml(configuration = YamlConfiguration(sequenceStyle = SequenceStyle.Flow)).encodeToString(ListSerializer(SimpleStructure.serializer()), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             [{name: "name1"}, {name: "name2"}]
@@ -641,7 +640,7 @@ class YamlWritingTest : DescribeSpec({
             }
         }
 
-        describe("serializing maps") {
+        context("serializing maps") {
             context("serializing a map of strings to strings") {
                 val input = mapOf(
                     "key1" to "value1",
@@ -650,7 +649,7 @@ class YamlWritingTest : DescribeSpec({
 
                 val output = Yaml.default.encodeToString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             "key1": "value1"
@@ -673,7 +672,7 @@ class YamlWritingTest : DescribeSpec({
                 val serializer = MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer()))
                 val output = Yaml.default.encodeToString(serializer, input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             "map1":
@@ -694,7 +693,7 @@ class YamlWritingTest : DescribeSpec({
                 val serializer = MapSerializer(String.serializer(), ListSerializer(Int.serializer()))
                 val output = Yaml.default.encodeToString(serializer, input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             "list1":
@@ -718,7 +717,7 @@ class YamlWritingTest : DescribeSpec({
                 val serializer = MapSerializer(String.serializer(), SimpleStructure.serializer())
                 val output = Yaml.default.encodeToString(serializer, input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             "item1":
@@ -730,12 +729,12 @@ class YamlWritingTest : DescribeSpec({
             }
         }
 
-        describe("serializing objects") {
+        context("serializing objects") {
             context("serializing a simple object") {
                 val input = SimpleStructure("The name")
                 val output = Yaml.default.encodeToString(SimpleStructure.serializer(), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             name: "The name"
@@ -752,7 +751,7 @@ class YamlWritingTest : DescribeSpec({
                 context("with default indentation") {
                     val output = Yaml.default.encodeToString(NestedObjects.serializer(), input)
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe
                             """
                                 firstPerson:
@@ -766,7 +765,7 @@ class YamlWritingTest : DescribeSpec({
                 context("with customised indentation") {
                     val output = yamlWithCustomisedIndentation.encodeToString(NestedObjects.serializer(), input)
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe
                             """
                                 firstPerson:
@@ -784,7 +783,7 @@ class YamlWritingTest : DescribeSpec({
                 context("with default indentation") {
                     val output = Yaml.default.encodeToString(Team.serializer(), input)
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe
                             """
                                 members:
@@ -797,7 +796,7 @@ class YamlWritingTest : DescribeSpec({
                 context("with customised indentation") {
                     val output = yamlWithCustomisedIndentation.encodeToString(Team.serializer(), input)
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe
                             """
                                 members:
@@ -818,7 +817,7 @@ class YamlWritingTest : DescribeSpec({
 
                 val output = Yaml.default.encodeToString(ThingWithMap.serializer(), input)
 
-                it("returns the value serialized in the expected YAML form") {
+                test("returns the value serialized in the expected YAML form") {
                     output shouldBe
                         """
                             variables:
@@ -829,11 +828,11 @@ class YamlWritingTest : DescribeSpec({
             }
         }
 
-        describe("serializing polymorphic values") {
-            describe("given tags are used to store the type information") {
+        context("serializing polymorphic values") {
+            context("given tags are used to store the type information") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag))
 
-                describe("serializing a sealed type") {
+                context("serializing a sealed type") {
                     val input = TestSealedStructure.SimpleSealedInt(5)
                     val output = polymorphicYaml.encodeToString(TestSealedStructure.serializer(), input)
                     val expectedYaml = """
@@ -841,12 +840,12 @@ class YamlWritingTest : DescribeSpec({
                         value: 5
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing an unsealed type") {
+                context("serializing an unsealed type") {
                     val input = UnsealedString("blah")
                     val output = polymorphicYaml.encodeToString(PolymorphicSerializer(UnsealedClass::class), input)
                     val expectedYaml = """
@@ -854,24 +853,24 @@ class YamlWritingTest : DescribeSpec({
                         value: "blah"
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing an unwrapped type") {
+                context("serializing an unwrapped type") {
                     val input = UnwrappedString("blah")
                     val output = polymorphicYaml.encodeToString(PolymorphicSerializer(UnwrappedInterface::class), input)
                     val expectedYaml = """
                         !<simpleString> "blah"
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing a polymorphic value as a property value") {
+                context("serializing a polymorphic value as a property value") {
                     val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
                     val output = polymorphicYaml.encodeToString(SealedWrapper.serializer(), input)
                     val expectedYaml = """
@@ -879,12 +878,12 @@ class YamlWritingTest : DescribeSpec({
                           value: 5
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing a list of polymorphic values") {
+                context("serializing a list of polymorphic values") {
                     val input = listOf(
                         TestSealedStructure.SimpleSealedInt(5),
                         TestSealedStructure.SimpleSealedString("some test"),
@@ -907,16 +906,16 @@ class YamlWritingTest : DescribeSpec({
                         - null
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
             }
 
-            describe("given properties are used to store the type information") {
+            context("given properties are used to store the type information") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property))
 
-                describe("serializing a sealed type") {
+                context("serializing a sealed type") {
                     val input = TestSealedStructure.SimpleSealedInt(5)
                     val output = polymorphicYaml.encodeToString(TestSealedStructure.serializer(), input)
                     val expectedYaml = """
@@ -924,12 +923,12 @@ class YamlWritingTest : DescribeSpec({
                         value: 5
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing an unsealed type") {
+                context("serializing an unsealed type") {
                     val input = UnsealedString("blah")
                     val output = polymorphicYaml.encodeToString(PolymorphicSerializer(UnsealedClass::class), input)
                     val expectedYaml = """
@@ -937,21 +936,21 @@ class YamlWritingTest : DescribeSpec({
                         value: "blah"
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing an unwrapped type") {
+                context("serializing an unwrapped type") {
                     val input = UnwrappedString("blah")
 
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<IllegalStateException> { polymorphicYaml.encodeToString(PolymorphicSerializer(UnwrappedInterface::class), input) }
                         exception.message shouldBe "Cannot serialize a polymorphic value that is not a YAML object when using PolymorphismStyle.Property."
                     }
                 }
 
-                describe("serializing a polymorphic value as a property value") {
+                context("serializing a polymorphic value as a property value") {
                     val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
                     val output = polymorphicYaml.encodeToString(SealedWrapper.serializer(), input)
                     val expectedYaml = """
@@ -960,12 +959,12 @@ class YamlWritingTest : DescribeSpec({
                           value: 5
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing a list of polymorphic values") {
+                context("serializing a list of polymorphic values") {
                     val input = listOf(
                         TestSealedStructure.SimpleSealedInt(5),
                         TestSealedStructure.SimpleSealedString("some test"),
@@ -988,16 +987,16 @@ class YamlWritingTest : DescribeSpec({
                         - null
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
             }
 
-            describe("given custom property name are used to store the type information") {
+            context("given custom property name are used to store the type information") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property, polymorphismPropertyName = "kind"))
 
-                describe("serializing a sealed type") {
+                context("serializing a sealed type") {
                     val input = TestSealedStructure.SimpleSealedInt(5)
                     val output = polymorphicYaml.encodeToString(TestSealedStructure.serializer(), input)
                     val expectedYaml = """
@@ -1005,12 +1004,12 @@ class YamlWritingTest : DescribeSpec({
                         value: 5
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing an unsealed type") {
+                context("serializing an unsealed type") {
                     val input = UnsealedString("blah")
                     val output = polymorphicYaml.encodeToString(PolymorphicSerializer(UnsealedClass::class), input)
                     val expectedYaml = """
@@ -1018,21 +1017,21 @@ class YamlWritingTest : DescribeSpec({
                         value: "blah"
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing an unwrapped type") {
+                context("serializing an unwrapped type") {
                     val input = UnwrappedString("blah")
 
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<IllegalStateException> { polymorphicYaml.encodeToString(PolymorphicSerializer(UnwrappedInterface::class), input) }
                         exception.message shouldBe "Cannot serialize a polymorphic value that is not a YAML object when using PolymorphismStyle.Property."
                     }
                 }
 
-                describe("serializing a polymorphic value as a property value") {
+                context("serializing a polymorphic value as a property value") {
                     val input = SealedWrapper(TestSealedStructure.SimpleSealedInt(5))
                     val output = polymorphicYaml.encodeToString(SealedWrapper.serializer(), input)
                     val expectedYaml = """
@@ -1041,12 +1040,12 @@ class YamlWritingTest : DescribeSpec({
                           value: 5
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
 
-                describe("serializing a list of polymorphic values") {
+                context("serializing a list of polymorphic values") {
                     val input = listOf(
                         TestSealedStructure.SimpleSealedInt(5),
                         TestSealedStructure.SimpleSealedString("some test"),
@@ -1069,21 +1068,21 @@ class YamlWritingTest : DescribeSpec({
                         - null
                     """.trimIndent()
 
-                    it("returns the value serialized in the expected YAML form") {
+                    test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
                 }
             }
         }
 
-        describe("handling default values") {
+        context("handling default values") {
             context("when encoding defaults") {
                 val defaultEncoder = Yaml.default
 
                 context("given a property with no default value") {
                     val input = SimpleStructure("name1")
 
-                    it("is always written") {
+                    test("is always written") {
                         defaultEncoder.encodeToString(SimpleStructure.serializer(), input) shouldBe """name: "name1""""
                     }
                 }
@@ -1091,7 +1090,7 @@ class YamlWritingTest : DescribeSpec({
                 context("given a property with a default value") {
                     val input = SimpleStructureWithDefault()
 
-                    it("is written") {
+                    test("is written") {
                         defaultEncoder.encodeToString(SimpleStructureWithDefault.serializer(), input) shouldBe """name: "default""""
                     }
                 }
@@ -1099,7 +1098,7 @@ class YamlWritingTest : DescribeSpec({
                 context("given a property with a default value has a non-default value") {
                     val input = SimpleStructureWithDefault("name1")
 
-                    it("is written") {
+                    test("is written") {
                         defaultEncoder.encodeToString(SimpleStructureWithDefault.serializer(), input) shouldBe """name: "name1""""
                     }
                 }
@@ -1111,7 +1110,7 @@ class YamlWritingTest : DescribeSpec({
                 context("given a property with no default value") {
                     val input = SimpleStructure("name1")
 
-                    it("is always written") {
+                    test("is always written") {
                         noDefaultEncoder.encodeToString(SimpleStructure.serializer(), input) shouldBe """name: "name1""""
                     }
                 }
@@ -1119,7 +1118,7 @@ class YamlWritingTest : DescribeSpec({
                 context("given a property with a default value") {
                     val input = SimpleStructureWithDefault()
 
-                    it("is not written") {
+                    test("is not written") {
                         noDefaultEncoder.encodeToString(SimpleStructureWithDefault.serializer(), input) shouldBe """{}"""
                     }
                 }
@@ -1127,18 +1126,18 @@ class YamlWritingTest : DescribeSpec({
                 context("given a property with a default value has a non-default value") {
                     val input = SimpleStructureWithDefault("name1")
 
-                    it("is written") {
+                    test("is written") {
                         noDefaultEncoder.encodeToString(SimpleStructureWithDefault.serializer(), input) shouldBe """name: "name1""""
                     }
                 }
             }
         }
 
-        describe("handling comments") {
+        context("handling comments") {
             context("comments in kotlin object") {
                 val input = SimpleStructureWithComments("objName", 73, "justTest")
 
-                it("is written") {
+                test("is written") {
                     Yaml.default.encodeToString(SimpleStructureWithComments.serializer(), input) shouldBe """
                         name: "objName"
                         # Cool int

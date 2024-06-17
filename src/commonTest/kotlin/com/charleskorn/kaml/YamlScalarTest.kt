@@ -20,11 +20,10 @@ package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class YamlScalarTest : DescribeSpec({
-    describe("a YAML scalar") {
+class YamlScalarTest : FlatFunSpec({
+    context("a YAML scalar") {
         mapOf(
             "0" to 0,
             "1" to 1,
@@ -40,7 +39,7 @@ class YamlScalarTest : DescribeSpec({
                 context("retrieving the value as an integer") {
                     val result = scalar.toInt()
 
-                    it("converts it to the expected integer") {
+                    test("converts it to the expected integer") {
                         result shouldBe expectedValue
                     }
                 }
@@ -48,7 +47,7 @@ class YamlScalarTest : DescribeSpec({
                 context("retrieving the value as a long") {
                     val result = scalar.toLong()
 
-                    it("converts it to the expected long") {
+                    test("converts it to the expected long") {
                         result shouldBe expectedValue.toLong()
                     }
                 }
@@ -56,7 +55,7 @@ class YamlScalarTest : DescribeSpec({
                 context("retrieving the value as a short") {
                     val result = scalar.toShort()
 
-                    it("converts it to the expected short") {
+                    test("converts it to the expected short") {
                         result shouldBe expectedValue.toShort()
                     }
                 }
@@ -64,7 +63,7 @@ class YamlScalarTest : DescribeSpec({
                 context("retrieving the value as a byte") {
                     val result = scalar.toByte()
 
-                    it("converts it to the expected byte") {
+                    test("converts it to the expected byte") {
                         result shouldBe expectedValue.toByte()
                     }
                 }
@@ -88,7 +87,7 @@ class YamlScalarTest : DescribeSpec({
                     val scalar = YamlScalar(content, path)
 
                     context("retrieving the value as an integer") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<YamlScalarFormatException> { scalar.toInt() }
 
                             exception.asClue {
@@ -102,7 +101,7 @@ class YamlScalarTest : DescribeSpec({
                     }
 
                     context("retrieving the value as a long") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<YamlScalarFormatException> { scalar.toLong() }
 
                             exception.asClue {
@@ -116,7 +115,7 @@ class YamlScalarTest : DescribeSpec({
                     }
 
                     context("retrieving the value as a short") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<YamlScalarFormatException> { scalar.toShort() }
 
                             exception.asClue {
@@ -130,7 +129,7 @@ class YamlScalarTest : DescribeSpec({
                     }
 
                     context("retrieving the value as a byte") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<YamlScalarFormatException> { scalar.toByte() }
 
                             exception.asClue {
@@ -174,7 +173,7 @@ class YamlScalarTest : DescribeSpec({
                     context("retrieving the value as a double") {
                         val result = scalar.toDouble()
 
-                        it("converts it to the expected double") {
+                        test("converts it to the expected double") {
                             result shouldBe expectedResult
                         }
                     }
@@ -210,7 +209,7 @@ class YamlScalarTest : DescribeSpec({
                     context("retrieving the value as a float") {
                         val result = scalar.toFloat()
 
-                        it("converts it to the expected float") {
+                        test("converts it to the expected float") {
                             result shouldBe expectedResult
                         }
                     }
@@ -234,7 +233,7 @@ class YamlScalarTest : DescribeSpec({
                     val scalar = YamlScalar(content, path)
 
                     context("retrieving the value as a float") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<YamlScalarFormatException> { scalar.toFloat() }
 
                             exception.asClue {
@@ -248,7 +247,7 @@ class YamlScalarTest : DescribeSpec({
                     }
 
                     context("retrieving the value as a double") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<YamlScalarFormatException> { scalar.toDouble() }
 
                             exception.asClue {
@@ -278,7 +277,7 @@ class YamlScalarTest : DescribeSpec({
                 context("retrieving the value as a boolean") {
                     val result = scalar.toBoolean()
 
-                    it("converts it to the expected value") {
+                    test("converts it to the expected value") {
                         result shouldBe expectedValue
                     }
                 }
@@ -290,7 +289,7 @@ class YamlScalarTest : DescribeSpec({
             val scalar = YamlScalar("nonsense", path)
 
             context("retrieving the value as a boolean") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<YamlScalarFormatException> { scalar.toBoolean() }
 
                     exception.asClue {
@@ -310,7 +309,7 @@ class YamlScalarTest : DescribeSpec({
             context("retrieving the value as a character value") {
                 val result = scalar.toChar()
 
-                it("converts it to the expected value") {
+                test("converts it to the expected value") {
                     result shouldBe 'b'
                 }
             }
@@ -325,7 +324,7 @@ class YamlScalarTest : DescribeSpec({
                 val scalar = YamlScalar(content, path)
 
                 context("retrieving the value as a character value") {
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<YamlScalarFormatException> { scalar.toChar() }
 
                         exception.asClue {
@@ -340,18 +339,18 @@ class YamlScalarTest : DescribeSpec({
             }
         }
 
-        describe("testing equivalence") {
+        context("testing equivalence") {
             val path = YamlPath.root.withListEntry(1, Location(2, 3))
             val scalar = YamlScalar("some content", path)
 
             context("comparing it to the same instance") {
-                it("indicates that they are equivalent") {
+                test("indicates that they are equivalent") {
                     scalar.equivalentContentTo(scalar) shouldBe true
                 }
             }
 
             context("comparing it to another scalar with the same content and path") {
-                it("indicates that they are equivalent") {
+                test("indicates that they are equivalent") {
                     scalar.equivalentContentTo(YamlScalar("some content", path)) shouldBe true
                 }
             }
@@ -359,56 +358,56 @@ class YamlScalarTest : DescribeSpec({
             context("comparing it to another scalar with the same content but a different path") {
                 val otherPath = YamlPath.root.withListEntry(1, Location(2, 4))
 
-                it("indicates that they are equivalent") {
+                test("indicates that they are equivalent") {
                     scalar.equivalentContentTo(YamlScalar("some content", otherPath)) shouldBe true
                 }
             }
 
             context("comparing it to another scalar with the same path but different content") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     scalar.equivalentContentTo(YamlScalar("some other content", path)) shouldBe false
                 }
             }
 
             context("comparing it to a null value") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     scalar.equivalentContentTo(YamlNull(path)) shouldBe false
                 }
             }
 
             context("comparing it to a list") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     scalar.equivalentContentTo(YamlList(emptyList(), path)) shouldBe false
                 }
             }
 
             context("comparing it to a map") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     scalar.equivalentContentTo(YamlMap(emptyMap(), path)) shouldBe false
                 }
             }
         }
 
-        describe("converting the content to a human-readable string") {
-            it("returns the content surrounded by single quotes") {
+        context("converting the content to a human-readable string") {
+            test("returns the content surrounded by single quotes") {
                 YamlScalar("thing", YamlPath.root).contentToString() shouldBe "'thing'"
             }
         }
 
-        describe("replacing its path") {
+        context("replacing its path") {
             val original = YamlScalar("abc123", YamlPath.root)
             val newPath = YamlPath.forAliasDefinition("blah", Location(2, 3))
 
-            it("returns a scalar value with the provided path") {
+            test("returns a scalar value with the provided path") {
                 original.withPath(newPath) shouldBe YamlScalar("abc123", newPath)
             }
         }
 
-        describe("converting it to a string") {
+        context("converting it to a string") {
             val path = YamlPath.root.withListEntry(2, Location(3, 4))
             val value = YamlScalar("hello world", path)
 
-            it("returns a human-readable description of itself") {
+            test("returns a human-readable description of itself") {
                 value.toString() shouldBe "scalar @ $path : hello world"
             }
         }

@@ -21,12 +21,11 @@ package com.charleskorn.kaml
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class YamlMapTest : DescribeSpec({
-    describe("a YAML map") {
-        describe("creating an instance") {
+class YamlMapTest : FlatFunSpec({
+    context("a YAML map") {
+        context("creating an instance") {
             val mapPath = YamlPath.root
             val key1Path = mapPath.withMapElementKey("key1", Location(4, 1))
             val key1ValuePath = key1Path.withMapElementValue(Location(4, 5))
@@ -34,13 +33,13 @@ class YamlMapTest : DescribeSpec({
             val key2ValuePath = key2Path.withMapElementValue(Location(6, 7))
 
             context("creating an empty map") {
-                it("does not throw an exception") {
+                test("does not throw an exception") {
                     shouldNotThrowAny { YamlMap(emptyMap(), mapPath) }
                 }
             }
 
             context("creating a map with a single entry") {
-                it("does not throw an exception") {
+                test("does not throw an exception") {
                     shouldNotThrowAny {
                         YamlMap(
                             mapOf(YamlScalar("key", key1Path) to YamlScalar("value", key1ValuePath)),
@@ -51,7 +50,7 @@ class YamlMapTest : DescribeSpec({
             }
 
             context("creating a map with two entries, each with unique keys") {
-                it("does not throw an exception") {
+                test("does not throw an exception") {
                     shouldNotThrowAny {
                         YamlMap(
                             mapOf(
@@ -65,7 +64,7 @@ class YamlMapTest : DescribeSpec({
             }
 
             context("creating a map with two entries with the same key") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<DuplicateKeyException> {
                         YamlMap(
                             mapOf(
@@ -91,7 +90,7 @@ class YamlMapTest : DescribeSpec({
             }
         }
 
-        describe("testing equivalence") {
+        context("testing equivalence") {
             val mapPath = YamlPath.root
             val key1Path = mapPath.withMapElementKey("key1", Location(4, 1))
             val key1ValuePath = key1Path.withMapElementValue(Location(4, 5))
@@ -107,19 +106,19 @@ class YamlMapTest : DescribeSpec({
             )
 
             context("comparing it to the same instance") {
-                it("indicates that they are equivalent") {
+                test("indicates that they are equivalent") {
                     map.equivalentContentTo(map) shouldBe true
                 }
             }
 
             context("comparing it to another map with the same items in the same order with a different path") {
-                it("indicates that they are equivalent") {
+                test("indicates that they are equivalent") {
                     map.equivalentContentTo(YamlMap(map.entries, YamlPath.root.withListEntry(0, Location(3, 4)))) shouldBe true
                 }
             }
 
             context("comparing it to another map with the same items in a different order with the same path") {
-                it("indicates that they are equivalent") {
+                test("indicates that they are equivalent") {
                     map.equivalentContentTo(
                         YamlMap(
                             mapOf(
@@ -133,7 +132,7 @@ class YamlMapTest : DescribeSpec({
             }
 
             context("comparing it to another map with different keys with the same path") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     map.equivalentContentTo(
                         YamlMap(
                             mapOf(
@@ -147,7 +146,7 @@ class YamlMapTest : DescribeSpec({
             }
 
             context("comparing it to another map with different values with the same path") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     map.equivalentContentTo(
                         YamlMap(
                             mapOf(
@@ -161,31 +160,31 @@ class YamlMapTest : DescribeSpec({
             }
 
             context("comparing it to another map with different items with the same path") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     map.equivalentContentTo(YamlMap(emptyMap(), map.path)) shouldBe false
                 }
             }
 
             context("comparing it to a scalar value") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     map.equivalentContentTo(YamlScalar("some content", map.path)) shouldBe false
                 }
             }
 
             context("comparing it to a null value") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     map.equivalentContentTo(YamlNull(map.path)) shouldBe false
                 }
             }
 
             context("comparing it to a list") {
-                it("indicates that they are not equivalent") {
+                test("indicates that they are not equivalent") {
                     map.equivalentContentTo(YamlList(emptyList(), map.path)) shouldBe false
                 }
             }
         }
 
-        describe("converting the content to a human-readable string") {
+        context("converting the content to a human-readable string") {
             val helloKeyPath = YamlPath.root.withMapElementKey("hello", Location(1, 1))
             val helloValuePath = helloKeyPath.withMapElementValue(Location(2, 1))
             val alsoKeyPath = YamlPath.root.withMapElementKey("also", Location(3, 1))
@@ -194,7 +193,7 @@ class YamlMapTest : DescribeSpec({
             context("an empty map") {
                 val map = YamlMap(emptyMap(), YamlPath.root)
 
-                it("returns empty curly brackets") {
+                test("returns empty curly brackets") {
                     map.contentToString() shouldBe "{}"
                 }
             }
@@ -207,7 +206,7 @@ class YamlMapTest : DescribeSpec({
                     YamlPath.root,
                 )
 
-                it("returns that item surrounded by curly brackets") {
+                test("returns that item surrounded by curly brackets") {
                     map.contentToString() shouldBe "{'hello': 'world'}"
                 }
             }
@@ -221,13 +220,13 @@ class YamlMapTest : DescribeSpec({
                     YamlPath.root,
                 )
 
-                it("returns all items separated by commas and surrounded by curly brackets") {
+                test("returns all items separated by commas and surrounded by curly brackets") {
                     map.contentToString() shouldBe "{'hello': 'world', 'also': 'thanks'}"
                 }
             }
         }
 
-        describe("getting elements of the map") {
+        context("getting elements of the map") {
             val helloKeyPath = YamlPath.root.withMapElementKey("hello", Location(1, 1))
             val helloValuePath = helloKeyPath.withMapElementValue(Location(2, 1))
             val alsoKeyPath = YamlPath.root.withMapElementKey("also", Location(3, 1))
@@ -242,19 +241,19 @@ class YamlMapTest : DescribeSpec({
             )
 
             context("the key is not in the map") {
-                it("returns null") {
+                test("returns null") {
                     map.get<YamlScalar>("something else") shouldBe null
                 }
             }
 
             context("the key is in the map") {
-                it("returns the value for that key") {
+                test("returns the value for that key") {
                     map.get<YamlScalar>("hello") shouldBe YamlScalar("world", helloValuePath)
                 }
             }
         }
 
-        describe("getting scalar elements of the map") {
+        context("getting scalar elements of the map") {
             val helloKeyPath = YamlPath.root.withMapElementKey("hello", Location(1, 1))
             val helloValuePath = helloKeyPath.withMapElementValue(Location(2, 1))
             val alsoKeyPath = YamlPath.root.withMapElementKey("also", Location(3, 1))
@@ -270,19 +269,19 @@ class YamlMapTest : DescribeSpec({
             )
 
             context("the key is not in the map") {
-                it("returns null") {
+                test("returns null") {
                     map.getScalar("something else") shouldBe null
                 }
             }
 
             context("the key is in the map and has a scalar value") {
-                it("returns the value for that key") {
+                test("returns the value for that key") {
                     map.getScalar("hello") shouldBe YamlScalar("world", helloValuePath)
                 }
             }
 
             context("the key is in the map but does not have a scalar value") {
-                it("returns the value for that key") {
+                test("returns the value for that key") {
                     val exception = shouldThrow<IncorrectTypeException> { map.getScalar("also") }
 
                     exception.asClue {
@@ -295,7 +294,7 @@ class YamlMapTest : DescribeSpec({
             }
         }
 
-        describe("getting keys of the map") {
+        context("getting keys of the map") {
             val helloKeyPath = YamlPath.root.withMapElementKey("hello", Location(1, 1))
             val helloValuePath = helloKeyPath.withMapElementValue(Location(2, 1))
             val alsoKeyPath = YamlPath.root.withMapElementKey("also", Location(3, 1))
@@ -310,19 +309,19 @@ class YamlMapTest : DescribeSpec({
             )
 
             context("the key is not in the map") {
-                it("returns null") {
+                test("returns null") {
                     map.getKey("something else") shouldBe null
                 }
             }
 
             context("the key is in the map") {
-                it("returns the node for that key") {
+                test("returns the node for that key") {
                     map.getKey("hello") shouldBe YamlScalar("hello", helloKeyPath)
                 }
             }
         }
 
-        describe("replacing its path") {
+        context("replacing its path") {
             val originalPath = YamlPath.root
             val originalKey1Path = originalPath.withMapElementKey("key1", Location(4, 1))
             val originalKey1ValuePath = originalKey1Path.withMapElementValue(Location(4, 5))
@@ -351,12 +350,12 @@ class YamlMapTest : DescribeSpec({
                 newPath,
             )
 
-            it("returns a new map node with the path for the node and its keys and values updated to the new path") {
+            test("returns a new map node with the path for the node and its keys and values updated to the new path") {
                 original.withPath(newPath) shouldBe expected
             }
         }
 
-        describe("converting it to a string") {
+        context("converting it to a string") {
             val path = YamlPath.root.withMapElementKey("test", Location(2, 1)).withMapElementValue(Location(2, 7))
             val keyPath = path.withMapElementKey("something", Location(3, 3))
             val valuePath = keyPath.withMapElementValue(Location(3, 7))
@@ -367,7 +366,7 @@ class YamlMapTest : DescribeSpec({
                 path,
             )
 
-            it("returns a human-readable description of itself") {
+            test("returns a human-readable description of itself") {
                 value.toString() shouldBe
                     """
                         map @ $path (size: 1)
