@@ -33,7 +33,8 @@ fun Project.configureAssemble() {
         project.extensions.getByType<PublishingExtension>().publications.names
             .filter { it != "kotlinMultiplatform" }
             .forEach { publicationName ->
-                from(tasks.named("${publicationName}Jar"))
+                // only Jvm and JS targets have jar task. All others have *binaries task
+                tasks.findByName("${publicationName}Jar")?.let { from(it) }
                 from(tasks.named("${publicationName}JavadocJar"))
                 from(tasks.named("${publicationName}SourcesJar"))
 

@@ -24,6 +24,7 @@ import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -57,6 +58,23 @@ kotlin {
         nodejs()
     }
 
+    //region Native Targets
+    // According to https://kotlinlang.org/docs/native-target-support.html
+    // Tier 1
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+
+    // Tier 2
+    linuxX64()
+    linuxArm64()
+    iosArm64()
+
+    // Tier 3
+    mingwX64()
+    //endregion
+
     sourceSets {
         commonMain {
             dependencies {
@@ -87,6 +105,12 @@ tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
     }
+}
+
+tasks.withType<KotlinNativeTest> {
+    // A few test with invalid floating point number fail due to issue in Kotlin native parser
+    // https://youtrack.jetbrains.com/issue/KT-69327
+    enabled = false
 }
 
 tasks.withType<KotlinJsIrLink>().configureEach {

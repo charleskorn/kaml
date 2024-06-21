@@ -1,6 +1,6 @@
 /*
 
-   Copyright 2018-2023 Charles Korn.
+   Copyright 2018-2024 Charles Korn.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,4 @@
 
 package com.charleskorn.kaml
 
-enum class KotlinTarget {
-    JVM,
-    JS,
-    WASM,
-    NATIVE,
-}
-
-expect val kotlinTarget: KotlinTarget
+actual val kotlinTarget: KotlinTarget = KotlinTarget.NATIVE
