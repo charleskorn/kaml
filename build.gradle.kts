@@ -58,7 +58,6 @@ kotlin {
         nodejs()
     }
 
-    //region Native Targets
     // According to https://kotlinlang.org/docs/native-target-support.html
     // Tier 1
     macosX64()
@@ -73,7 +72,6 @@ kotlin {
 
     // Tier 3
     mingwX64()
-    //endregion
 
     sourceSets {
         commonMain {
