@@ -64,7 +64,8 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 } catch (e: NumberFormatException) {
                     throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
                 } catch (e: IndexOutOfBoundsException) {
-                    // https://youtrack.jetbrains.com/issue/KT-69327
+                    // Workaround for https://youtrack.jetbrains.com/issue/KT-69327
+                    // TODO: remove once it is fixed
                     throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
                 }
         }
@@ -81,7 +82,8 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 } catch (e: NumberFormatException) {
                     throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
                 } catch (e: IndexOutOfBoundsException) {
-                    // https://youtrack.jetbrains.com/issue/KT-69327
+                    // Workaround for https://youtrack.jetbrains.com/issue/KT-69327
+                    // TODO: remove once it is fixed
                     throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
                 }
         }
