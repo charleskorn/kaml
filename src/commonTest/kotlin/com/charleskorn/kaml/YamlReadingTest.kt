@@ -36,7 +36,6 @@ import com.charleskorn.kaml.testobjects.UnwrappedString
 import com.charleskorn.kaml.testobjects.polymorphicModule
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.Contextual
@@ -61,16 +60,16 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.serializersModuleOf
 import kotlin.jvm.JvmInline
 
-class YamlReadingTest : DescribeSpec({
-    describe("a YAML parser") {
-        describe("parsing scalars") {
+class YamlReadingTest : FlatFunSpec({
+    context("a YAML parser") {
+        context("parsing scalars") {
             context("given the input 'hello'") {
                 val input = "hello"
 
                 context("parsing that input as a string") {
                     val result = Yaml.default.decodeFromString(String.serializer(), input)
 
-                    it("deserializes it to the expected string value") {
+                    test("deserializes it to the expected string value") {
                         result shouldBe "hello"
                     }
                 }
@@ -78,13 +77,13 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable string") {
                     val result = Yaml.default.decodeFromString(String.serializer().nullable, input)
 
-                    it("deserializes it to the expected string value") {
+                    test("deserializes it to the expected string value") {
                         result shouldBe "hello"
                     }
                 }
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(LocationThrowingSerializer, input) }
 
                         exception.asClue {
@@ -96,7 +95,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a value type") {
                     val result = Yaml.default.decodeFromString(StringValue.serializer(), input)
 
-                    it("deserializes it to the expected object") {
+                    test("deserializes it to the expected object") {
                         result shouldBe StringValue("hello")
                     }
                 }
@@ -108,7 +107,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as an integer") {
                     val result = Yaml.default.decodeFromString(Int.serializer(), input)
 
-                    it("deserializes it to the expected integer") {
+                    test("deserializes it to the expected integer") {
                         result shouldBe 123
                     }
                 }
@@ -116,7 +115,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a long") {
                     val result = Yaml.default.decodeFromString(Long.serializer(), input)
 
-                    it("deserializes it to the expected long") {
+                    test("deserializes it to the expected long") {
                         result shouldBe 123
                     }
                 }
@@ -124,7 +123,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a short") {
                     val result = Yaml.default.decodeFromString(Short.serializer(), input)
 
-                    it("deserializes it to the expected short") {
+                    test("deserializes it to the expected short") {
                         result shouldBe 123
                     }
                 }
@@ -132,7 +131,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a byte") {
                     val result = Yaml.default.decodeFromString(Byte.serializer(), input)
 
-                    it("deserializes it to the expected byte") {
+                    test("deserializes it to the expected byte") {
                         result shouldBe 123
                     }
                 }
@@ -140,7 +139,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a double") {
                     val result = Yaml.default.decodeFromString(Double.serializer(), input)
 
-                    it("deserializes it to the expected double") {
+                    test("deserializes it to the expected double") {
                         result shouldBe 123.0
                     }
                 }
@@ -148,7 +147,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a float") {
                     val result = Yaml.default.decodeFromString(Float.serializer(), input)
 
-                    it("deserializes it to the expected float") {
+                    test("deserializes it to the expected float") {
                         result shouldBe 123.0f
                     }
                 }
@@ -156,7 +155,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable integer") {
                     val result = Yaml.default.decodeFromString(Int.serializer().nullable, input)
 
-                    it("deserializes it to the expected integer") {
+                    test("deserializes it to the expected integer") {
                         result shouldBe 123
                     }
                 }
@@ -164,7 +163,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable long") {
                     val result = Yaml.default.decodeFromString(Long.serializer().nullable, input)
 
-                    it("deserializes it to the expected long") {
+                    test("deserializes it to the expected long") {
                         result shouldBe 123
                     }
                 }
@@ -172,7 +171,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable short") {
                     val result = Yaml.default.decodeFromString(Short.serializer().nullable, input)
 
-                    it("deserializes it to the expected short") {
+                    test("deserializes it to the expected short") {
                         result shouldBe 123
                     }
                 }
@@ -180,7 +179,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable byte") {
                     val result = Yaml.default.decodeFromString(Byte.serializer().nullable, input)
 
-                    it("deserializes it to the expected byte") {
+                    test("deserializes it to the expected byte") {
                         result shouldBe 123
                     }
                 }
@@ -188,7 +187,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable double") {
                     val result = Yaml.default.decodeFromString(Double.serializer().nullable, input)
 
-                    it("deserializes it to the expected double") {
+                    test("deserializes it to the expected double") {
                         result shouldBe 123.0
                     }
                 }
@@ -196,7 +195,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable float") {
                     val result = Yaml.default.decodeFromString(Float.serializer().nullable, input)
 
-                    it("deserializes it to the expected float") {
+                    test("deserializes it to the expected float") {
                         result shouldBe 123.0f
                     }
                 }
@@ -208,7 +207,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a boolean") {
                     val result = Yaml.default.decodeFromString(Boolean.serializer(), input)
 
-                    it("deserializes it to the expected boolean value") {
+                    test("deserializes it to the expected boolean value") {
                         result shouldBe true
                     }
                 }
@@ -216,7 +215,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable boolean") {
                     val result = Yaml.default.decodeFromString(Boolean.serializer().nullable, input)
 
-                    it("deserializes it to the expected boolean value") {
+                    test("deserializes it to the expected boolean value") {
                         result shouldBe true
                     }
                 }
@@ -228,7 +227,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a character") {
                     val result = Yaml.default.decodeFromString(Char.serializer(), input)
 
-                    it("deserializes it to the expected character value") {
+                    test("deserializes it to the expected character value") {
                         result shouldBe 'c'
                     }
                 }
@@ -236,7 +235,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable character") {
                     val result = Yaml.default.decodeFromString(Char.serializer().nullable, input)
 
-                    it("deserializes it to the expected character value") {
+                    test("deserializes it to the expected character value") {
                         result shouldBe 'c'
                     }
                 }
@@ -256,7 +255,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as an enumeration value") {
                         val result = Yaml.default.decodeFromString(serializer, input)
 
-                        it("deserializes it to the expected enumeration value") {
+                        test("deserializes it to the expected enumeration value") {
                             result shouldBe expectedValue
                         }
                     }
@@ -264,7 +263,7 @@ class YamlReadingTest : DescribeSpec({
             }
 
             context("parsing an invalid enumeration value") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<YamlScalarFormatException> { Yaml.default.decodeFromString(TestEnum.serializer(), "nonsense") }
 
                     exception.asClue {
@@ -277,19 +276,19 @@ class YamlReadingTest : DescribeSpec({
             }
         }
 
-        describe("parsing null values") {
+        context("parsing null values") {
             val input = "null"
 
             context("parsing a null value as a nullable string") {
                 val result = Yaml.default.decodeFromString(String.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable string") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(String.serializer(), input) }
 
                     exception.asClue {
@@ -304,13 +303,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable integer") {
                 val result = Yaml.default.decodeFromString(Int.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable integer") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Int.serializer(), input) }
 
                     exception.asClue {
@@ -325,13 +324,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable long") {
                 val result = Yaml.default.decodeFromString(Long.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable long") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Long.serializer(), input) }
 
                     exception.asClue {
@@ -346,13 +345,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable short") {
                 val result = Yaml.default.decodeFromString(Short.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable short") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Short.serializer(), input) }
 
                     exception.asClue {
@@ -367,13 +366,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable byte") {
                 val result = Yaml.default.decodeFromString(Byte.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable byte") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Byte.serializer(), input) }
 
                     exception.asClue {
@@ -388,13 +387,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable double") {
                 val result = Yaml.default.decodeFromString(Double.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable double") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Double.serializer(), input) }
 
                     exception.asClue {
@@ -409,13 +408,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable float") {
                 val result = Yaml.default.decodeFromString(Float.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable float") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Float.serializer(), input) }
 
                     exception.asClue {
@@ -430,13 +429,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable boolean") {
                 val result = Yaml.default.decodeFromString(Boolean.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable boolean") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Boolean.serializer(), input) }
 
                     exception.asClue {
@@ -451,13 +450,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable character") {
                 val result = Yaml.default.decodeFromString(Char.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable character") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Char.serializer(), input) }
 
                     exception.asClue {
@@ -472,13 +471,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable enum") {
                 val result = Yaml.default.decodeFromString(TestEnum.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable enum") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(TestEnum.serializer(), input) }
 
                     exception.asClue {
@@ -493,13 +492,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable list") {
                 val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()).nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable list") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }
 
                     exception.asClue {
@@ -514,13 +513,13 @@ class YamlReadingTest : DescribeSpec({
             context("parsing a null value as a nullable object") {
                 val result = Yaml.default.decodeFromString(ComplexStructure.serializer().nullable, input)
 
-                it("returns a null value") {
+                test("returns a null value") {
                     result shouldBe null
                 }
             }
 
             context("parsing a null value as a non-nullable object") {
-                it("throws an appropriate exception") {
+                test("throws an appropriate exception") {
                     val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
 
                     exception.asClue {
@@ -533,7 +532,7 @@ class YamlReadingTest : DescribeSpec({
             }
 
             context("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
-                it("throws an exception with the correct location information") {
+                test("throws an exception with the correct location information") {
                     val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(LocationThrowingSerializer, input) }
 
                     exception.asClue {
@@ -552,7 +551,7 @@ class YamlReadingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
                 ).decodeFromString(NamingStrategyTestData.serializer(), "serial_name: value")
 
-                it("correctly serializes into the data class") {
+                test("correctly serializes into the data class") {
                     output shouldBe NamingStrategyTestData("value")
                 }
             }
@@ -562,7 +561,7 @@ class YamlReadingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.PascalCase),
                 ).decodeFromString(NamingStrategyTestData.serializer(), "SerialName: value")
 
-                it("correctly serializes into the data class") {
+                test("correctly serializes into the data class") {
                     output shouldBe NamingStrategyTestData("value")
                 }
             }
@@ -572,13 +571,13 @@ class YamlReadingTest : DescribeSpec({
                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.CamelCase),
                 ).decodeFromString(NamingStrategyTestData.serializer(), "serialName: value")
 
-                it("correctly serializes into the data class") {
+                test("correctly serializes into the data class") {
                     output shouldBe NamingStrategyTestData("value")
                 }
             }
         }
 
-        describe("parsing lists") {
+        context("parsing lists") {
             context("given a list of strings") {
                 val input = """
                     - thing1
@@ -589,7 +588,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf("thing1", "thing2", "thing3")
                     }
                 }
@@ -597,13 +596,13 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a nullable list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()).nullable, input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf("thing1", "thing2", "thing3")
                     }
                 }
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(ListSerializer(LocationThrowingSerializer), input) }
 
                         exception.asClue {
@@ -623,7 +622,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list of integers") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Int.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(123, 45, 6)
                     }
                 }
@@ -631,7 +630,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list of longs") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Long.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(123L, 45, 6)
                     }
                 }
@@ -639,7 +638,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list of shorts") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Short.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(123.toShort(), 45, 6)
                     }
                 }
@@ -647,7 +646,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list of bytes") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Byte.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(123.toByte(), 45, 6)
                     }
                 }
@@ -655,7 +654,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list of doubles") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Double.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(123.0, 45.0, 6.0)
                     }
                 }
@@ -663,7 +662,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list of floats") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Float.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(123.0f, 45.0f, 6.0f)
                     }
                 }
@@ -678,7 +677,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Boolean.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(true, false)
                     }
                 }
@@ -693,7 +692,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(TestEnum.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf(TestEnum.Value1, TestEnum.Value2)
                     }
                 }
@@ -708,7 +707,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Char.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf('a', 'b')
                     }
                 }
@@ -723,7 +722,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(String.serializer().nullable), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe listOf("thing1", null)
                     }
                 }
@@ -738,7 +737,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(ListSerializer(String.serializer())), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe
                             listOf(
                                 listOf("thing1", "thing2"),
@@ -757,7 +756,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input as a list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(SimpleStructure.serializer()), input)
 
-                    it("deserializes it to the expected value") {
+                    test("deserializes it to the expected value") {
                         result shouldBe
                             listOf(
                                 SimpleStructure("thing1"),
@@ -768,7 +767,7 @@ class YamlReadingTest : DescribeSpec({
             }
         }
 
-        describe("parsing objects") {
+        context("parsing objects") {
             context("given some input representing an object with an optional value specified") {
                 val input = """
                     string: Alex
@@ -787,7 +786,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(ComplexStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe
                             ComplexStructure(
                                 "Alex",
@@ -824,7 +823,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(ComplexStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe
                             ComplexStructure(
                                 "Alex",
@@ -860,7 +859,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(ComplexStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe
                             ComplexStructure(
                                 "Alex",
@@ -889,7 +888,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(Team.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe Team(listOf("Alex", "Jamie"))
                     }
                 }
@@ -906,7 +905,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(NestedObjects.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie"))
                     }
                 }
@@ -923,7 +922,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(NestedObjects.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe NestedObjects(SimpleStructure("Alex"), SimpleStructure("Jamie"))
                     }
                 }
@@ -938,13 +937,13 @@ class YamlReadingTest : DescribeSpec({
 
                 context("parsing that input as list") {
                     val result = Yaml.default.decodeFromString(ListSerializer(Int.serializer()), input)
-                    it("deserializes it to a list ignoring the tag") {
+                    test("deserializes it to a list ignoring the tag") {
                         result shouldBe listOf(5, 3)
                     }
                 }
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(LocationThrowingSerializer, input) }
 
                         exception.asClue {
@@ -965,13 +964,13 @@ class YamlReadingTest : DescribeSpec({
                         MapSerializer(String.serializer(), String.serializer()),
                         input,
                     )
-                    it("deserializes it to a Map ignoring the tag") {
+                    test("deserializes it to a Map ignoring the tag") {
                         result shouldBe mapOf("foo" to "bar")
                     }
                 }
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(LocationThrowingMapSerializer, input) }
 
                         exception.asClue {
@@ -995,7 +994,7 @@ class YamlReadingTest : DescribeSpec({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<MissingRequiredPropertyException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
 
                         exception.asClue {
@@ -1015,7 +1014,7 @@ class YamlReadingTest : DescribeSpec({
                 """.trimIndent()
 
                 context("parsing that input") {
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<UnknownPropertyException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
 
                         exception.asClue {
@@ -1035,7 +1034,7 @@ class YamlReadingTest : DescribeSpec({
                     val input = "oneTwoThree: something".trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception") {
+                        test("throws an exception") {
                             val exception = shouldThrow<UnknownPropertyException> {
                                 Yaml(
                                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
@@ -1058,7 +1057,7 @@ class YamlReadingTest : DescribeSpec({
                     val input = "firstPerson: something".trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception") {
+                        test("throws an exception") {
                             val exception = shouldThrow<UnknownPropertyException> {
                                 Yaml(
                                     configuration = YamlConfiguration(yamlNamingStrategy = YamlNamingStrategy.SnakeCase),
@@ -1094,7 +1093,7 @@ class YamlReadingTest : DescribeSpec({
                         val input = "$fieldName: xxx"
 
                         context("parsing that input") {
-                            it("throws an appropriate exception") {
+                            test("throws an appropriate exception") {
                                 val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
 
                                 exception.asClue {
@@ -1115,7 +1114,7 @@ class YamlReadingTest : DescribeSpec({
                 val input = "name: null"
 
                 context("parsing that input") {
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(SimpleStructure.serializer(), input) }
 
                         exception.asClue {
@@ -1134,7 +1133,7 @@ class YamlReadingTest : DescribeSpec({
                 val input = "firstPerson: null"
 
                 context("parsing that input") {
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(NestedObjects.serializer(), input) }
 
                         exception.asClue {
@@ -1156,7 +1155,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(NullableNestedObject.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe NullableNestedObject(null)
                     }
                 }
@@ -1166,7 +1165,7 @@ class YamlReadingTest : DescribeSpec({
                 val input = "members: null"
 
                 context("parsing that input") {
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(Team.serializer(), input) }
 
                         exception.asClue {
@@ -1187,7 +1186,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(NullableNestedList.serializer(), input)
 
-                    it("deserializes it to a Kotlin object") {
+                    test("deserializes it to a Kotlin object") {
                         result shouldBe NullableNestedList(null)
                     }
                 }
@@ -1197,7 +1196,7 @@ class YamlReadingTest : DescribeSpec({
                 val input = "value: something"
 
                 context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(StructureWithLocationThrowingSerializer.serializer(), input) }
 
                         exception.asClue {
@@ -1216,7 +1215,7 @@ class YamlReadingTest : DescribeSpec({
                 context("parsing that input") {
                     val result = Yaml.default.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                    it("deserializes it to a Kotlin map") {
+                    test("deserializes it to a Kotlin map") {
                         result shouldBe
                             mapOf(
                                 "SOME_ENV_VAR" to "somevalue",
@@ -1226,7 +1225,7 @@ class YamlReadingTest : DescribeSpec({
                 }
 
                 context("parsing that input with a serializer for the key that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(MapSerializer(LocationThrowingSerializer, String.serializer()), input) }
 
                         exception.asClue {
@@ -1236,7 +1235,7 @@ class YamlReadingTest : DescribeSpec({
                 }
 
                 context("parsing that input with a serializer for the value that uses YAML location information when throwing exceptions") {
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(MapSerializer(String.serializer(), LocationThrowingSerializer), input) }
 
                         exception.asClue {
@@ -1257,7 +1256,7 @@ class YamlReadingTest : DescribeSpec({
                     val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", allowAnchorsAndAliases = false)
                     val yaml = Yaml(configuration = configuration)
 
-                    it("throws an appropriate exception") {
+                    test("throws an appropriate exception") {
                         val exception = shouldThrow<ForbiddenAnchorOrAliasException> { yaml.decodeFromString(SimpleStructure.serializer(), input) }
 
                         exception.asClue {
@@ -1273,7 +1272,7 @@ class YamlReadingTest : DescribeSpec({
                     val yaml = Yaml(configuration = configuration)
                     val result = yaml.decodeFromString(SimpleStructure.serializer(), input)
 
-                    it("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
+                    test("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
                         result shouldBe SimpleStructure("Jamie")
                     }
                 }
@@ -1290,7 +1289,7 @@ class YamlReadingTest : DescribeSpec({
                     val yaml = Yaml(configuration = configuration)
 
                     context("parsing that input") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<UnknownPropertyException> { yaml.decodeFromString(SimpleStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1308,7 +1307,7 @@ class YamlReadingTest : DescribeSpec({
                     val yaml = Yaml(configuration = configuration)
 
                     context("parsing that input") {
-                        it("ignores the extra field and returns a deserialised object") {
+                        test("ignores the extra field and returns a deserialised object") {
                             yaml.decodeFromString(SimpleStructure.serializer(), input) shouldBe SimpleStructure("Blah Blahson")
                         }
                     }
@@ -1322,14 +1321,14 @@ class YamlReadingTest : DescribeSpec({
 
                 val result = Yaml.default.decodeFromString(Database.serializer().nullable, input)
 
-                it("deserializes it to the expected object") {
+                test("deserializes it to the expected object") {
                     result shouldBe Database("db.test.com")
                 }
             }
         }
 
-        describe("parsing polymorphic values") {
-            describe("given tags are used to store the type information") {
+        context("parsing polymorphic values") {
+            context("given tags are used to store the type information") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag))
 
                 context("given some input where the value should be a sealed class") {
@@ -1341,7 +1340,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
                         }
                     }
@@ -1349,7 +1348,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("value" to "asdfg")
                         }
                     }
@@ -1362,7 +1361,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<MissingRequiredPropertyException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1384,7 +1383,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnwrappedInterface::class), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe UnwrappedString("asdfg")
                         }
                     }
@@ -1392,7 +1391,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as a string") {
                         val result = polymorphicYaml.decodeFromString(String.serializer(), input)
 
-                        it("deserializes it to a string ignoring the tag") {
+                        test("deserializes it to a string ignoring the tag") {
                             result shouldBe "asdfg"
                         }
                     }
@@ -1407,7 +1406,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe UnsealedString("asdfg")
                         }
                     }
@@ -1415,7 +1414,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("value" to "asdfg")
                         }
                     }
@@ -1430,7 +1429,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg"))
                         }
                     }
@@ -1438,7 +1437,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("element" to mapOf("value" to "asdfg"))
                         }
                     }
@@ -1452,7 +1451,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(PolymorphicWrapper.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe PolymorphicWrapper(UnwrappedInt(42))
                         }
                     }
@@ -1473,7 +1472,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(ListSerializer(TestSealedStructure.serializer()), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe
                                 listOf(
                                     TestSealedStructure.SimpleSealedString(null),
@@ -1492,7 +1491,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<InvalidPropertyValueException> { polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input) }
 
                             exception.asClue {
@@ -1512,7 +1511,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<InvalidPropertyValueException> { polymorphicYaml.decodeFromString(PolymorphicWrapper.serializer(), input) }
 
                             exception.asClue {
@@ -1532,7 +1531,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<InvalidPropertyValueException> { polymorphicYaml.decodeFromString(PolymorphicWrapper.serializer(), input) }
 
                             exception.asClue {
@@ -1552,7 +1551,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }
 
                             exception.asClue {
@@ -1573,7 +1572,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1594,7 +1593,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1610,7 +1609,7 @@ class YamlReadingTest : DescribeSpec({
                 }
             }
 
-            describe("given a property is used to store the type information") {
+            context("given a property is used to store the type information") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property))
 
                 context("given some input where the value should be a sealed class") {
@@ -1622,7 +1621,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
                         }
                     }
@@ -1630,7 +1629,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                        it("deserializes it to a map including the type") {
+                        test("deserializes it to a map including the type") {
                             result shouldBe mapOf("type" to "sealedString", "value" to "asdfg")
                         }
                     }
@@ -1645,7 +1644,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe UnsealedString("asdfg")
                         }
                     }
@@ -1653,7 +1652,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("type" to "unsealedString", "value" to "asdfg")
                         }
                     }
@@ -1669,7 +1668,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg"))
                         }
                     }
@@ -1677,7 +1676,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("element" to mapOf("type" to "sealedString", "value" to "asdfg"))
                         }
                     }
@@ -1689,7 +1688,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<MissingRequiredPropertyException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1716,7 +1715,7 @@ class YamlReadingTest : DescribeSpec({
                         """.trimIndent()
 
                         context("parsing that input") {
-                            it("throws an exception with the correct location information") {
+                            test("throws an exception with the correct location information") {
                                 val exception = shouldThrow<InvalidPropertyValueException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                                 exception.asClue {
@@ -1747,7 +1746,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(ListSerializer(TestSealedStructure.serializer()), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe
                                 listOf(
                                     TestSealedStructure.SimpleSealedString(null),
@@ -1766,7 +1765,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }
 
                             exception.asClue {
@@ -1788,7 +1787,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1813,14 +1812,14 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
-                        it("uses the type from the property and ignores the tag") {
+                        test("uses the type from the property and ignores the tag") {
                             result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
                         }
                     }
                 }
             }
 
-            describe("given a custom property name is used to store the type information") {
+            context("given a custom property name is used to store the type information") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Property, polymorphismPropertyName = "kind"))
 
                 context("given some input where the value should be a sealed class") {
@@ -1832,7 +1831,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
                         }
                     }
@@ -1840,7 +1839,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                        it("deserializes it to a map including the type") {
+                        test("deserializes it to a map including the type") {
                             result shouldBe mapOf("kind" to "sealedString", "value" to "asdfg")
                         }
                     }
@@ -1855,7 +1854,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe UnsealedString("asdfg")
                         }
                     }
@@ -1863,7 +1862,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("kind" to "unsealedString", "value" to "asdfg")
                         }
                     }
@@ -1879,7 +1878,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe SealedWrapper(TestSealedStructure.SimpleSealedString("asdfg"))
                         }
                     }
@@ -1887,7 +1886,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input as map") {
                         val result = polymorphicYaml.decodeFromString(MapSerializer(String.serializer(), MapSerializer(String.serializer(), String.serializer())), input)
 
-                        it("deserializes it to a map ignoring the tag") {
+                        test("deserializes it to a map ignoring the tag") {
                             result shouldBe mapOf("element" to mapOf("kind" to "sealedString", "value" to "asdfg"))
                         }
                     }
@@ -1899,7 +1898,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<MissingRequiredPropertyException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -1926,7 +1925,7 @@ class YamlReadingTest : DescribeSpec({
                         """.trimIndent()
 
                         context("parsing that input") {
-                            it("throws an exception with the correct location information") {
+                            test("throws an exception with the correct location information") {
                                 val exception = shouldThrow<InvalidPropertyValueException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                                 exception.asClue {
@@ -1957,7 +1956,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(ListSerializer(TestSealedStructure.serializer()), input)
 
-                        it("deserializes it to a Kotlin object") {
+                        test("deserializes it to a Kotlin object") {
                             result shouldBe
                                 listOf(
                                     TestSealedStructure.SimpleSealedString(null),
@@ -1976,7 +1975,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(PolymorphicSerializer(UnsealedClass::class), input) }
 
                             exception.asClue {
@@ -1998,7 +1997,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -2023,14 +2022,14 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input") {
                         val result = polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
 
-                        it("uses the type from the property and ignores the tag") {
+                        test("uses the type from the property and ignores the tag") {
                             result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
                         }
                     }
                 }
             }
 
-            describe("given polymorphic inputs when PolymorphismStyle.None is used") {
+            context("given polymorphic inputs when PolymorphismStyle.None is used") {
                 val polymorphicYaml = Yaml(serializersModule = polymorphicModule, configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None))
 
                 context("given tagged input") {
@@ -2040,7 +2039,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<IncorrectTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -2059,7 +2058,7 @@ class YamlReadingTest : DescribeSpec({
                     """.trimIndent()
 
                     context("parsing that input") {
-                        it("throws an appropriate exception") {
+                        test("throws an appropriate exception") {
                             val exception = shouldThrow<IncorrectTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
@@ -2074,8 +2073,8 @@ class YamlReadingTest : DescribeSpec({
             }
         }
 
-        describe("parsing values with a dynamically installed serializer") {
-            describe("parsing a literal with a contextual serializer") {
+        context("parsing values with a dynamically installed serializer") {
+            context("parsing a literal with a contextual serializer") {
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor: SerialDescriptor
                         get() = String.serializer().descriptor
@@ -2093,12 +2092,12 @@ class YamlReadingTest : DescribeSpec({
 
                 val result = parser.decodeFromString(Container.serializer(), input)
 
-                it("deserializes it using the dynamically installed serializer") {
+                test("deserializes it using the dynamically installed serializer") {
                     result shouldBe Container(Inner("from context serializer"))
                 }
             }
 
-            describe("parsing a class with a contextual serializer") {
+            context("parsing a class with a contextual serializer") {
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor = buildClassSerialDescriptor("Inner") {
                         element("thing", String.serializer().descriptor)
@@ -2126,12 +2125,12 @@ class YamlReadingTest : DescribeSpec({
 
                 val result = parser.decodeFromString(Container.serializer(), input)
 
-                it("deserializes it using the dynamically installed serializer") {
+                test("deserializes it using the dynamically installed serializer") {
                     result shouldBe Container(Inner("this is the input, from context serializer"))
                 }
             }
 
-            describe("parsing a map with a contextual serializer") {
+            context("parsing a map with a contextual serializer") {
                 val contextSerializer = object : KSerializer<Inner> {
                     override val descriptor = buildSerialDescriptor("Inner", StructureKind.MAP) {
                         element("key", String.serializer().descriptor)
@@ -2163,13 +2162,13 @@ class YamlReadingTest : DescribeSpec({
 
                 val result = parser.decodeFromString(Container.serializer(), input)
 
-                it("deserializes it using the dynamically installed serializer") {
+                test("deserializes it using the dynamically installed serializer") {
                     result shouldBe Container(Inner("thing: this is the input, from context serializer"))
                 }
             }
         }
 
-        describe("parsing values with mismatched types") {
+        context("parsing values with mismatched types") {
             data class Scenario(
                 val description: String,
                 val serializer: KSerializer<out Any?>,
@@ -2195,7 +2194,7 @@ class YamlReadingTest : DescribeSpec({
                     val input = "- thing"
 
                     context("parsing that input as $description") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(serializer, input) }
 
                             exception.asClue {
@@ -2214,7 +2213,7 @@ class YamlReadingTest : DescribeSpec({
                             - some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input) }
 
                         exception.asClue {
@@ -2232,7 +2231,7 @@ class YamlReadingTest : DescribeSpec({
                             - some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
 
                         exception.asClue {
@@ -2249,7 +2248,7 @@ class YamlReadingTest : DescribeSpec({
                         - [ some_value ]
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }
 
                         exception.asClue {
@@ -2280,7 +2279,7 @@ class YamlReadingTest : DescribeSpec({
                     val input = "key: value"
 
                     context("parsing that input as $description") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(serializer, input) }
 
                             exception.asClue {
@@ -2299,7 +2298,7 @@ class YamlReadingTest : DescribeSpec({
                             some_key: some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(MapSerializer(String.serializer(), String.serializer()), input) }
 
                         exception.asClue {
@@ -2317,7 +2316,7 @@ class YamlReadingTest : DescribeSpec({
                             some_key: some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
 
                         exception.asClue {
@@ -2334,7 +2333,7 @@ class YamlReadingTest : DescribeSpec({
                         - some_key: some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }
 
                         exception.asClue {
@@ -2356,7 +2355,7 @@ class YamlReadingTest : DescribeSpec({
                     val input = "blah"
 
                     context("parsing that input as $description") {
-                        it("throws an exception with the correct location information") {
+                        test("throws an exception with the correct location information") {
                             val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(serializer, input) }
 
                             exception.asClue {
@@ -2374,7 +2373,7 @@ class YamlReadingTest : DescribeSpec({
                         key: some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(MapSerializer(String.serializer(), ListSerializer(String.serializer())), input) }
 
                         exception.asClue {
@@ -2391,7 +2390,7 @@ class YamlReadingTest : DescribeSpec({
                         members: some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<InvalidPropertyValueException> { Yaml.default.decodeFromString(Team.serializer(), input) }
 
                         exception.asClue {
@@ -2408,7 +2407,7 @@ class YamlReadingTest : DescribeSpec({
                         - some_value
                     """.trimIndent()
 
-                    it("throws an exception with the correct location information") {
+                    test("throws an exception with the correct location information") {
                         val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ListSerializer((ListSerializer(String.serializer()))), input) }
 
                         exception.asClue {
@@ -2422,7 +2421,7 @@ class YamlReadingTest : DescribeSpec({
             }
         }
 
-        describe("parsing values with a contextual serializer") {
+        context("parsing values with a contextual serializer") {
             mapOf(
                 "scalar" to "2",
                 "list" to "[ thing ]",
@@ -2432,7 +2431,7 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input using a contextual serializer at the top level") {
                         val result = Yaml.default.decodeFromString(ContextualSerializer, input)
 
-                        it("the serializer receives the top-level object") {
+                        test("the serializer receives the top-level object") {
                             result shouldBe description
                         }
                     }
@@ -2440,14 +2439,14 @@ class YamlReadingTest : DescribeSpec({
                     context("parsing that input using a contextual serializer nested within an object") {
                         val result = Yaml.default.decodeFromString(ObjectWithNestedContextualSerializer.serializer(), "thing: $input")
 
-                        it("the serializer receives the correct object") {
+                        test("the serializer receives the correct object") {
                             result shouldBe ObjectWithNestedContextualSerializer(description)
                         }
                     }
                 }
             }
 
-            describe("given the contextual serializer attempts to begin a structure that does not match the input") {
+            context("given the contextual serializer attempts to begin a structure that does not match the input") {
                 context("given the input is a map") {
                     val input = "a: b"
 
@@ -2456,7 +2455,7 @@ class YamlReadingTest : DescribeSpec({
                         StructureKind.LIST to "a list",
                     ).forEach { (kind, description) ->
                         context("attempting to begin $description") {
-                            it("throws an exception with the correct location information") {
+                            test("throws an exception with the correct location information") {
                                 val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }
 
                                 exception.asClue {
@@ -2480,7 +2479,7 @@ class YamlReadingTest : DescribeSpec({
                         PrimitiveKind.STRING to "a string",
                     ).forEach { (kind, description) ->
                         context("attempting to begin $kind") {
-                            it("throws an exception with the correct location information") {
+                            test("throws an exception with the correct location information") {
                                 val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }
 
                                 exception.asClue {
@@ -2504,7 +2503,7 @@ class YamlReadingTest : DescribeSpec({
                         StructureKind.LIST to "a list",
                     ).forEach { (kind, description) ->
                         context("attempting to begin $kind") {
-                            it("throws an exception with the correct location information") {
+                            test("throws an exception with the correct location information") {
                                 val exception = shouldThrow<IncorrectTypeException> { Yaml.default.decodeFromString(ContextualSerializerThatAttemptsToDeserializeIncorrectType(kind), input) }
 
                                 exception.asClue {
@@ -2519,7 +2518,7 @@ class YamlReadingTest : DescribeSpec({
                 }
             }
 
-            describe("decoding from a YamlNode") {
+            context("decoding from a YamlNode") {
                 val input = """
                     keyA:
                         host: A
@@ -2544,12 +2543,12 @@ class YamlReadingTest : DescribeSpec({
                 val parser = Yaml.default
                 val result = parser.decodeFromString(mapAsListSerializer, input)
 
-                it("decodes the map value as a list using the YamlNode") {
+                test("decodes the map value as a list using the YamlNode") {
                     result shouldBe listOf(Database("A"), Database("B"))
                 }
             }
 
-            describe("decoding from a YamlNode at a non-root node") {
+            context("decoding from a YamlNode at a non-root node") {
                 val input = """
                     databaseListing:
                         keyA:
@@ -2561,7 +2560,7 @@ class YamlReadingTest : DescribeSpec({
                 val parser = Yaml.default
                 val result = parser.decodeFromString(ServerConfig.serializer(), input)
 
-                it("decodes the map value as a list using the YamlNode") {
+                test("decodes the map value as a list using the YamlNode") {
                     result shouldBe ServerConfig(DatabaseListing(listOf(Database("A"), Database("B"))))
                 }
             }
