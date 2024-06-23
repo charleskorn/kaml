@@ -57,6 +57,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3.4.2
 
+      - name: Cache konan dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Build
         run: ./gradlew assemble
 
