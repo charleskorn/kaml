@@ -22,7 +22,8 @@ import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.common.Platform
 import io.kotest.common.platform
-import io.kotest.core.test.Enabled
+import io.kotest.core.test.Enabled.Companion.disabled
+import io.kotest.core.test.Enabled.Companion.enabled
 import io.kotest.core.test.EnabledOrReasonIf
 import io.kotest.matchers.doubles.shouldBeNaN
 import io.kotest.matchers.floats.shouldBeNaN
@@ -247,11 +248,21 @@ class YamlScalarTest : FlatFunSpec({
                 "",
             ).forEach { content ->
 
-                val ignoreValidFloatingPointsForJs: EnabledOrReasonIf = {
-                    if (platform == Platform.JS && content in setOf("0x2", "0o2")) {
-                        Enabled.disabled("$content is a valid floating value for JS due to dynamic cast")
-                    } else {
-                        Enabled.enabled
+                val floatingPointTestCondition: EnabledOrReasonIf = {
+                    when (platform) {
+                        Platform.Native ->
+                            if (content == "1e-") {
+                                disabled("floating point parser bug: https://youtrack.jetbrains.com/issue/KT-69327")
+                            } else {
+                                enabled
+                            }
+                        Platform.JS ->
+                            if (content in setOf("0x2", "0o2")) {
+                                disabled("$content is a valid floating value for JS due to dynamic cast")
+                            } else {
+                                enabled
+                            }
+                        else -> enabled
                     }
                 }
 
@@ -261,7 +272,7 @@ class YamlScalarTest : FlatFunSpec({
 
                     context("retrieving the value as a float") {
                         test("throws an appropriate exception")
-                            .config(enabledOrReasonIf = ignoreValidFloatingPointsForJs) {
+                            .config(enabledOrReasonIf = floatingPointTestCondition) {
                                 val exception = shouldThrow<YamlScalarFormatException> { scalar.toFloat() }
 
                                 exception.asClue {
@@ -276,7 +287,7 @@ class YamlScalarTest : FlatFunSpec({
 
                     context("retrieving the value as a double") {
                         test("throws an appropriate exception")
-                            .config(enabledOrReasonIf = ignoreValidFloatingPointsForJs) {
+                            .config(enabledOrReasonIf = floatingPointTestCondition) {
                                 val exception = shouldThrow<YamlScalarFormatException> { scalar.toDouble() }
 
                                 exception.asClue {
