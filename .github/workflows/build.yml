@@ -3,8 +3,33 @@ name: Pipeline
 on: [push, pull_request]
 
 jobs:
-  build:
-    name: "Build, Test and Publish"
+  test-linux:
+    uses: ./.github/workflows/test-target.yml
+    with:
+      runs-on: ubuntu-latest
+      tasks: check # all linux targets + JVM + JS + WasmJS
+  test-windows:
+    uses: ./.github/workflows/test-target.yml
+    with:
+      runs-on: windows-latest
+      tasks: mingwX64Test
+  test-macosX64:
+    uses: ./.github/workflows/test-target.yml
+    with:
+      runs-on: macos-13 # latest version with X64 processor
+      tasks: macosX64Test iosX64Test
+  test-macosArm64:
+    uses: ./.github/workflows/test-target.yml
+    with:
+      runs-on: macos-latest
+      tasks: macosArm64Test iosSimulatorArm64Test
+  publish:
+    name: "Build and Publish"
+    needs:
+      - test-linux
+      - test-windows
+      - test-macosX64
+      - test-macosArm64
     runs-on: macos-latest
     env:
       TERM: xterm-256color
@@ -34,9 +59,6 @@ jobs:
 
       - name: Build
         run: ./gradlew assemble
-
-      - name: Check
-        run: ./gradlew check
 
       - name: Assemble release
         run: ./gradlew assembleRelease

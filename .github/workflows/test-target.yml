@@ -1,0 +1,48 @@
+name: Execute tasks on specified runner
+
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        type: string
+        required: true
+        description: Runner to be used for tasks execution
+      tasks:
+        type: string
+        required: true
+        description: Tasks to be executed
+
+jobs:
+  run:
+    name: "Execute tasks ${{ inputs.tasks }} on ${{ inputs.runs-on }}"
+    runs-on: ${{ inputs.runs-on }}
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v3.4.2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3.4.2
+
+      - name: Cache konan dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+              ${{ runner.os }}-gradle-
+
+      - name: Build
+        run: ./gradlew ${{ inputs.tasks }}
