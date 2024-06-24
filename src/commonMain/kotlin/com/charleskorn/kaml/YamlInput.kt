@@ -26,6 +26,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.getContextualDescriptor
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.modules.SerializersModule
 
@@ -47,21 +48,21 @@ public sealed class YamlInput(
 
             is YamlScalar -> when {
                 descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, yaml, context, configuration)
-                descriptor.kind is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
+                descriptor.kind is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
                 descriptor.kind is PolymorphicKind -> throw MissingTypeTagException(node.path)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.path)
             }
 
             is YamlList -> when (descriptor.kind) {
                 is StructureKind.LIST -> YamlListInput(node, yaml, context, configuration)
-                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
+                is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.path)
             }
 
             is YamlMap -> when (descriptor.kind) {
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, yaml, context, configuration)
                 is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
-                is SerialKind.CONTEXTUAL -> YamlContextualInput(node, yaml, context, configuration)
+                is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
                 is PolymorphicKind -> when (configuration.polymorphismStyle) {
                     PolymorphismStyle.None ->
                         throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
@@ -81,6 +82,16 @@ public sealed class YamlInput(
                 else -> createFor(node.innerNode, yaml, context, configuration, descriptor)
             }
         }
+
+        private fun createContextual(
+            node: YamlNode,
+            yaml: Yaml,
+            context: SerializersModule,
+            configuration: YamlConfiguration,
+            descriptor: SerialDescriptor,
+        ): YamlInput = context.getContextualDescriptor(descriptor)
+            ?.let { createFor(node, yaml, context, configuration, it) }
+            ?: YamlContextualInput(node, yaml, context, configuration)
 
         private fun createPolymorphicMapDeserializer(node: YamlMap, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration): YamlPolymorphicInput {
             val desiredKey = configuration.polymorphismPropertyName

@@ -2079,7 +2079,7 @@ class YamlReadingTest : FlatFunSpec({
                     override val descriptor: SerialDescriptor
                         get() = String.serializer().descriptor
 
-                    override fun deserialize(decoder: Decoder): Inner = Inner("from context serializer")
+                    override fun deserialize(decoder: Decoder): Inner = Inner(decoder.decodeString())
                     override fun serialize(encoder: Encoder, value: Inner) = throw UnsupportedOperationException()
                 }
 
@@ -2093,7 +2093,7 @@ class YamlReadingTest : FlatFunSpec({
                 val result = parser.decodeFromString(Container.serializer(), input)
 
                 test("deserializes it using the dynamically installed serializer") {
-                    result shouldBe Container(Inner("from context serializer"))
+                    result shouldBe Container(Inner("this is the input"))
                 }
             }
 
