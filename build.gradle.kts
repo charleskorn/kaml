@@ -70,7 +70,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
                 implementation("it.krzeminski:snakeyaml-engine-kmp:3.0.0")
                 implementation("com.squareup.okio:okio:3.9.0")
             }
