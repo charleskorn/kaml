@@ -20,7 +20,6 @@ package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.assertions.withClue
 import io.kotest.common.Platform
 import io.kotest.common.platform
 import io.kotest.core.test.Enabled
