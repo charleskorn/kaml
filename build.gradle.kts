@@ -46,18 +46,8 @@ kotlin {
     }
 
     js(IR) {
-        browser {
-            testTask {
-                // TODO: enable once the tests work with Kotlin/JS.
-                enabled = false
-            }
-        }
-        nodejs {
-            testTask {
-                // TODO: enable once the tests work with Kotlin/JS.
-                enabled = false
-            }
-        }
+        browser()
+        nodejs()
         binaries.executable()
     }
 
