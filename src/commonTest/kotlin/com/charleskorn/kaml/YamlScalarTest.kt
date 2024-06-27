@@ -25,6 +25,8 @@ import io.kotest.common.Platform
 import io.kotest.common.platform
 import io.kotest.core.test.Enabled
 import io.kotest.core.test.EnabledOrReasonIf
+import io.kotest.matchers.doubles.shouldBeNaN
+import io.kotest.matchers.floats.shouldBeNaN
 import io.kotest.matchers.shouldBe
 
 class YamlScalarTest : FlatFunSpec({
@@ -180,12 +182,9 @@ class YamlScalarTest : FlatFunSpec({
 
                         test("converts it to the expected double") {
                             if (expectedResult.isNaN()) {
-                                // this is not correct to compare NaNs
-                                // instead isNaN method should be invoked
-                                // to check whether the value is NaN or not
-                                withClue("$result should be NaN") {
-                                    result.isNaN() shouldBe true
-                                }
+                                // comparing NaNs requires special code
+                                // as they must not be compared via == / equals()
+                                result.shouldBeNaN()
                             } else {
                                 result shouldBe expectedResult
                             }
@@ -225,12 +224,9 @@ class YamlScalarTest : FlatFunSpec({
 
                         test("converts it to the expected float") {
                             if (expectedResult.isNaN()) {
-                                // this is not correct to compare NaNs
-                                // instead isNaN method should be invoked
-                                // to check whether the value is NaN or not
-                                withClue("$result should be NaN") {
-                                    result.isNaN() shouldBe true
-                                }
+                                // comparing NaNs requires special code
+                                // as they must not be compared via == / equals()
+                                result.shouldBeNaN()
                             } else {
                                 result shouldBe expectedResult
                             }
@@ -251,6 +247,7 @@ class YamlScalarTest : FlatFunSpec({
                 "+",
                 "",
             ).forEach { content ->
+
                 val ignoreValidFloatingPointsForJs: EnabledOrReasonIf = {
                     if (platform == Platform.JS && content in setOf("0x2", "0o2")) {
                         Enabled.disabled("$content is a valid floating value for JS due to dynamic cast")
@@ -258,6 +255,7 @@ class YamlScalarTest : FlatFunSpec({
                         Enabled.enabled
                     }
                 }
+
                 context("given a scalar with the content '$content'") {
                     val path = YamlPath.root.withListEntry(1, Location(2, 4))
                     val scalar = YamlScalar(content, path)
