@@ -5,6 +5,10 @@ on: [push, pull_request]
 env:
   GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
 
+concurrency:
+  cancel-in-progress: true
+  group: build-${{ github.event.pull_request.number || github.event.after }}
+
 jobs:
   test-matrix:
     strategy:
