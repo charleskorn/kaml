@@ -94,7 +94,6 @@ public class Yaml(
         return buffer.readUtf8().trimEnd()
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun <T> encodeToBufferedSink(
         serializer: SerializationStrategy<T>,
         value: T,
@@ -108,7 +107,6 @@ public class Yaml(
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private class BufferedSinkDataWriter(
     val sink: BufferedSink,
 ) : StreamDataWriter, AutoCloseable {
