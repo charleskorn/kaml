@@ -20,6 +20,12 @@ package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.common.Platform
+import io.kotest.common.platform
+import io.kotest.core.test.Enabled
+import io.kotest.core.test.EnabledOrReasonIf
+import io.kotest.matchers.doubles.shouldBeNaN
+import io.kotest.matchers.floats.shouldBeNaN
 import io.kotest.matchers.shouldBe
 
 class YamlScalarTest : FlatFunSpec({
@@ -174,7 +180,13 @@ class YamlScalarTest : FlatFunSpec({
                         val result = scalar.toDouble()
 
                         test("converts it to the expected double") {
-                            result shouldBe expectedResult
+                            if (expectedResult.isNaN()) {
+                                // comparing NaNs requires special code
+                                // as they must not be compared via == / equals()
+                                result.shouldBeNaN()
+                            } else {
+                                result shouldBe expectedResult
+                            }
                         }
                     }
                 }
@@ -210,7 +222,13 @@ class YamlScalarTest : FlatFunSpec({
                         val result = scalar.toFloat()
 
                         test("converts it to the expected float") {
-                            result shouldBe expectedResult
+                            if (expectedResult.isNaN()) {
+                                // comparing NaNs requires special code
+                                // as they must not be compared via == / equals()
+                                result.shouldBeNaN()
+                            } else {
+                                result shouldBe expectedResult
+                            }
                         }
                     }
                 }
@@ -228,36 +246,47 @@ class YamlScalarTest : FlatFunSpec({
                 "+",
                 "",
             ).forEach { content ->
+
+                val ignoreValidFloatingPointsForJs: EnabledOrReasonIf = {
+                    if (platform == Platform.JS && content in setOf("0x2", "0o2")) {
+                        Enabled.disabled("$content is a valid floating value for JS due to dynamic cast")
+                    } else {
+                        Enabled.enabled
+                    }
+                }
+
                 context("given a scalar with the content '$content'") {
                     val path = YamlPath.root.withListEntry(1, Location(2, 4))
                     val scalar = YamlScalar(content, path)
 
                     context("retrieving the value as a float") {
-                        test("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toFloat() }
+                        test("throws an appropriate exception")
+                            .config(enabledOrReasonIf = ignoreValidFloatingPointsForJs) {
+                                val exception = shouldThrow<YamlScalarFormatException> { scalar.toFloat() }
 
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid floating point value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
+                                exception.asClue {
+                                    it.message shouldBe "Value '$content' is not a valid floating point value."
+                                    it.line shouldBe 2
+                                    it.column shouldBe 4
+                                    it.path shouldBe path
+                                    it.originalValue shouldBe content
+                                }
                             }
-                        }
                     }
 
                     context("retrieving the value as a double") {
-                        test("throws an appropriate exception") {
-                            val exception = shouldThrow<YamlScalarFormatException> { scalar.toDouble() }
+                        test("throws an appropriate exception")
+                            .config(enabledOrReasonIf = ignoreValidFloatingPointsForJs) {
+                                val exception = shouldThrow<YamlScalarFormatException> { scalar.toDouble() }
 
-                            exception.asClue {
-                                it.message shouldBe "Value '$content' is not a valid floating point value."
-                                it.line shouldBe 2
-                                it.column shouldBe 4
-                                it.path shouldBe path
-                                it.originalValue shouldBe content
+                                exception.asClue {
+                                    it.message shouldBe "Value '$content' is not a valid floating point value."
+                                    it.line shouldBe 2
+                                    it.column shouldBe 4
+                                    it.path shouldBe path
+                                    it.originalValue shouldBe content
+                                }
                             }
-                        }
                     }
                 }
             }
