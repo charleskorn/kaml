@@ -25,6 +25,8 @@ import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 
+private val TARGETS_WITH_JAR_TASK = setOf("jvm", "js", "wasmJs")
+
 fun Project.configureAssemble() {
     tasks.register<Copy>("assembleRelease") {
         description = "Prepares files for release."
@@ -33,7 +35,9 @@ fun Project.configureAssemble() {
         project.extensions.getByType<PublishingExtension>().publications.names
             .filter { it != "kotlinMultiplatform" }
             .forEach { publicationName ->
-                from(tasks.named("${publicationName}Jar"))
+                if (publicationName in TARGETS_WITH_JAR_TASK) {
+                    from(tasks.named("${publicationName}Jar"))
+                }
                 from(tasks.named("${publicationName}JavadocJar"))
                 from(tasks.named("${publicationName}SourcesJar"))
 

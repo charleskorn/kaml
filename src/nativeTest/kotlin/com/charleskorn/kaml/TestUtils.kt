@@ -18,11 +18,4 @@
 
 package com.charleskorn.kaml
 
-enum class KotlinTarget {
-    JVM,
-    JS,
-    WASM,
-    NATIVE,
-}
-
-expect val kotlinTarget: KotlinTarget
+actual val kotlinTarget: KotlinTarget = KotlinTarget.NATIVE

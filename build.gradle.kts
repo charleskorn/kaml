@@ -57,6 +57,21 @@ kotlin {
         nodejs()
     }
 
+    // According to https://kotlinlang.org/docs/native-target-support.html
+    // Tier 1
+    macosX64()
+    macosArm64()
+    iosSimulatorArm64()
+    iosX64()
+
+    // Tier 2
+    linuxX64()
+    linuxArm64()
+    iosArm64()
+
+    // Tier 3
+    mingwX64()
+
     sourceSets {
         commonMain {
             dependencies {

@@ -2,14 +2,65 @@ name: Pipeline
 
 on: [push, pull_request]
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+
+concurrency:
+  cancel-in-progress: true
+  group: build-${{ github.event.pull_request.number || github.event.after }}
+
 jobs:
-  build:
-    name: "Build, Test and Publish"
-    runs-on: ubuntu-latest
+  test-matrix:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            tasks: check
+          - os: windows-latest
+            tasks: mingwX64Test
+          - os: macos-13
+            tasks: macosX64Test iosX64Test
+          - os: macos-latest
+            tasks: macosArm64Test iosSimulatorArm64Test
+    runs-on: ${{ matrix.os }}
+    name: Test on ${{ matrix.os }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3.4.2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4.2.1
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3.4.2
+
+      - name: Cache konan dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+              ${{ runner.os }}-gradle-
+
+      - name: Build
+        run: ./gradlew ${{ matrix.tasks }}
+
+  publish:
+    name: "Build and Publish"
+    needs:
+      - test-matrix
+    runs-on: macos-latest
     env:
       TERM: xterm-256color
       GPG_KEY_ID: 6D76AD03 # Run `gpg -K` to get this, take last eight characters
-      GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
 
     permissions:
       contents: write # Required to be able to publish releases, see https://docs.github.com/en/rest/reference/permissions-required-for-github-apps#permission-on-contents
@@ -21,7 +72,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v3.4.2
+        uses: gradle/actions/wrapper-validation@v3.4.2
 
       - name: Set up JDK
         uses: actions/setup-java@v4.2.1
@@ -30,13 +81,18 @@ jobs:
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3.4.2
+        uses: gradle/actions/setup-gradle@v3.4.2
+
+      - name: Cache konan dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Build
         run: ./gradlew assemble
-
-      - name: Check
-        run: ./gradlew check
 
       - name: Assemble release
         run: ./gradlew assembleRelease
