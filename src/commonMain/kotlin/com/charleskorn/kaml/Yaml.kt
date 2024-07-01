@@ -40,6 +40,9 @@ public class Yaml(
         public val default: Yaml = Yaml()
     }
 
+    public inline fun <reified T> decodeFromYamlNode(node: YamlNode): T =
+        decodeFromYamlNode(serializer<T>(), node)
+
     public fun <T> decodeFromYamlNode(
         deserializer: DeserializationStrategy<T>,
         node: YamlNode,
@@ -48,12 +51,18 @@ public class Yaml(
         return input.decodeSerializableValue(deserializer)
     }
 
+    public inline fun <reified T> decodeFromString(string: String): T =
+        decodeFromString(serializersModule.serializer<T>(), string)
+
     override fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         string: String,
     ): T {
         return decodeFromSource(deserializer, string.bufferedSource())
     }
+
+    public inline fun <reified T> decodeFromSource(source: Source): T =
+        decodeFromSource(serializersModule.serializer<T>(), source)
 
     public fun <T> decodeFromSource(
         deserializer: DeserializationStrategy<T>,
@@ -77,6 +86,9 @@ public class Yaml(
         return node
     }
 
+    public inline fun <reified T> encodeToSink(value: T, sink: Sink) =
+        encodeToSink(serializersModule.serializer<T>(), value, sink)
+
     public fun <T> encodeToSink(
         serializer: SerializationStrategy<T>,
         value: T,
@@ -84,6 +96,9 @@ public class Yaml(
     ) {
         encodeToBufferedSink(serializer, value, sink.buffer())
     }
+
+    public inline fun <reified T> encodeToString(value: T): String =
+        encodeToString(serializersModule.serializer<T>(), value)
 
     override fun <T> encodeToString(
         serializer: SerializationStrategy<T>,
@@ -94,7 +109,9 @@ public class Yaml(
         return buffer.readUtf8().trimEnd()
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
+    public inline fun <reified T> encodeToBufferedSink(value: T, sink: BufferedSink) =
+        encodeToBufferedSink(serializersModule.serializer<T>(), value, sink)
+
     private fun <T> encodeToBufferedSink(
         serializer: SerializationStrategy<T>,
         value: T,
@@ -108,7 +125,6 @@ public class Yaml(
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private class BufferedSinkDataWriter(
     val sink: BufferedSink,
 ) : StreamDataWriter, AutoCloseable {
