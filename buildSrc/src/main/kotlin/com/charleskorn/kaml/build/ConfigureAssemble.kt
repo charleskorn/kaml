@@ -48,6 +48,7 @@ fun Project.configureAssemble() {
                             when (fileName) {
                                 "module.json.asc" -> "${project.name}-$publicationName-${project.version}.module.json.asc"
                                 "pom-default.xml.asc" -> "${project.name}-$publicationName-${project.version}.pom.asc"
+                                "${project.name}.klib.asc" -> "${project.name}-$publicationName-${project.version}.klib.asc"
                                 else -> fileName
                             }
                         },
