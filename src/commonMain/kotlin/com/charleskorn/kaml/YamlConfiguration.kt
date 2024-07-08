@@ -18,6 +18,8 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.ExperimentalSerializationApi
+
 /**
  * Configuration options for parsing YAML to objects and serialising objects to YAML.
  *
@@ -52,6 +54,8 @@ public data class YamlConfiguration(
     internal val allowAnchorsAndAliases: Boolean = false,
     internal val yamlNamingStrategy: YamlNamingStrategy? = null,
     internal val codePointLimit: Int? = null,
+    @ExperimentalSerializationApi
+    internal val decodeEnumCaseInsensitive: Boolean = false,
 )
 
 public enum class PolymorphismStyle {

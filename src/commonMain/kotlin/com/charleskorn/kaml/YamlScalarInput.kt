@@ -42,13 +42,22 @@ internal class YamlScalarInput(val scalar: YamlScalar, yaml: Yaml, context: Seri
             return index
         }
 
-        val choices = (0..enumDescriptor.elementsCount - 1)
+        val choices = (0..<enumDescriptor.elementsCount)
+            .asSequence()
             .map { enumDescriptor.getElementName(it) }
-            .sorted()
-            .joinToString(", ")
+
+        if (configuration.decodeEnumCaseInsensitive) {
+            val lowerChoices = choices.map { it.lowercase() }
+            val lowerContent = scalar.content.lowercase()
+
+            val idx = lowerChoices.indexOf(lowerContent)
+            if (idx != -1) {
+                return idx
+            }
+        }
 
         throw YamlScalarFormatException(
-            "Value ${scalar.contentToString()} is not a valid option, permitted choices are: $choices",
+            "Value ${scalar.contentToString()} is not a valid option, permitted choices are: ${choices.sorted().joinToString(", ")}",
             scalar.path,
             scalar.content,
         )
