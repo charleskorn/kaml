@@ -24,7 +24,8 @@ import it.krzeminski.snakeyaml.engine.kmp.events.Event
 import it.krzeminski.snakeyaml.engine.kmp.exceptions.MarkedYamlEngineException
 import it.krzeminski.snakeyaml.engine.kmp.parser.ParserImpl
 import it.krzeminski.snakeyaml.engine.kmp.scanner.StreamReader
-import okio.Source
+import kotlinx.io.Source
+import kotlinx.io.readString
 
 internal class YamlParser(reader: Source, codePointLimit: Int? = null) {
     internal constructor(source: String) : this(source.bufferedSource())
@@ -34,7 +35,9 @@ internal class YamlParser(reader: Source, codePointLimit: Int? = null) {
         if (codePointLimit != null) setCodePointLimit(codePointLimit)
         setLabel(dummyFileName)
     }.build()
-    private val streamReader = StreamReader(loadSettings, reader)
+
+    // TODO dont use readString, need support Kotlinx.IO from snakeyaml-engine-kmp
+    private val streamReader = StreamReader(loadSettings, reader.readString())
     private val events = ParserImpl(loadSettings, streamReader)
 
     init {
