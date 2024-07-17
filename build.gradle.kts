@@ -75,7 +75,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-json-io:1.7.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
                 implementation("it.krzeminski:snakeyaml-engine-kmp:3.0.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.5.1")
             }
