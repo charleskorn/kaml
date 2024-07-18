@@ -120,7 +120,7 @@ jobs:
         if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2.0.7
+        uses: softprops/action-gh-release@v2.0.8
         with:
           files: build/release/*
           fail_on_unmatched_files: true
