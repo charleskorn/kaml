@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3.4.2
+        uses: gradle/actions/wrapper-validation@v3.5.0
 
       - name: Set up JDK
         uses: actions/setup-java@v4.2.1
@@ -40,7 +40,7 @@ jobs:
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3.4.2
+        uses: gradle/actions/setup-gradle@v3.5.0
 
       - name: Cache konan dependencies
         uses: actions/cache@v4
@@ -72,7 +72,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3.4.2
+        uses: gradle/actions/wrapper-validation@v3.5.0
 
       - name: Set up JDK
         uses: actions/setup-java@v4.2.1
@@ -81,7 +81,7 @@ jobs:
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3.4.2
+        uses: gradle/actions/setup-gradle@v3.5.0
 
       - name: Cache konan dependencies
         uses: actions/cache@v4
@@ -120,7 +120,7 @@ jobs:
         if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2.0.6
+        uses: softprops/action-gh-release@v2.0.8
         with:
           files: build/release/*
           fail_on_unmatched_files: true
