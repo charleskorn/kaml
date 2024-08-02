@@ -94,11 +94,7 @@ internal class YamlOutput(
     }
 
     override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
-        val element = if (configuration.decodeEnumCaseInsensitive) { // use lower case enums
-            enumDescriptor.getElementName(index).lowercase()
-        } else {
-            enumDescriptor.getElementName(index)
-        }
+        val element = enumDescriptor.getElementName(index)
 
         emitQuotedScalar(element, configuration.singleLineStringStyle.scalarStyle)
     }
