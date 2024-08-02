@@ -47,10 +47,8 @@ internal class YamlScalarInput(val scalar: YamlScalar, yaml: Yaml, context: Seri
             .map { enumDescriptor.getElementName(it) }
 
         if (configuration.decodeEnumCaseInsensitive) {
-            val lowerChoices = choices.map { it.lowercase() }
-            val lowerContent = scalar.content.lowercase()
+            val idx = choices.indexOfFirst { it.equals(scalar.content, ignoreCase = true) }
 
-            val idx = lowerChoices.indexOf(lowerContent)
             if (idx != -1) {
                 return idx
             }
