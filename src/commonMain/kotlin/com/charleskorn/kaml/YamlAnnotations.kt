@@ -32,3 +32,32 @@ import kotlinx.serialization.SerialInfo
 public annotation class YamlComment(
     vararg val lines: String,
 )
+
+/**
+ * If specified the String produced by the serializing will be written as a scalar using the 'Folded' style.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlWriteAsFoldedScalar
+
+
+/**
+ * If specified the String produced by the serializing will be written as a scalar using the 'Literal' style.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlWriteAsLiteralScalar
+
+
+/**
+ * If specified the String produced by the serializing will be written as a scalar using the 'Plain' style.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlWriteAsPlainScalar

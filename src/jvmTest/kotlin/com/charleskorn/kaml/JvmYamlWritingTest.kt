@@ -176,6 +176,37 @@ class JvmYamlWritingTest : DescribeSpec({
                 output.toString(Charsets.UTF_8) shouldBe "\"hello world\"\n"
             }
         }
+
+        describe("serializing a string with new lines as a literal") {
+            val output = ByteArrayOutputStream()
+            val thing =  Thing(
+                "Name of Thing",
+                "Literal 1\nLiteral 2\nLiteral 3\n",
+                "Folded 1\nFolded 2\nFolded 3\n",
+                "Plain 1\nPlain 2\nPlain 3\n",
+            )
+
+            Yaml.default.encodeToStream<Thing>(thing, output)
+            output.toString(Charsets.UTF_8) shouldBe
+                "name: \"Name of Thing\"\n" +
+                "literal: |\n" +
+                "  Literal 1\n" +
+                "  Literal 2\n" +
+                "  Literal 3\n" +
+                "folded: >\n" +
+                "  Folded 1\n" +
+                "\n" +
+                "  Folded 2\n" +
+                "\n" +
+                "  Folded 3\n" +
+                "plain: 'Plain 1\n" +
+                "\n" +
+                "  Plain 2\n" +
+                "\n" +
+                "  Plain 3\n" +
+                "\n" +
+                "  '\n"
+        }
     }
 })
 
@@ -190,3 +221,16 @@ sealed interface Animal {
     @Serializable
     data class Cat(val name: String) : Animal
 }
+
+// ------------------------------------------
+
+@Serializable
+data class Thing(
+    val name: String,
+    @YamlWriteAsLiteralScalar
+    val literal: String,
+    @YamlWriteAsFoldedScalar
+    val folded: String,
+    @YamlWriteAsPlainScalar
+    val plain: String,
+)
