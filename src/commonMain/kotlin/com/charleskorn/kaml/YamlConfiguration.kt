@@ -39,20 +39,38 @@ package com.charleskorn.kaml
  * * [codePointLimit]: the maximum amount of code points allowed in the input YAML document (defaults to 3 MB)
  */
 public data class YamlConfiguration(
+    /** Set to `false` to not write default property values to YAML (defaults to `true`) */
     internal val encodeDefaults: Boolean = true,
+    /** Set to true to throw an exception when reading an object that has an unknown property, or false to ignore unknown properties (defaults to `true`) */
     internal val strictMode: Boolean = true,
+    /** Prefix used on root-level keys (where document root is an object) to define extensions that can later be merged (defaults to `null`, which disables extensions altogether). See https://batect.dev/docs/reference/config#anchors-aliases-extensions-and-merging for example. */
     internal val extensionDefinitionPrefix: String? = null,
+    /**
+     * How to read or write the type of a polymorphic object:
+     * * [PolymorphismStyle.Tag]: use a YAML tag (eg. `!<typeOfThing> { property: value }`)
+     * * [PolymorphismStyle.Property]: use a property (eg. `{ type: typeOfThing, property: value }`)
+     */
     internal val polymorphismStyle: PolymorphismStyle = PolymorphismStyle.Tag,
+    /** Property name to use when [polymorphismStyle] is [PolymorphismStyle.Property] */
     internal val polymorphismPropertyName: String = "type",
+    /** Number of spaces to use as indentation when encoding objects as YAML */
     internal val encodingIndentationSize: Int = 2,
+    /** Maximum length of scalars when encoding objects as YAML (scalars exceeding this length will be split into multiple lines) */
     internal val breakScalarsAt: Int = 80,
+    /** How sequences (aka lists and arrays) should be formatted. See [SequenceStyle] for an example of each */
     internal val sequenceStyle: SequenceStyle = SequenceStyle.Block,
+    /** The style in which a single line String value is written. Can be overruled for a specific field with the [YamlWriteSingleLineStringUsingScalarStyle] annotation. */
     internal val singleLineStringStyle: SingleLineStringStyle = SingleLineStringStyle.DoubleQuoted,
+    /** The style in which a multi line String value is written. Can be overruled for a  specific field with the [YamlWriteMultiLineStringUsingScalarStyle] annotation. */
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
+    /** How strings should be escaped when [singleLineStringStyle] is [SingleLineStringStyle.PlainExceptAmbiguous] and the value is ambiguous */
     internal val ambiguousQuoteStyle: AmbiguousQuoteStyle = AmbiguousQuoteStyle.DoubleQuoted,
+    /** Number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block] */
     internal val sequenceBlockIndent: Int = 0,
+    /** Set to true to allow anchors and aliases when decoding YAML (defaults to `false`) */
     internal val allowAnchorsAndAliases: Boolean = false,
     internal val yamlNamingStrategy: YamlNamingStrategy? = null,
+    /** The maximum amount of code points allowed in the input YAML document (defaults to 3 MB) */
     internal val codePointLimit: Int? = null,
 )
 
