@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import it.krzeminski.snakeyaml.engine.kmp.common.ScalarStyle
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
@@ -34,30 +35,25 @@ public annotation class YamlComment(
 )
 
 /**
- * If specified the String produced by the serializing will be written as a scalar using the 'Folded' style.
+ * Write a String value if it is a single line in the specified ScalarStyle.
+ * This overrides the value specified in the [YamlConfiguration].
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
 @SerialInfo
-public annotation class YamlWriteAsFoldedScalar
-
+public annotation class YamlWriteSingleLineStringUsingScalarStyle(
+    val scalarStyle: ScalarStyle,
+)
 
 /**
- * If specified the String produced by the serializing will be written as a scalar using the 'Literal' style.
+ * Write a String value if it is a multiline in the specified ScalarStyle.
+ * This overrides the value specified in the [YamlConfiguration].
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.BINARY)
 @SerialInfo
-public annotation class YamlWriteAsLiteralScalar
-
-
-/**
- * If specified the String produced by the serializing will be written as a scalar using the 'Plain' style.
- */
-@OptIn(ExperimentalSerializationApi::class)
-@Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.BINARY)
-@SerialInfo
-public annotation class YamlWriteAsPlainScalar
+public annotation class YamlWriteMultiLineStringUsingScalarStyle(
+    val scalarStyle: ScalarStyle,
+)

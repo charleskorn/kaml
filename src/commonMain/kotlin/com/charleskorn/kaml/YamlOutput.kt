@@ -81,24 +81,23 @@ internal class YamlOutput(
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
 
-    // FIXME: This will go really bad in mutlithreaded situations
-    private var forcedScalarStyle: ScalarStyle? = null
+    private var forcedSingleLineScalarStyle: ScalarStyle? = null
+    private var forcedMultiLineScalarStyle: ScalarStyle? = null
 
     override fun encodeString(value: String) {
         if (shouldReadTypeName) {
             currentTypeName = value
             shouldReadTypeName = false
         } else {
-            val scalarStyle = forcedScalarStyle
+            val singleLineScalarStyle = forcedSingleLineScalarStyle ?: configuration.singleLineStringStyle.scalarStyle
+            val multiLineScalarStyle  = forcedMultiLineScalarStyle  ?: configuration.multiLineStringStyle.scalarStyle
             when {
-                scalarStyle != null
-                    -> emitScalar(value, scalarStyle)
                 value.contains('\n')
-                    -> emitQuotedScalar(value, configuration.multiLineStringStyle.scalarStyle)
+                    -> emitScalar(value, multiLineScalarStyle)
                 configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous()
                     -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
                 else
-                    -> emitQuotedScalar(value, configuration.singleLineStringStyle.scalarStyle)
+                    -> emitScalar(value, singleLineScalarStyle)
             }
         }
     }
@@ -124,12 +123,9 @@ internal class YamlOutput(
             emitPlainScalar(serializedName)
         }
 
-        forcedScalarStyle = when {
-            descriptor.getAnnotation<YamlWriteAsLiteralScalar>(index) != null -> ScalarStyle.LITERAL
-            descriptor.getAnnotation<YamlWriteAsFoldedScalar>(index)  != null -> ScalarStyle.FOLDED
-            descriptor.getAnnotation<YamlWriteAsPlainScalar>(index)   != null -> ScalarStyle.PLAIN
-            else -> null
-        }
+        // If this field was annotated we overrule the used ScalarStyle with the annotation
+        forcedSingleLineScalarStyle = descriptor.getAnnotation<YamlWriteSingleLineStringUsingScalarStyle>(index)?.scalarStyle
+        forcedMultiLineScalarStyle = descriptor.getAnnotation<YamlWriteMultiLineStringUsingScalarStyle>(index)?.scalarStyle
 
         return super.encodeElement(descriptor, index)
     }
