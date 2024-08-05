@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml
 
-import it.krzeminski.snakeyaml.engine.kmp.common.ScalarStyle
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
@@ -43,7 +42,7 @@ public annotation class YamlComment(
 @Retention(AnnotationRetention.BINARY)
 @SerialInfo
 public annotation class YamlWriteSingleLineStringUsingScalarStyle(
-    val scalarStyle: ScalarStyle,
+    val stringScalarStyle: StringScalarStyle,
 )
 
 /**
@@ -55,5 +54,16 @@ public annotation class YamlWriteSingleLineStringUsingScalarStyle(
 @Retention(AnnotationRetention.BINARY)
 @SerialInfo
 public annotation class YamlWriteMultiLineStringUsingScalarStyle(
-    val scalarStyle: ScalarStyle,
+    val stringScalarStyle: StringScalarStyle,
 )
+
+/**
+ * The scalar styles that can be used in the annotation to force a specific field to be rendered in.
+ */
+public enum class StringScalarStyle {
+    DOUBLE_QUOTED,
+    SINGLE_QUOTED,
+    LITERAL,
+    FOLDED,
+    PLAIN;
+}

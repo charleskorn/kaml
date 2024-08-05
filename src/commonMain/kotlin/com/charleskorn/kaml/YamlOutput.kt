@@ -81,16 +81,25 @@ internal class YamlOutput(
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
 
-    private var forcedSingleLineScalarStyle: ScalarStyle? = null
-    private var forcedMultiLineScalarStyle: ScalarStyle? = null
+    private var forcedSingleLineScalarStyle: StringScalarStyle? = null
+    private var forcedMultiLineScalarStyle:  StringScalarStyle? = null
+
+    private fun StringScalarStyle.toScalarStyle() =
+        when (this) {
+            StringScalarStyle.DOUBLE_QUOTED -> ScalarStyle.DOUBLE_QUOTED
+            StringScalarStyle.SINGLE_QUOTED -> ScalarStyle.SINGLE_QUOTED
+            StringScalarStyle.LITERAL       -> ScalarStyle.LITERAL
+            StringScalarStyle.FOLDED        -> ScalarStyle.FOLDED
+            StringScalarStyle.PLAIN         -> ScalarStyle.PLAIN
+        }
 
     override fun encodeString(value: String) {
         if (shouldReadTypeName) {
             currentTypeName = value
             shouldReadTypeName = false
         } else {
-            val singleLineScalarStyle = forcedSingleLineScalarStyle ?: configuration.singleLineStringStyle.scalarStyle
-            val multiLineScalarStyle  = forcedMultiLineScalarStyle  ?: configuration.multiLineStringStyle.scalarStyle
+            val singleLineScalarStyle = forcedSingleLineScalarStyle ?.toScalarStyle() ?: configuration.singleLineStringStyle.scalarStyle
+            val multiLineScalarStyle  = forcedMultiLineScalarStyle  ?.toScalarStyle() ?: configuration.multiLineStringStyle.scalarStyle
             when {
                 value.contains('\n')
                     -> emitScalar(value, multiLineScalarStyle)
@@ -124,8 +133,8 @@ internal class YamlOutput(
         }
 
         // If this field was annotated we overrule the used ScalarStyle with the annotation
-        forcedSingleLineScalarStyle = descriptor.getAnnotation<YamlWriteSingleLineStringUsingScalarStyle>(index)?.scalarStyle
-        forcedMultiLineScalarStyle = descriptor.getAnnotation<YamlWriteMultiLineStringUsingScalarStyle>(index)?.scalarStyle
+        forcedSingleLineScalarStyle = descriptor.getAnnotation<YamlWriteSingleLineStringUsingScalarStyle>(index)?.stringScalarStyle
+        forcedMultiLineScalarStyle = descriptor.getAnnotation<YamlWriteMultiLineStringUsingScalarStyle>(index)?.stringScalarStyle
 
         return super.encodeElement(descriptor, index)
     }

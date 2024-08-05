@@ -302,14 +302,14 @@ data class ThingSL(
     val name: String,
     // Without any annotations
     val string: String,
-    @YamlWriteSingleLineStringUsingScalarStyle(ScalarStyle.LITERAL)
-    @YamlWriteMultiLineStringUsingScalarStyle(ScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.LITERAL)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
     val literal: String,
-    @YamlWriteSingleLineStringUsingScalarStyle(ScalarStyle.FOLDED)
-    @YamlWriteMultiLineStringUsingScalarStyle(ScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.FOLDED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
     val folded: String,
-    @YamlWriteSingleLineStringUsingScalarStyle(ScalarStyle.PLAIN)
-    @YamlWriteMultiLineStringUsingScalarStyle(ScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.PLAIN)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
     val plain: String,
 )
 
@@ -318,13 +318,13 @@ data class ThingML(
     val name: String,
     // Without any annotations
     val string: String,
-    @YamlWriteSingleLineStringUsingScalarStyle(ScalarStyle.DOUBLE_QUOTED)
-    @YamlWriteMultiLineStringUsingScalarStyle(ScalarStyle.LITERAL)
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.LITERAL)
     val literal: String,
-    @YamlWriteSingleLineStringUsingScalarStyle(ScalarStyle.DOUBLE_QUOTED)
-    @YamlWriteMultiLineStringUsingScalarStyle(ScalarStyle.FOLDED)
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.FOLDED)
     val folded: String,
-    @YamlWriteSingleLineStringUsingScalarStyle(ScalarStyle.DOUBLE_QUOTED)
-    @YamlWriteMultiLineStringUsingScalarStyle(ScalarStyle.PLAIN)
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.PLAIN)
     val plain: String,
 )
