@@ -19,6 +19,7 @@
 package com.charleskorn.kaml
 
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import it.krzeminski.snakeyaml.engine.kmp.common.ScalarStyle
 import kotlinx.serialization.Serializable
@@ -282,6 +283,16 @@ class JvmYamlWritingTest : DescribeSpec({
                 """.trimIndent()
         }
 
+        describe("Ensure all StringScalarStyle and ScalarStyle values match 1 on 1") {
+            // Mapping the StringScalarStyles to ScalarStyle must result in 100% coverage
+            val mappedStringScalarStyles = StringScalarStyle.entries.map { it.toScalarStyle() }
+            ScalarStyle.entries.shouldContainExactlyInAnyOrder(mappedStringScalarStyles)
+
+            // The NAME of each of the enums in both must also be identical
+            StringScalarStyle.entries.forEach {
+                it.toScalarStyle().name shouldBe it.name
+            }
+        }
     }
 })
 

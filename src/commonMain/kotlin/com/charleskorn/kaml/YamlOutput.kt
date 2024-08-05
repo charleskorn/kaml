@@ -84,15 +84,6 @@ internal class YamlOutput(
     private var forcedSingleLineScalarStyle: StringScalarStyle? = null
     private var forcedMultiLineScalarStyle:  StringScalarStyle? = null
 
-    private fun StringScalarStyle.toScalarStyle() =
-        when (this) {
-            StringScalarStyle.DOUBLE_QUOTED -> ScalarStyle.DOUBLE_QUOTED
-            StringScalarStyle.SINGLE_QUOTED -> ScalarStyle.SINGLE_QUOTED
-            StringScalarStyle.LITERAL       -> ScalarStyle.LITERAL
-            StringScalarStyle.FOLDED        -> ScalarStyle.FOLDED
-            StringScalarStyle.PLAIN         -> ScalarStyle.PLAIN
-        }
-
     override fun encodeString(value: String) {
         if (shouldReadTypeName) {
             currentTypeName = value
@@ -259,3 +250,12 @@ internal class YamlOutput(
         private val ALL_EXPLICIT = ImplicitTuple(false, false)
     }
 }
+
+internal fun StringScalarStyle.toScalarStyle(): ScalarStyle =
+    when (this) {
+        StringScalarStyle.DOUBLE_QUOTED -> ScalarStyle.DOUBLE_QUOTED
+        StringScalarStyle.SINGLE_QUOTED -> ScalarStyle.SINGLE_QUOTED
+        StringScalarStyle.LITERAL       -> ScalarStyle.LITERAL
+        StringScalarStyle.FOLDED        -> ScalarStyle.FOLDED
+        StringScalarStyle.PLAIN         -> ScalarStyle.PLAIN
+    }
