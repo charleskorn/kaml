@@ -80,15 +80,24 @@ internal class YamlOutput(
     override fun encodeInt(value: Int) = emitPlainScalar(value.toString())
     override fun encodeLong(value: Long) = emitPlainScalar(value.toString())
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
+
+    private var forcedSingleLineScalarStyle: StringScalarStyle? = null
+    private var forcedMultiLineScalarStyle:  StringScalarStyle? = null
+
     override fun encodeString(value: String) {
         if (shouldReadTypeName) {
             currentTypeName = value
             shouldReadTypeName = false
         } else {
+            val singleLineScalarStyle = forcedSingleLineScalarStyle ?.toScalarStyle() ?: configuration.singleLineStringStyle.scalarStyle
+            val multiLineScalarStyle  = forcedMultiLineScalarStyle  ?.toScalarStyle() ?: configuration.multiLineStringStyle.scalarStyle
             when {
-                value.contains('\n') -> emitQuotedScalar(value, configuration.multiLineStringStyle.scalarStyle)
-                configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous() -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
-                else -> emitQuotedScalar(value, configuration.singleLineStringStyle.scalarStyle)
+                value.contains('\n')
+                    -> emitScalar(value, multiLineScalarStyle)
+                configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous()
+                    -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
+                else
+                    -> emitScalar(value, singleLineScalarStyle)
             }
         }
     }
@@ -98,6 +107,13 @@ internal class YamlOutput(
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
     private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
 
+
+    private inline fun <reified R> SerialDescriptor.getAnnotation(index: Int): R? {
+        return getElementAnnotations(index)
+            .filterIsInstance<R>()
+            .firstOrNull()
+    }
+
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         encodeComment(descriptor, index)
 
@@ -106,6 +122,10 @@ internal class YamlOutput(
             val serializedName = configuration.yamlNamingStrategy?.serialNameForYaml(elementName) ?: elementName
             emitPlainScalar(serializedName)
         }
+
+        // If this field was annotated we overrule the used ScalarStyle with the annotation
+        forcedSingleLineScalarStyle = descriptor.getAnnotation<YamlWriteSingleLineStringUsingScalarStyle>(index)?.stringScalarStyle
+        forcedMultiLineScalarStyle = descriptor.getAnnotation<YamlWriteMultiLineStringUsingScalarStyle>(index)?.stringScalarStyle
 
         return super.encodeElement(descriptor, index)
     }
@@ -159,9 +179,7 @@ internal class YamlOutput(
     }
 
     private fun encodeComment(descriptor: SerialDescriptor, index: Int) {
-        val commentAnno = descriptor.getElementAnnotations(index)
-            .filterIsInstance<YamlComment>()
-            .firstOrNull() ?: return
+        val commentAnno = descriptor.getAnnotation<YamlComment>(index) ?: return
 
         for (line in commentAnno.lines) {
             emitter.emit(CommentEvent(CommentType.BLOCK, " $line", null, null))
@@ -232,3 +250,12 @@ internal class YamlOutput(
         private val ALL_EXPLICIT = ImplicitTuple(false, false)
     }
 }
+
+internal fun StringScalarStyle.toScalarStyle(): ScalarStyle =
+    when (this) {
+        StringScalarStyle.DOUBLE_QUOTED -> ScalarStyle.DOUBLE_QUOTED
+        StringScalarStyle.SINGLE_QUOTED -> ScalarStyle.SINGLE_QUOTED
+        StringScalarStyle.LITERAL       -> ScalarStyle.LITERAL
+        StringScalarStyle.FOLDED        -> ScalarStyle.FOLDED
+        StringScalarStyle.PLAIN         -> ScalarStyle.PLAIN
+    }

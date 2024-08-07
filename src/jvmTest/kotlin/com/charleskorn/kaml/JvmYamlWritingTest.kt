@@ -19,7 +19,9 @@
 package com.charleskorn.kaml
 
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import it.krzeminski.snakeyaml.engine.kmp.common.ScalarStyle
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import java.io.ByteArrayOutputStream
@@ -176,6 +178,121 @@ class JvmYamlWritingTest : DescribeSpec({
                 output.toString(Charsets.UTF_8) shouldBe "\"hello world\"\n"
             }
         }
+
+        describe("serializing a string as an explicitly stated ScalarStyle (Single Line - ThingSL)") {
+            val output = ByteArrayOutputStream()
+            val thing =  ThingSL(
+                "Name of Thing",
+                "String",
+                "Literal",
+                "Folded",
+                "Plain",
+            )
+
+            Yaml.default.encodeToStream<ThingSL>(thing, output)
+            output.toString(Charsets.UTF_8) shouldBe
+                """
+                    name: "Name of Thing"
+                    string: "String"
+                    literal: |-
+                      Literal
+                    folded: >-
+                      Folded
+                    plain: Plain
+                    
+                """.trimIndent()
+        }
+
+        describe("serializing a string as an explicitly stated ScalarStyle (Multi Line - ThingSL)") {
+            val output = ByteArrayOutputStream()
+            val thing =  ThingSL(
+                "Name of Thing",
+                "String 1\nString 2\nString 3\n",
+                "Literal 1\nLiteral 2\nLiteral 3\n",
+                "Folded 1\nFolded 2\nFolded 3\n",
+                "Plain 1\nPlain 2\nPlain 3\n",
+            )
+
+            Yaml.default.encodeToStream<ThingSL>(thing, output)
+            output.toString(Charsets.UTF_8) shouldBe
+                """
+                    name: "Name of Thing"
+                    string: "String 1\nString 2\nString 3\n"
+                    literal: "Literal 1\nLiteral 2\nLiteral 3\n"
+                    folded: "Folded 1\nFolded 2\nFolded 3\n"
+                    plain: "Plain 1\nPlain 2\nPlain 3\n"
+                    
+                """.trimIndent()
+        }
+
+        describe("serializing a string as an explicitly stated ScalarStyle (Single Line - ThingML)") {
+            val output = ByteArrayOutputStream()
+            val thing =  ThingML(
+                "Name of Thing",
+                "String",
+                "Literal",
+                "Folded",
+                "Plain",
+            )
+
+            Yaml.default.encodeToStream<ThingML>(thing, output)
+            output.toString(Charsets.UTF_8) shouldBe
+                """
+                    name: "Name of Thing"
+                    string: "String"
+                    literal: "Literal"
+                    folded: "Folded"
+                    plain: "Plain"
+
+                """.trimIndent()
+        }
+
+        describe("serializing a string as an explicitly stated ScalarStyle (Multi Line - ThingML)") {
+            val output = ByteArrayOutputStream()
+            val thing =  ThingML(
+                "Name of Thing",
+                "String 1\nString 2\nString 3\n",
+                "Literal 1\nLiteral 2\nLiteral 3\n",
+                "Folded 1\nFolded 2\nFolded 3\n",
+                "Plain 1\nPlain 2\nPlain 3\n",
+            )
+
+            Yaml.default.encodeToStream<ThingML>(thing, output)
+            output.toString(Charsets.UTF_8) shouldBe
+                """
+                    name: "Name of Thing"
+                    string: "String 1\nString 2\nString 3\n"
+                    literal: |
+                      Literal 1
+                      Literal 2
+                      Literal 3
+                    folded: >
+                      Folded 1
+                    
+                      Folded 2
+                    
+                      Folded 3
+                    plain: 'Plain 1
+                    
+                      Plain 2
+                    
+                      Plain 3
+                    
+                      '
+                
+                """.trimIndent()
+        }
+
+        describe("Ensure all StringScalarStyle and ScalarStyle values match 1 on 1") {
+            // Mapping the StringScalarStyles to ScalarStyle must result in 100% coverage
+            val mappedStringScalarStyles = StringScalarStyle.entries.map { it.toScalarStyle() }
+            ScalarStyle.entries.shouldContainExactlyInAnyOrder(mappedStringScalarStyles)
+
+            // The NAME of each of the enums in both must also be identical
+            StringScalarStyle.entries.forEach {
+                it.toScalarStyle().name shouldBe it.name
+            }
+        }
     }
 })
 
@@ -190,3 +307,35 @@ sealed interface Animal {
     @Serializable
     data class Cat(val name: String) : Animal
 }
+
+@Serializable
+data class ThingSL(
+    val name: String,
+    // Without any annotations
+    val string: String,
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.LITERAL)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    val literal: String,
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.FOLDED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    val folded: String,
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.PLAIN)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    val plain: String,
+)
+
+@Serializable
+data class ThingML(
+    val name: String,
+    // Without any annotations
+    val string: String,
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.LITERAL)
+    val literal: String,
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.FOLDED)
+    val folded: String,
+    @YamlWriteSingleLineStringUsingScalarStyle(StringScalarStyle.DOUBLE_QUOTED)
+    @YamlWriteMultiLineStringUsingScalarStyle(StringScalarStyle.PLAIN)
+    val plain: String,
+)

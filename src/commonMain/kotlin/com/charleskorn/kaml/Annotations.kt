@@ -32,3 +32,38 @@ import kotlinx.serialization.SerialInfo
 public annotation class YamlComment(
     vararg val lines: String,
 )
+
+/**
+ * Write a String value if it is a single line in the specified ScalarStyle.
+ * This overrides the value specified in the [YamlConfiguration].
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlWriteSingleLineStringUsingScalarStyle(
+    val stringScalarStyle: StringScalarStyle,
+)
+
+/**
+ * Write a String value if it is a multiline in the specified ScalarStyle.
+ * This overrides the value specified in the [YamlConfiguration].
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.BINARY)
+@SerialInfo
+public annotation class YamlWriteMultiLineStringUsingScalarStyle(
+    val stringScalarStyle: StringScalarStyle,
+)
+
+/**
+ * The scalar styles that can be used in the annotation to force a specific field to be rendered in.
+ */
+public enum class StringScalarStyle {
+    DOUBLE_QUOTED,
+    SINGLE_QUOTED,
+    LITERAL,
+    FOLDED,
+    PLAIN;
+}
