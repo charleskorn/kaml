@@ -93,11 +93,7 @@ internal class YamlOutput(
         }
     }
 
-    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
-        val element = enumDescriptor.getElementName(index)
-
-        emitQuotedScalar(element, configuration.singleLineStringStyle.scalarStyle)
-    }
+    override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) = emitQuotedScalar(enumDescriptor.getElementName(index), configuration.singleLineStringStyle.scalarStyle)
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
     private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
