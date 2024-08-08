@@ -18,9 +18,10 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.io.asSink
+import kotlinx.io.buffered
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.serializer
-import okio.sink
 import java.io.OutputStream
 
 /**
@@ -34,7 +35,7 @@ public fun <T> Yaml.encodeToStream(
     serializer: SerializationStrategy<T>,
     value: T,
     stream: OutputStream,
-): Unit = encodeToSink(serializer, value, stream.sink())
+): Unit = encodeToSink(serializer, value, stream.asSink().buffered())
 
 /**
  * Convert [value] to YAML, and output the result into an [OutputStream].

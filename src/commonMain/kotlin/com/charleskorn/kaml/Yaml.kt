@@ -20,16 +20,17 @@ package com.charleskorn.kaml
 
 import com.charleskorn.kaml.internal.bufferedSource
 import it.krzeminski.snakeyaml.engine.kmp.api.StreamDataWriter
+import kotlinx.io.Buffer
+import kotlinx.io.InternalIoApi
+import kotlinx.io.Sink
+import kotlinx.io.Source
+import kotlinx.io.readString
+import kotlinx.io.writeString
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import okio.Buffer
-import okio.BufferedSink
-import okio.Sink
-import okio.Source
-import okio.buffer
 
 public class Yaml(
     override val serializersModule: SerializersModule = EmptySerializersModule(),
@@ -77,12 +78,13 @@ public class Yaml(
         return node
     }
 
+    @OptIn(InternalIoApi::class)
     public fun <T> encodeToSink(
         serializer: SerializationStrategy<T>,
         value: T,
         sink: Sink,
     ) {
-        encodeToBufferedSink(serializer, value, sink.buffer())
+        encodeToBufferedSink(serializer, value, sink.buffer)
     }
 
     override fun <T> encodeToString(
@@ -91,14 +93,13 @@ public class Yaml(
     ): String {
         val buffer = Buffer()
         encodeToBufferedSink(serializer, value, buffer)
-        return buffer.readUtf8().trimEnd()
+        return buffer.readString().trimEnd()
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun <T> encodeToBufferedSink(
         serializer: SerializationStrategy<T>,
         value: T,
-        sink: BufferedSink,
+        sink: Sink,
     ) {
         BufferedSinkDataWriter(sink).use { writer ->
             YamlOutput(writer, serializersModule, configuration).use { output ->
@@ -108,18 +109,17 @@ public class Yaml(
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 private class BufferedSinkDataWriter(
-    val sink: BufferedSink,
+    val sink: Sink,
 ) : StreamDataWriter, AutoCloseable {
     override fun flush(): Unit = sink.flush()
 
     override fun write(str: String) {
-        sink.writeUtf8(str)
+        sink.writeString(str)
     }
 
     override fun write(str: String, off: Int, len: Int) {
-        sink.writeUtf8(string = str, beginIndex = off, endIndex = off + len)
+        sink.writeString(string = str, startIndex = off, endIndex = off + len)
     }
 
     override fun close() {

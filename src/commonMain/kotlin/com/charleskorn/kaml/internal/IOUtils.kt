@@ -18,14 +18,14 @@
 
 package com.charleskorn.kaml.internal
 
-import okio.Buffer
-import okio.BufferedSource
-import okio.ByteString.Companion.encodeUtf8
+import kotlinx.io.Buffer
+import kotlinx.io.Source
+import kotlinx.io.writeString
 
 /**
- * Convert a [String] to a [BufferedSource].
+ * Convert a [String] to a [Source].
  *
  * The string _must_ be encoded with UTF-8.
  */
 // https://github.com/square/okio/issues/774#issuecomment-703315013
-internal fun String.bufferedSource(): BufferedSource = Buffer().write(encodeUtf8())
+internal fun String.bufferedSource(): Source = Buffer().also { it.writeString(this) }

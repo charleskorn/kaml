@@ -77,7 +77,7 @@ kotlin {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
                 implementation("it.krzeminski:snakeyaml-engine-kmp:3.0.1")
-                implementation("com.squareup.okio:okio:3.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.5.1")
             }
         }
 

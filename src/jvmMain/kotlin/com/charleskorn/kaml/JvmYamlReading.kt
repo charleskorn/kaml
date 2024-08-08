@@ -18,9 +18,10 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.serializer
-import okio.source
 import java.io.InputStream
 
 /**
@@ -35,7 +36,7 @@ public fun <T> Yaml.decodeFromStream(
     source: InputStream,
 ): T = decodeFromSource(
     deserializer = deserializer,
-    source = source.source(),
+    source = source.asSource().buffered(),
 )
 
 /**
@@ -47,7 +48,7 @@ public inline fun <reified T> Yaml.decodeFromStream(
     stream: InputStream,
 ): T = decodeFromSource(
     deserializer = serializersModule.serializer<T>(),
-    source = stream.source(),
+    source = stream.asSource().buffered(),
 )
 
 /**
@@ -59,4 +60,4 @@ public inline fun <reified T> Yaml.decodeFromStream(
 public fun Yaml.parseToYamlNode(
     source: InputStream,
 ): YamlNode =
-    parseToYamlNode(source.source())
+    parseToYamlNode(source.asSource().buffered())
