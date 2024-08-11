@@ -274,6 +274,33 @@ class YamlReadingTest : FlatFunSpec({
                     }
                 }
             }
+
+            context("parsing case insensitive enumeration value") {
+                val yaml = Yaml(configuration = YamlConfiguration(decodeEnumCaseInsensitive = true))
+
+                test("deserializes it to the expected enumeration value") {
+                    val result = yaml.decodeFromString(TestEnum.serializer(), "value1")
+
+                    result shouldBe TestEnum.Value1
+                }
+
+                test("deserializes explicit names to the expected enumeration value") {
+                    val result = yaml.decodeFromString(TestEnumWithExplicitNames.serializer(), "with SPACE")
+
+                    result shouldBe TestEnumWithExplicitNames.WithSpace
+                }
+
+                test("throws exception with case sensitive configuration") {
+                    val exception = shouldThrow<YamlScalarFormatException> { Yaml.default.decodeFromString(TestEnum.serializer(), "value1") }
+
+                    exception.asClue {
+                        it.message shouldBe "Value 'value1' is not a valid option, permitted choices are: Value1, Value2"
+                        it.line shouldBe 1
+                        it.column shouldBe 1
+                        it.path shouldBe YamlPath.root
+                    }
+                }
+            }
         }
 
         context("parsing null values") {
