@@ -179,7 +179,7 @@ class JvmYamlWritingTest : DescribeSpec({
 
         describe("serializing a string as an explicitly stated ScalarStyle (Single Line - ThingSL)") {
             val output = ByteArrayOutputStream()
-            val thing =  ThingSL(
+            val thing = ThingSL(
                 "Name of Thing",
                 "String",
                 "Single Quoted",
@@ -195,13 +195,13 @@ class JvmYamlWritingTest : DescribeSpec({
                     singleQuoted: 'Single Quoted'
                     doubleQuoted: "Double Quoted"
                     plain: Plain
-                    
+
                 """.trimIndent()
         }
 
         describe("serializing a string as an explicitly stated ScalarStyle (Multi Line - ThingSL)") {
             val output = ByteArrayOutputStream()
-            val thing =  ThingSL(
+            val thing = ThingSL(
                 "Name of Thing",
                 "String 1\nString 2\nString 3\n",
                 "Single Quoted 1\nSingle Quoted 2\nSingle Quoted 3\n",
@@ -215,19 +215,19 @@ class JvmYamlWritingTest : DescribeSpec({
                     name: "Name of Thing"
                     string: "String 1\nString 2\nString 3\n"
                     singleQuoted: 'Single Quoted 1
-                    
+
                       Single Quoted 2
-                    
+
                       Single Quoted 3
-                    
+
                       '
                     doubleQuoted: "Double Quoted 1\nDouble Quoted 2\nDouble Quoted 3\n"
                     plain: 'Plain 1
-                    
+
                       Plain 2
-                    
+
                       Plain 3
-                    
+
                       '
 
                 """.trimIndent()
@@ -235,7 +235,7 @@ class JvmYamlWritingTest : DescribeSpec({
 
         describe("serializing a string as an explicitly stated ScalarStyle (Single Line - ThingML)") {
             val output = ByteArrayOutputStream()
-            val thing =  ThingML(
+            val thing = ThingML(
                 "Name of Thing",
                 "String",
                 "Literal",
@@ -257,7 +257,7 @@ class JvmYamlWritingTest : DescribeSpec({
 
         describe("serializing a string as an explicitly stated ScalarStyle (Multi Line - ThingML)") {
             val output = ByteArrayOutputStream()
-            val thing =  ThingML(
+            val thing = ThingML(
                 "Name of Thing",
                 "String 1\nString 2\nString 3\n",
                 "Literal 1\nLiteral 2\nLiteral 3\n",
@@ -276,21 +276,20 @@ class JvmYamlWritingTest : DescribeSpec({
                       Literal 3
                     folded: >
                       Folded 1
-                    
+
                       Folded 2
-                    
+
                       Folded 3
                     plain: 'Plain 1
-                    
+
                       Plain 2
-                    
+
                       Plain 3
-                    
+
                       '
-                    
+
                 """.trimIndent()
         }
-
     }
 })
 

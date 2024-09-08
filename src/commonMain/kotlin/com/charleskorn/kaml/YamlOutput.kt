@@ -82,7 +82,7 @@ internal class YamlOutput(
     override fun encodeShort(value: Short) = emitPlainScalar(value.toString())
 
     private var forcedSingleLineScalarStyle: SingleLineStringStyle? = null
-    private var forcedMultiLineScalarStyle:  MultiLineStringStyle? = null
+    private var forcedMultiLineScalarStyle: MultiLineStringStyle? = null
 
     override fun encodeString(value: String) {
         if (shouldReadTypeName) {
@@ -90,14 +90,14 @@ internal class YamlOutput(
             shouldReadTypeName = false
         } else {
             val singleLineScalarStyle = forcedSingleLineScalarStyle ?.scalarStyle ?: configuration.singleLineStringStyle.scalarStyle
-            val multiLineScalarStyle  = forcedMultiLineScalarStyle  ?.scalarStyle ?: configuration.multiLineStringStyle.scalarStyle
+            val multiLineScalarStyle = forcedMultiLineScalarStyle ?.scalarStyle ?: configuration.multiLineStringStyle.scalarStyle
             when {
                 value.contains('\n')
-                    -> emitScalar(value, multiLineScalarStyle)
+                -> emitScalar(value, multiLineScalarStyle)
                 configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous()
-                    -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
+                -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
                 else
-                    -> emitScalar(value, singleLineScalarStyle)
+                -> emitScalar(value, singleLineScalarStyle)
             }
         }
     }
@@ -106,7 +106,6 @@ internal class YamlOutput(
 
     private fun emitPlainScalar(value: String) = emitScalar(value, ScalarStyle.PLAIN)
     private fun emitQuotedScalar(value: String, scalarStyle: ScalarStyle) = emitScalar(value, scalarStyle)
-
 
     private inline fun <reified R> SerialDescriptor.getAnnotation(index: Int): R? {
         return getElementAnnotations(index)
