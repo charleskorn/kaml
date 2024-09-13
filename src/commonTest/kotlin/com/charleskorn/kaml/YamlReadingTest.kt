@@ -26,7 +26,6 @@ import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
-import com.charleskorn.kaml.testobjects.TestEnumWithExplicitNames
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.UnsealedClass
 import com.charleskorn.kaml.testobjects.UnsealedString
