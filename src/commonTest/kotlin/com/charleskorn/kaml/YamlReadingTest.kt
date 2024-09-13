@@ -2620,35 +2620,6 @@ private data class StructureWithLocationThrowingSerializer(
 private data class CustomSerializedValue(val thing: String)
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-private object LocationThrowingSerializer : KSerializer<Any> {
-    override val descriptor = buildSerialDescriptor(LocationThrowingSerializer::class.simpleName!!, SerialKind.CONTEXTUAL)
-
-    override fun deserialize(decoder: Decoder): Any {
-        val location = (decoder as YamlInput).getCurrentLocation()
-        val path = decoder.getCurrentPath()
-
-        throw LocationInformationException("Serializer called with location (${location.line}, ${location.column}) and path: ${path.toHumanReadableString()}")
-    }
-
-    override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
-}
-
-private object LocationThrowingMapSerializer : KSerializer<Any> {
-    override val descriptor: SerialDescriptor = MapSerializer(String.serializer(), String.serializer()).descriptor
-
-    override fun deserialize(decoder: Decoder): Any {
-        val location = (decoder as YamlInput).getCurrentLocation()
-        val path = decoder.getCurrentPath()
-
-        throw LocationInformationException("Serializer called with location (${location.line}, ${location.column}) and path: ${path.toHumanReadableString()}")
-    }
-
-    override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
-}
-
-private class LocationInformationException(message: String) : RuntimeException(message)
-
-@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 object ContextualSerializer : KSerializer<String> {
     override val descriptor = buildSerialDescriptor("ContextualSerializer", SerialKind.CONTEXTUAL) {
         element("string", PrimitiveSerialDescriptor("value", PrimitiveKind.STRING))
