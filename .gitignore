@@ -21,3 +21,5 @@ gradle-app.setting
 /.idea/
 out
 *.iml
+
+/.kotlin/
