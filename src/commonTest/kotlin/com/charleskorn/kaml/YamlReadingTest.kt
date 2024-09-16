@@ -1470,6 +1470,20 @@ class YamlReadingTest : FlatFunSpec({
                     }
                 }
 
+                context("given some input for an object where the property value should be a sealed class (inline)") {
+                    val input = """
+                        element: !<inlineString> "abcdef"
+                    """.trimIndent()
+
+                    context("parsing that input") {
+                        val result = polymorphicYaml.decodeFromString(SealedWrapper.serializer(), input)
+
+                        test("deserializes it to a Kotlin object") {
+                            result shouldBe SealedWrapper(TestSealedStructure.InlineSealedString("abcdef"))
+                        }
+                    }
+                }
+
                 context("given some input for an object where the property value is a literal") {
                     val input = """
                         test: !<simpleInt> 42
@@ -1492,6 +1506,7 @@ class YamlReadingTest : FlatFunSpec({
                           value: -987
                         - !<sealedInt>
                           value: 654
+                        - !<inlineString> "testing"
                         - !<sealedString>
                           value: "tests"
                     """.trimIndent()
@@ -1505,6 +1520,7 @@ class YamlReadingTest : FlatFunSpec({
                                     TestSealedStructure.SimpleSealedString(null),
                                     TestSealedStructure.SimpleSealedInt(-987),
                                     TestSealedStructure.SimpleSealedInt(654),
+                                    TestSealedStructure.InlineSealedString("testing"),
                                     TestSealedStructure.SimpleSealedString("tests"),
                                 )
                         }
@@ -1603,11 +1619,11 @@ class YamlReadingTest : FlatFunSpec({
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
-                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: sealedInt, sealedString"
+                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: inlineString, sealedInt, sealedString"
                                 it.line shouldBe 1
                                 it.column shouldBe 1
                                 it.typeName shouldBe "someOtherType"
-                                it.validTypeNames shouldBe setOf("sealedInt", "sealedString")
+                                it.validTypeNames shouldBe setOf("inlineString", "sealedInt", "sealedString")
                                 it.path shouldBe YamlPath.root
                             }
                         }
@@ -1624,11 +1640,11 @@ class YamlReadingTest : FlatFunSpec({
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
-                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: sealedInt, sealedString"
+                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: inlineString, sealedInt, sealedString"
                                 it.line shouldBe 1
                                 it.column shouldBe 1
                                 it.typeName shouldBe "someOtherType"
-                                it.validTypeNames shouldBe setOf("sealedInt", "sealedString")
+                                it.validTypeNames shouldBe setOf("inlineString", "sealedInt", "sealedString")
                                 it.path shouldBe YamlPath.root
                             }
                         }
@@ -1818,11 +1834,11 @@ class YamlReadingTest : FlatFunSpec({
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
-                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: sealedInt, sealedString"
+                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: inlineString, sealedInt, sealedString"
                                 it.line shouldBe 1
                                 it.column shouldBe 7
                                 it.typeName shouldBe "someOtherType"
-                                it.validTypeNames shouldBe setOf("sealedInt", "sealedString")
+                                it.validTypeNames shouldBe setOf("inlineString", "sealedInt", "sealedString")
                                 it.path shouldBe YamlPath.root.withMapElementKey("type", Location(1, 1)).withMapElementValue(Location(1, 7))
                             }
                         }
@@ -2028,11 +2044,11 @@ class YamlReadingTest : FlatFunSpec({
                             val exception = shouldThrow<UnknownPolymorphicTypeException> { polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input) }
 
                             exception.asClue {
-                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: sealedInt, sealedString"
+                                it.message shouldBe "Unknown type 'someOtherType'. Known types are: inlineString, sealedInt, sealedString"
                                 it.line shouldBe 1
                                 it.column shouldBe 7
                                 it.typeName shouldBe "someOtherType"
-                                it.validTypeNames shouldBe setOf("sealedInt", "sealedString")
+                                it.validTypeNames shouldBe setOf("inlineString", "sealedInt", "sealedString")
                                 it.path shouldBe YamlPath.root.withMapElementKey("kind", Location(1, 1)).withMapElementValue(Location(1, 7))
                             }
                         }

@@ -24,7 +24,11 @@ import kotlinx.serialization.modules.SerializersModule
 
 internal class YamlContextualInput(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(node, yaml, context, configuration) {
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
-    override fun decodeValue(): Any = throw IllegalStateException("Must call beginStructure() and use returned Decoder")
+    override fun decodeValue(): Any = when (node) {
+        is YamlScalar -> node.content
+        is YamlNull -> throw UnexpectedNullValueException(node.path)
+        else -> throw IllegalStateException("Must call beginStructure() and use returned Decoder")
+    }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder =
         createFor(node, yaml, serializersModule, configuration, descriptor)
