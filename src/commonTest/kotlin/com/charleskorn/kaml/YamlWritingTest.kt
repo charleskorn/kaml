@@ -845,6 +845,18 @@ class YamlWritingTest : FlatFunSpec({
                     }
                 }
 
+                context("serializing a sealed type (inline)") {
+                    val input = TestSealedStructure.InlineSealedString("abc")
+                    val output = polymorphicYaml.encodeToString(TestSealedStructure.serializer(), input)
+                    val expectedYaml = """
+                        !<inlineString> "abc"
+                    """.trimIndent()
+
+                    test("returns the value serialized in the expected YAML form") {
+                        output shouldBe expectedYaml
+                    }
+                }
+
                 context("serializing an unsealed type") {
                     val input = UnsealedString("blah")
                     val output = polymorphicYaml.encodeToString(PolymorphicSerializer(UnsealedClass::class), input)
@@ -883,11 +895,24 @@ class YamlWritingTest : FlatFunSpec({
                     }
                 }
 
+                context("serializing a polymorphic value (inline) as a property value") {
+                    val input = SealedWrapper(TestSealedStructure.InlineSealedString("abc"))
+                    val output = polymorphicYaml.encodeToString(SealedWrapper.serializer(), input)
+                    val expectedYaml = """
+                        element: !<inlineString> "abc"
+                    """.trimIndent()
+
+                    test("returns the value serialized in the expected YAML form") {
+                        output shouldBe expectedYaml
+                    }
+                }
+
                 context("serializing a list of polymorphic values") {
                     val input = listOf(
                         TestSealedStructure.SimpleSealedInt(5),
                         TestSealedStructure.SimpleSealedString("some test"),
                         TestSealedStructure.SimpleSealedInt(-20),
+                        TestSealedStructure.InlineSealedString("more test"),
                         TestSealedStructure.SimpleSealedString(null),
                         null,
                     )
@@ -901,6 +926,7 @@ class YamlWritingTest : FlatFunSpec({
                           value: "some test"
                         - !<sealedInt>
                           value: -20
+                        - !<inlineString> "more test"
                         - !<sealedString>
                           value: null
                         - null
