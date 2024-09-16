@@ -2724,10 +2724,7 @@ private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
     override fun deserialize(decoder: Decoder): DatabaseListing {
         check(decoder is YamlInput)
 
-        val currentMap = decoder.node.yamlMap.get<YamlMap>("databaseListing")
-        checkNotNull(currentMap)
-
-        val list = currentMap.entries.map { (_, value) ->
+        val list = decoder.node.yamlMap.entries.map { (_, value) ->
             decoder.yaml.decodeFromYamlNode(Database.serializer(), value)
         }
 
