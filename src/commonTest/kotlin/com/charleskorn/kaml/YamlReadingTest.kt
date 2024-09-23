@@ -1280,7 +1280,7 @@ class YamlReadingTest : FlatFunSpec({
                 """.trimIndent()
 
                 context("parsing anchors and aliases is disabled") {
-                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", allowAnchorsAndAliases = false)
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Forbidden)
                     val yaml = Yaml(configuration = configuration)
 
                     test("throws an appropriate exception") {
@@ -1295,12 +1295,115 @@ class YamlReadingTest : FlatFunSpec({
                 }
 
                 context("parsing anchors and aliases is enabled") {
-                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", allowAnchorsAndAliases = true)
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Permitted())
                     val yaml = Yaml(configuration = configuration)
                     val result = yaml.decodeFromString(SimpleStructure.serializer(), input)
 
                     test("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
                         result shouldBe SimpleStructure("Jamie")
+                    }
+                }
+            }
+
+            context("restricting max alias count") {
+                val input = """
+                    .some-extension: &name Jamie
+
+                    members: [*name, *name]
+                """.trimIndent()
+
+                context("parsing anchors and aliases is disabled") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Forbidden)
+                    val yaml = Yaml(configuration = configuration)
+
+                    test("throws an appropriate exception") {
+                        val exception = shouldThrow<ForbiddenAnchorOrAliasException> { yaml.decodeFromString(Team.serializer(), input) }
+
+                        exception.asClue {
+                            it.message shouldBe "Parsing anchors and aliases is disabled."
+                            it.line shouldBe 1
+                            it.column shouldBe 18
+                        }
+                    }
+                }
+
+                context("parsing anchors and aliases is enabled, max aliases count 0") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Permitted(maxAliasCount = 0u))
+                    val yaml = Yaml(configuration = configuration)
+
+                    test("throws an appropriate exception") {
+                        val exception = shouldThrow<ForbiddenAnchorOrAliasException> { yaml.decodeFromString(Team.serializer(), input) }
+
+                        exception.asClue {
+                            it.message shouldBe "Parsing anchors and aliases is disabled."
+                            it.line shouldBe 1
+                            it.column shouldBe 18
+                        }
+                    }
+                }
+
+                context("parsing anchors and aliases is enabled, max aliases count 1") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Permitted(maxAliasCount = 1u))
+                    val yaml = Yaml(configuration = configuration)
+
+                    test("throws an appropriate exception") {
+                        val exception = shouldThrow<ForbiddenAnchorOrAliasException> { yaml.decodeFromString(Team.serializer(), input) }
+
+                        exception.asClue {
+                            it.message shouldBe "Maximum number of aliases has been reached."
+                            it.line shouldBe 3
+                            it.column shouldBe 18
+                        }
+                    }
+                }
+
+                context("parsing anchors and aliases is enabled, max aliases count 2") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Permitted(maxAliasCount = 2u))
+                    val yaml = Yaml(configuration = configuration)
+                    val result = yaml.decodeFromString(Team.serializer(), input)
+
+                    test("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
+                        result shouldBe Team(listOf("Jamie", "Jamie"))
+                    }
+                }
+
+                context("parsing anchors and aliases is enabled, max aliases count null") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Permitted(maxAliasCount = null))
+                    val yaml = Yaml(configuration = configuration)
+                    val result = yaml.decodeFromString(Team.serializer(), input)
+
+                    test("deserializes it to a Kotlin object, replacing the reference to the extension with the extension") {
+                        result shouldBe Team(listOf("Jamie", "Jamie"))
+                    }
+                }
+
+                context("parsing anchors and aliases is enabled, billion laughs is prevented by default") {
+                    val configuration = YamlConfiguration(extensionDefinitionPrefix = ".", anchorsAndAliases = AnchorsAndAliases.Permitted())
+                    val yaml = Yaml(configuration = configuration)
+
+                    test("throws an appropriate exception") {
+                        val exception = shouldThrow<ForbiddenAnchorOrAliasException> {
+                            yaml.decodeFromString(
+                                Team.serializer(),
+                                """
+                                    a: &a ["lol","lol","lol","lol","lol","lol","lol","lol","lol"]
+                                    b: &b [*a,*a,*a,*a,*a,*a,*a,*a,*a]
+                                    c: &c [*b,*b,*b,*b,*b,*b,*b,*b,*b]
+                                    d: &d [*c,*c,*c,*c,*c,*c,*c,*c,*c]
+                                    e: &e [*d,*d,*d,*d,*d,*d,*d,*d,*d]
+                                    f: &f [*e,*e,*e,*e,*e,*e,*e,*e,*e]
+                                    g: &g [*f,*f,*f,*f,*f,*f,*f,*f,*f]
+                                    h: &h [*g,*g,*g,*g,*g,*g,*g,*g,*g]
+                                    i: &i [*h,*h,*h,*h,*h,*h,*h,*h,*h]
+                                """.trimIndent(),
+                            )
+                        }
+
+                        exception.asClue {
+                            it.message shouldBe "Maximum number of aliases has been reached."
+                            it.line shouldBe 4
+                            it.column shouldBe 8
+                        }
                     }
                 }
             }

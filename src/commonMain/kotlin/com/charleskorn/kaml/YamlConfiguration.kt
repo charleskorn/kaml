@@ -37,7 +37,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
  * * [multiLineStringStyle]: the style in which a multi line String value is written. Can be overruled for a specific field with the [YamlMultiLineStringStyle] annotation.
  * * [ambiguousQuoteStyle]: how strings should be escaped when [singleLineStringStyle] is [SingleLineStringStyle.PlainExceptAmbiguous] and the value is ambiguous
  * * [sequenceBlockIndent]: number of spaces to use as indentation for sequences, if [sequenceStyle] set to [SequenceStyle.Block]
- * * [allowAnchorsAndAliases]: set to true to allow anchors and aliases when decoding YAML (defaults to `false`)
+ * * [anchorsAndAliases]: set to [AnchorsAndAliases.Permitted] to allow anchors and aliases when decoding YAML (defaults to [AnchorsAndAliases.Forbidden])
  * * [yamlNamingStrategy]: The system that converts the field names in to the names used in the Yaml.
  * * [codePointLimit]: the maximum amount of code points allowed in the input YAML document (defaults to 3 MB)
  * * [decodeEnumCaseInsensitive]: set to true to allow case-insensitive decoding of enums (defaults to `false`)
@@ -55,7 +55,7 @@ public data class YamlConfiguration(
     internal val multiLineStringStyle: MultiLineStringStyle = singleLineStringStyle.multiLineStringStyle,
     internal val ambiguousQuoteStyle: AmbiguousQuoteStyle = AmbiguousQuoteStyle.DoubleQuoted,
     internal val sequenceBlockIndent: Int = 0,
-    internal val allowAnchorsAndAliases: Boolean = false,
+    internal val anchorsAndAliases: AnchorsAndAliases = AnchorsAndAliases.Forbidden,
     internal val yamlNamingStrategy: YamlNamingStrategy? = null,
     internal val codePointLimit: Int? = null,
     @ExperimentalSerializationApi
@@ -123,4 +123,17 @@ public enum class SingleLineStringStyle {
 public enum class AmbiguousQuoteStyle {
     DoubleQuoted,
     SingleQuoted,
+}
+
+public sealed class AnchorsAndAliases {
+    internal abstract val maxAliasCount: UInt?
+
+    public data object Forbidden : AnchorsAndAliases() {
+        override val maxAliasCount: UInt = 0u
+    }
+
+    /**
+     * [maxAliasCount]: the maximum amount of aliases allowed in the input YAML document if allowed at all, `null` allows any amount (defaults to `100`)
+     */
+    public data class Permitted(override val maxAliasCount: UInt? = 100u) : AnchorsAndAliases()
 }

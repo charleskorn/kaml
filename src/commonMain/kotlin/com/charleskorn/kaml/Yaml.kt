@@ -80,8 +80,11 @@ public class Yaml(
 
     internal fun parseToYamlNode(source: Source): YamlNode {
         val parser = YamlParser(source, configuration.codePointLimit)
-        val reader =
-            YamlNodeReader(parser, configuration.extensionDefinitionPrefix, configuration.allowAnchorsAndAliases)
+        val reader = YamlNodeReader(
+            parser,
+            configuration.extensionDefinitionPrefix,
+            configuration.anchorsAndAliases.maxAliasCount,
+        )
         val node = reader.read()
         parser.ensureEndOfStreamReached()
         return node

@@ -29,37 +29,41 @@ import it.krzeminski.snakeyaml.engine.kmp.events.SequenceStartEvent
 internal class YamlNodeReader(
     private val parser: YamlParser,
     private val extensionDefinitionPrefix: String? = null,
-    private val allowAnchorsAndAliases: Boolean = false,
+    private val maxAliasCount: UInt? = 0u,
 ) {
-    private val aliases = mutableMapOf<Anchor, YamlNode>()
+    private val aliases = mutableMapOf<Anchor, WeightedNode>()
+    private var aliasCount = 0u
 
-    fun read(): YamlNode = readNode(YamlPath.root)
+    fun read(): YamlNode = readNode(YamlPath.root).node
 
-    private fun readNode(path: YamlPath): YamlNode = readNodeAndAnchor(path).first
+    private fun readNode(path: YamlPath): WeightedNode = readNodeAndAnchor(path).first
 
-    private fun readNodeAndAnchor(path: YamlPath): Pair<YamlNode, Anchor?> {
+    private fun readNodeAndAnchor(path: YamlPath): Pair<WeightedNode, Anchor?> {
         val event = parser.consumeEvent(path)
-        val node = readFromEvent(event, path)
+        val (node, weight) = readFromEvent(event, path)
 
         if (event is NodeEvent) {
-            event.anchor?.let {
-                if (!allowAnchorsAndAliases) {
-                    throw ForbiddenAnchorOrAliasException("Parsing anchors and aliases is disabled.", path)
-                }
+            if (event !is AliasEvent) {
+                event.anchor?.let {
+                    if (maxAliasCount == 0u) {
+                        throw ForbiddenAnchorOrAliasException("Parsing anchors and aliases is disabled.", path)
+                    }
 
-                aliases.put(it, node.withPath(YamlPath.forAliasDefinition(it.value, event.location)))
+                    val anchor = node.withPath(YamlPath.forAliasDefinition(it.value, event.location))
+                    aliases[it] = WeightedNode(anchor, weight)
+                }
             }
 
-            return node to event.anchor
+            return WeightedNode(node, weight) to event.anchor
         }
 
-        return node to null
+        return WeightedNode(node, weight = 0u) to null
     }
 
-    private fun readFromEvent(event: Event, path: YamlPath): YamlNode = when (event) {
-        is ScalarEvent -> readScalarOrNull(event, path).maybeToTaggedNode(event.tag)
-        is SequenceStartEvent -> readSequence(path).maybeToTaggedNode(event.tag)
-        is MappingStartEvent -> readMapping(path).maybeToTaggedNode(event.tag)
+    private fun readFromEvent(event: Event, path: YamlPath): WeightedNode = when (event) {
+        is ScalarEvent -> WeightedNode(readScalarOrNull(event, path).maybeToTaggedNode(event.tag), weight = 0u)
+        is SequenceStartEvent -> readSequence(path).let { it.copy(node = it.node.maybeToTaggedNode(event.tag)) }
+        is MappingStartEvent -> readMapping(path).let { it.copy(node = it.node.maybeToTaggedNode(event.tag)) }
         is AliasEvent -> readAlias(event, path)
         else -> throw MalformedYamlException("Unexpected ${event.eventId}", path.withError(event.location))
     }
@@ -72,8 +76,9 @@ internal class YamlNodeReader(
         }
     }
 
-    private fun readSequence(path: YamlPath): YamlList {
+    private fun readSequence(path: YamlPath): WeightedNode {
         val items = mutableListOf<YamlNode>()
+        var sequenceWeight = 0u
 
         while (true) {
             val event = parser.peekEvent(path)
@@ -81,16 +86,21 @@ internal class YamlNodeReader(
             when (event.eventId) {
                 Event.ID.SequenceEnd -> {
                     parser.consumeEventOfType(Event.ID.SequenceEnd, path)
-                    return YamlList(items, path)
+                    return WeightedNode(YamlList(items, path), sequenceWeight)
                 }
 
-                else -> items += readNode(path.withListEntry(items.size, event.location))
+                else -> {
+                    val (node, weight) = readNode(path.withListEntry(items.size, event.location))
+                    sequenceWeight += weight
+                    items += node
+                }
             }
         }
     }
 
-    private fun readMapping(path: YamlPath): YamlMap {
+    private fun readMapping(path: YamlPath): WeightedNode {
         val items = mutableMapOf<YamlScalar, YamlNode>()
+        var mapWeight = 0u
 
         while (true) {
             val event = parser.peekEvent(path)
@@ -98,7 +108,7 @@ internal class YamlNodeReader(
             when (event.eventId) {
                 Event.ID.MappingEnd -> {
                     parser.consumeEventOfType(Event.ID.MappingEnd, path)
-                    return YamlMap(doMerges(items), path)
+                    return WeightedNode(YamlMap(doMerges(items), path), mapWeight)
                 }
 
                 else -> {
@@ -108,14 +118,15 @@ internal class YamlNodeReader(
 
                     val valueLocation = parser.peekEvent(keyNode.path).location
                     val valuePath = if (isMerge(keyNode)) path.withMerge(valueLocation) else keyNode.path.withMapElementValue(valueLocation)
-                    val (value, anchor) = readNodeAndAnchor(valuePath)
+                    val (weightedNode, anchor) = readNodeAndAnchor(valuePath)
+                    mapWeight += weightedNode.weight
 
                     if (path == YamlPath.root && extensionDefinitionPrefix != null && key.startsWith(extensionDefinitionPrefix)) {
                         if (anchor == null) {
                             throw NoAnchorForExtensionException(key, extensionDefinitionPrefix, path.withError(event.location))
                         }
                     } else {
-                        items += (keyNode to value)
+                        items += (keyNode to weightedNode.node)
                     }
                 }
             }
@@ -189,18 +200,34 @@ internal class YamlNodeReader(
         return merged
     }
 
-    private fun readAlias(event: AliasEvent, path: YamlPath): YamlNode {
-        if (!allowAnchorsAndAliases) {
+    private fun readAlias(event: AliasEvent, path: YamlPath): WeightedNode {
+        if (maxAliasCount == 0u) {
             throw ForbiddenAnchorOrAliasException("Parsing anchors and aliases is disabled.", path)
         }
 
-        val anchor = event.anchor!!
+        val anchor = event.alias
 
-        val resolvedNode = aliases.getOrElse(anchor) {
+        val (resolvedNode, resolvedNodeWeight) = aliases.getOrElse(anchor) {
             throw UnknownAnchorException(anchor.value, path.withError(event.location))
         }
 
-        return resolvedNode.withPath(path.withAliasReference(anchor.value, event.location).withAliasDefinition(anchor.value, resolvedNode.location))
+        val resultWeight = resolvedNodeWeight + 1u
+        aliasCount += resultWeight
+
+        if ((maxAliasCount != null) && (aliasCount > maxAliasCount)) {
+            throw ForbiddenAnchorOrAliasException(
+                "Maximum number of aliases has been reached.",
+                path,
+            )
+        }
+
+        return WeightedNode(
+            node = resolvedNode.withPath(
+                path.withAliasReference(anchor.value, event.location)
+                    .withAliasDefinition(anchor.value, resolvedNode.location),
+            ),
+            weight = resultWeight,
+        )
     }
 
     private fun <T> Iterable<T>.second(): T = this.drop(1).first()
@@ -208,3 +235,8 @@ internal class YamlNodeReader(
     private val Event.location: Location
         get() = Location(startMark!!.line + 1, startMark!!.column + 1)
 }
+
+private data class WeightedNode(
+    val node: YamlNode,
+    val weight: UInt,
+)
