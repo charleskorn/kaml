@@ -28,16 +28,22 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.SerializersModule
+import kotlin.jvm.JvmInline
 
 @Serializable
-sealed class TestSealedStructure {
+sealed interface TestSealedStructure {
     @Serializable
     @SerialName("sealedInt")
-    data class SimpleSealedInt(val value: Int) : TestSealedStructure()
+    data class SimpleSealedInt(val value: Int) : TestSealedStructure
 
     @Serializable
     @SerialName("sealedString")
-    data class SimpleSealedString(val value: String?) : TestSealedStructure()
+    data class SimpleSealedString(val value: String?) : TestSealedStructure
+
+    @Serializable
+    @SerialName("inlineString")
+    @JvmInline
+    value class InlineSealedString(val value: String) : TestSealedStructure
 }
 
 @Serializable
