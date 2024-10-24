@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
@@ -64,6 +65,13 @@ internal class YamlListInput(val list: YamlList, yaml: Yaml, context: Serializer
     override fun decodeBoolean(): Boolean = currentElementDecoder.decodeBoolean()
     override fun decodeChar(): Char = currentElementDecoder.decodeChar()
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = currentElementDecoder.decodeEnum(enumDescriptor)
+
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
+        if (!haveStartedReadingElements) {
+            return super.decodeSerializableValue(deserializer)
+        }
+        return currentElementDecoder.decodeSerializableValue(deserializer)
+    }
 
     private val haveStartedReadingElements: Boolean
         get() = nextElementIndex > 0

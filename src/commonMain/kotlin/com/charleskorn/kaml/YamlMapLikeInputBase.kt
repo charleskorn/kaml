@@ -18,6 +18,7 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.modules.SerializersModule
 
@@ -44,6 +45,15 @@ internal sealed class YamlMapLikeInputBase(map: YamlMap, yaml: Yaml, context: Se
     override fun decodeBoolean(): Boolean = fromCurrentValue { decodeBoolean() }
     override fun decodeChar(): Char = fromCurrentValue { decodeChar() }
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = fromCurrentValue { decodeEnum(enumDescriptor) }
+
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
+        if (!haveStartedReadingEntries) {
+            return super.decodeSerializableValue(deserializer)
+        }
+        return fromCurrentValue {
+            decodeSerializableValue(deserializer)
+        }
+    }
 
     protected fun <T> fromCurrentValue(action: YamlInput.() -> T): T {
         try {
