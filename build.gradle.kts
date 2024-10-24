@@ -68,6 +68,13 @@ kotlin {
     linuxX64()
     linuxArm64()
     iosArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
 
     // Tier 3
     mingwX64()
