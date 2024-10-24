@@ -49,7 +49,10 @@ public sealed class YamlInput(
             is YamlScalar -> when {
                 descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, yaml, context, configuration)
                 descriptor.kind is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
-                descriptor.kind is PolymorphicKind -> throw MissingTypeTagException(node.path)
+                descriptor.kind is PolymorphicKind -> {
+                    if (descriptor.isContentBasedPolymorphic) createContextual(node, yaml, context, configuration, descriptor)
+                    else throw MissingTypeTagException(node.path)
+                }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.path)
             }
 
@@ -63,11 +66,15 @@ public sealed class YamlInput(
                 is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, yaml, context, configuration)
                 is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
                 is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
-                is PolymorphicKind -> when (configuration.polymorphismStyle) {
-                    PolymorphismStyle.None ->
-                        throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
-                    PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
-                    PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
+                is PolymorphicKind -> {
+                    if (descriptor.isContentBasedPolymorphic) createContextual(node, yaml, context, configuration, descriptor)
+                    else when (configuration.polymorphismStyle) {
+                        PolymorphismStyle.None ->
+                            throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
+
+                        PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
+                        PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
+                    }
                 }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.path)
             }
@@ -115,6 +122,8 @@ public sealed class YamlInput(
         private fun YamlMap.withoutKey(key: String): YamlMap {
             return this.copy(entries = entries.filterKeys { it.content != key })
         }
+
+        private val SerialDescriptor.isContentBasedPolymorphic get() = serialName.startsWith(YamlContentPolymorphicSerializer::class.simpleName!!)
     }
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
