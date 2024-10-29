@@ -24,8 +24,11 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
+import kotlin.reflect.KProperty1
 
 class YamlNodeTest : FunSpec({
+    data class TestCase(val name: String, val method: KProperty1<YamlNode, YamlNode>, val value: YamlNode)
+
     val path = YamlPath.root
     val testScalar = YamlScalar("test", path)
     val testNull = YamlNull(path)
@@ -33,42 +36,44 @@ class YamlNodeTest : FunSpec({
     val testMap = YamlMap(emptyMap(), path)
     val testTaggedNode = YamlTaggedNode("tag", YamlScalar("tagged_scalar", path))
 
-    withData(
-        YamlNode::yamlScalar to testScalar,
-        YamlNode::yamlNull to testNull,
-        YamlNode::yamlList to testList,
-        YamlNode::yamlMap to testMap,
-        YamlNode::yamlTaggedNode to testTaggedNode,
-    ) { (method, value) ->
-        shouldNotThrowAny { method(value) }
-        method(value) shouldBe value
+    withData<TestCase>(
+        { it.name },
+        TestCase("scalar", YamlNode::yamlScalar, testScalar),
+        TestCase("null", YamlNode::yamlNull, testNull),
+        TestCase("list", YamlNode::yamlList, testList),
+        TestCase("map", YamlNode::yamlMap, testMap),
+        TestCase("tagged node", YamlNode::yamlTaggedNode, testTaggedNode),
+    ) { testCase ->
+        shouldNotThrowAny { testCase.method(testCase.value) }
+        testCase.method(testCase.value) shouldBe testCase.value
     }
 
-    withData(
-        YamlNode::yamlScalar to testNull,
-        YamlNode::yamlScalar to testList,
-        YamlNode::yamlScalar to testMap,
-        YamlNode::yamlScalar to testTaggedNode,
-        YamlNode::yamlNull to testScalar,
-        YamlNode::yamlNull to testList,
-        YamlNode::yamlNull to testMap,
-        YamlNode::yamlNull to testTaggedNode,
-        YamlNode::yamlList to testScalar,
-        YamlNode::yamlList to testNull,
-        YamlNode::yamlList to testMap,
-        YamlNode::yamlList to testTaggedNode,
-        YamlNode::yamlMap to testScalar,
-        YamlNode::yamlMap to testNull,
-        YamlNode::yamlMap to testList,
-        YamlNode::yamlMap to testTaggedNode,
-        YamlNode::yamlTaggedNode to testScalar,
-        YamlNode::yamlTaggedNode to testNull,
-        YamlNode::yamlTaggedNode to testList,
-        YamlNode::yamlTaggedNode to testMap,
-    ) { (method, value) ->
-        val type = method.name.replaceFirstChar(Char::titlecase)
-        val fromType = value::class.simpleName
-        val exception = shouldThrow<IncorrectTypeException> { method(value) }
+    withData<TestCase>(
+        { it.name },
+        TestCase("retrieving a scalar from a null", YamlNode::yamlScalar, testNull),
+        TestCase("retrieving a scalar from a list", YamlNode::yamlScalar, testList),
+        TestCase("retrieving a scalar from a map", YamlNode::yamlScalar, testMap),
+        TestCase("retrieving a scalar from a tagged node", YamlNode::yamlScalar, testTaggedNode),
+        TestCase("retrieving a null from a scalar", YamlNode::yamlNull, testScalar),
+        TestCase("retrieving a null from a list", YamlNode::yamlNull, testList),
+        TestCase("retrieving a null from a map", YamlNode::yamlNull, testMap),
+        TestCase("retrieving a null from a tagged node", YamlNode::yamlNull, testTaggedNode),
+        TestCase("retrieving a list from a scalar", YamlNode::yamlList, testScalar),
+        TestCase("retrieving a list from a null", YamlNode::yamlList, testNull),
+        TestCase("retrieving a list from a map", YamlNode::yamlList, testMap),
+        TestCase("retrieving a list from a tagged node", YamlNode::yamlList, testTaggedNode),
+        TestCase("retrieving a map from a scalar", YamlNode::yamlMap, testScalar),
+        TestCase("retrieving a map from a null", YamlNode::yamlMap, testNull),
+        TestCase("retrieving a map from a list", YamlNode::yamlMap, testList),
+        TestCase("retrieving a map from a tagged node", YamlNode::yamlMap, testTaggedNode),
+        TestCase("retrieving a tagged node from a scalar", YamlNode::yamlTaggedNode, testScalar),
+        TestCase("retrieving a tagged node from a null", YamlNode::yamlTaggedNode, testNull),
+        TestCase("retrieving a tagged node from a list", YamlNode::yamlTaggedNode, testList),
+        TestCase("retrieving a tagged node from a map", YamlNode::yamlTaggedNode, testMap),
+    ) { testCase ->
+        val type = testCase.method.name.replaceFirstChar(Char::titlecase)
+        val fromType = testCase.value::class.simpleName
+        val exception = shouldThrow<IncorrectTypeException> { testCase.method(testCase.value) }
         exception.asClue {
             it.message shouldBe "Expected element to be $type but is $fromType"
             it.path shouldBe path
