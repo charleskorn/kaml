@@ -60,7 +60,8 @@
       ],
       "matchPackagePatterns": [
         "^com\\.diffplug\\.spotless$",
-        "^com\\.diffplug\\.spotless:"
+        "^com\\.diffplug\\.spotless:",
+        "^com\\.pinterest:ktlint$"
       ],
       "semanticCommitScope": "internal"
     },
@@ -93,19 +94,7 @@
         "ktlint\\(\"(?<currentValue>[\\d.]*?)\"\\)"
       ],
       "datasourceTemplate": "maven",
-      "depNameTemplate": "com.pinterest:ktlint",
-      "semanticCommitScope": "internal"
-    },
-    {
-      "matchPaths": [
-        ".github/workflows/*.yml"
-      ],
-      "matchStrings": [
-        "\\srun: npx semantic-release@(?<currentValue>.*?)\\s"
-      ],
-      "datasourceTemplate": "npm",
-      "depNameTemplate": "semantic-release",
-      "semanticCommitScope": "internal"
+      "depNameTemplate": "com.pinterest:ktlint"
     }
   ]
 }
