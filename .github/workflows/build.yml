@@ -1,4 +1,4 @@
-name: Pipeline
+name: CI
 
 on: [push, pull_request]
 
