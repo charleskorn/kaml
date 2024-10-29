@@ -5,7 +5,10 @@
     ":prHourlyLimitNone",
     ":prConcurrentLimitNone",
     ":switchToGradleLite",
-    ":disableDependencyDashboard"
+    ":disableDependencyDashboard",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(deps)",
+    ":semanticCommitScopeDisabled"
   ],
   "reviewers": [
     "charleskorn"
