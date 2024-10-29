@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**' # Run on all branches, ignore tags.
+  pull_request:
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
@@ -65,6 +69,8 @@ jobs:
 
     permissions:
       contents: write # Required to be able to publish releases, see https://docs.github.com/en/rest/reference/permissions-required-for-github-apps#permission-on-contents
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Check out code
@@ -81,6 +87,11 @@ jobs:
           java-version: 17
           distribution: temurin
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3.8.1
+        with:
+          node-version: 18
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4.1.0
 
@@ -92,21 +103,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Install release tooling
+        run: npm --prefix=.github/workflows/release clean-install
+
+      - name: Create release
+        run: npx --prefix=.github/workflows/release semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+
       - name: Build
         run: ./gradlew assemble
 
       - name: Assemble release
         run: ./gradlew assembleRelease
         env:
-          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
-          GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-
-      - name: Publish snapshot
-        run: ./gradlew publishSnapshot
-        env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
         if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -118,14 +129,20 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
 
-      - name: Create GitHub release
+      - name: Get tag
+        id: get_tag
+        run: echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+      - name: Add artifacts to GitHub release
         uses: softprops/action-gh-release@v2.0.8
         with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
           files: build/release/*
           fail_on_unmatched_files: true
           draft: true # Update draft release with matching tag, if there is one.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
