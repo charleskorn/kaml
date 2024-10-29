@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest.multiplatform") version "5.9.1"
+    id("io.kotest.multiplatform") version "6.0.0.M1"
 }
 
 group = "com.charleskorn.kaml"
@@ -90,16 +90,15 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:5.9.1")
-                implementation("io.kotest:kotest-framework-api:5.9.1")
-                implementation("io.kotest:kotest-framework-engine:5.9.1")
-                implementation("io.kotest:kotest-framework-datatest:5.9.1")
+                implementation("io.kotest:kotest-assertions-core:6.0.0.M1")
+                implementation("io.kotest:kotest-framework-api:6.0.0.M1")
+                implementation("io.kotest:kotest-framework-engine:6.0.0.M1")
             }
         }
 
         jvmTest {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:5.9.1")
+                implementation("io.kotest:kotest-runner-junit5:6.0.0.M1")
             }
         }
     }

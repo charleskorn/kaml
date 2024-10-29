@@ -20,8 +20,6 @@ package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.common.Platform
-import io.kotest.common.platform
 import io.kotest.core.test.Enabled.Companion.disabled
 import io.kotest.core.test.Enabled.Companion.enabled
 import io.kotest.core.test.EnabledOrReasonIf
@@ -249,14 +247,14 @@ class YamlScalarTest : FlatFunSpec({
             ).forEach { content ->
 
                 val floatingPointTestCondition: EnabledOrReasonIf = {
-                    when (platform) {
-                        Platform.Native ->
+                    when (kotlinTarget) {
+                        KotlinTarget.NATIVE ->
                             if (content == "1e-") {
                                 disabled("floating point parser bug: https://youtrack.jetbrains.com/issue/KT-69327")
                             } else {
                                 enabled
                             }
-                        Platform.JS ->
+                        KotlinTarget.JS ->
                             if (content in setOf("0x2", "0o2")) {
                                 disabled("$content is a valid floating value for JS due to dynamic cast")
                             } else {
