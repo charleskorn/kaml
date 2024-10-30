@@ -42,7 +42,7 @@ public class Yaml(
     }
 
     public inline fun <reified T> decodeFromYamlNode(node: YamlNode): T =
-        decodeFromYamlNode(serializer<T>(), node)
+        decodeFromYamlNode(serializersModule.serializer<T>(), node)
 
     public fun <T> decodeFromYamlNode(
         deserializer: DeserializationStrategy<T>,
