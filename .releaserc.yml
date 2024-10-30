@@ -27,6 +27,8 @@ plugins:
         - type: deps
           scope: internal
           release: false
+        - type: test
+          release: false
   - - "@semantic-release/release-notes-generator"
     - preset: conventionalcommits
       presetConfig:
@@ -65,8 +67,7 @@ plugins:
             section: Refactoring
             hidden: false
           - type: test
-            section: Tests
-            hidden: false
+            hidden: true
           - type: build
             section: Build System
             hidden: false
