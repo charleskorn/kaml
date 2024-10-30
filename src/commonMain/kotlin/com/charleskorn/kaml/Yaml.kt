@@ -52,9 +52,6 @@ public class Yaml(
         return input.decodeSerializableValue(deserializer)
     }
 
-    public inline fun <reified T> decodeFromString(string: String): T =
-        decodeFromString(serializersModule.serializer<T>(), string)
-
     override fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         string: String,
@@ -97,9 +94,6 @@ public class Yaml(
     ) {
         encodeToBufferedSink(serializer, value, sink.buffer())
     }
-
-    public inline fun <reified T> encodeToString(value: T): String =
-        encodeToString(serializersModule.serializer<T>(), value)
 
     override fun <T> encodeToString(
         serializer: SerializationStrategy<T>,
