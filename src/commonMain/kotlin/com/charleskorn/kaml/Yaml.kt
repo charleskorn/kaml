@@ -42,7 +42,7 @@ public class Yaml(
     }
 
     public inline fun <reified T> decodeFromYamlNode(node: YamlNode): T =
-        decodeFromYamlNode(serializer<T>(), node)
+        decodeFromYamlNode(serializersModule.serializer<T>(), node)
 
     public fun <T> decodeFromYamlNode(
         deserializer: DeserializationStrategy<T>,
@@ -51,9 +51,6 @@ public class Yaml(
         val input = YamlInput.createFor(node, this, serializersModule, configuration, deserializer.descriptor)
         return input.decodeSerializableValue(deserializer)
     }
-
-    public inline fun <reified T> decodeFromString(string: String): T =
-        decodeFromString(serializersModule.serializer<T>(), string)
 
     override fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
@@ -97,9 +94,6 @@ public class Yaml(
     ) {
         encodeToBufferedSink(serializer, value, sink.buffer())
     }
-
-    public inline fun <reified T> encodeToString(value: T): String =
-        encodeToString(serializersModule.serializer<T>(), value)
 
     override fun <T> encodeToString(
         serializer: SerializationStrategy<T>,
