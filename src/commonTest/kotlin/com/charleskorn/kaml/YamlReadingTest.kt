@@ -2100,6 +2100,23 @@ class YamlReadingTest : FlatFunSpec({
                     result shouldBe ServerConfig(DatabaseListing(listOf(Database("A"), Database("B"))))
                 }
             }
+
+            context("decoding with a custom serializer for a non-root node") {
+                val theInput = """
+                    objectWithCustomSerializer:
+                        - cats
+                        - dogs
+                        - birds
+                """.trimIndent()
+
+                val result = Yaml.default.decodeFromString(ObjectContainingObjectWithCustomSerializer.serializer(), theInput)
+
+                test("decodes the Yaml as an ObjectContainingObjectWithCustomSerializer") {
+                    result shouldBe ObjectContainingObjectWithCustomSerializer(
+                        ObjectWithCustomSerializer("cats;dogs;birds"),
+                    )
+                }
+            }
         }
     }
 })
@@ -2204,10 +2221,7 @@ private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
     override fun deserialize(decoder: Decoder): DatabaseListing {
         check(decoder is YamlInput)
 
-        val currentMap = decoder.node.yamlMap.get<YamlMap>("databaseListing")
-        checkNotNull(currentMap)
-
-        val list = currentMap.entries.map { (_, value) ->
+        val list = decoder.node.yamlMap.entries.map { (_, value) ->
             decoder.yaml.decodeFromYamlNode(Database.serializer(), value)
         }
 
@@ -2215,4 +2229,35 @@ private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
     }
 
     override fun serialize(encoder: Encoder, value: DatabaseListing) = throw UnsupportedOperationException()
+}
+
+@Serializable
+private data class ObjectContainingObjectWithCustomSerializer(
+    val objectWithCustomSerializer: ObjectWithCustomSerializer,
+)
+
+@Serializable(with = SerializerForObjectWithCustomSerializer::class)
+private data class ObjectWithCustomSerializer(
+    val combinedValues: String,
+)
+
+private object SerializerForObjectWithCustomSerializer : KSerializer<ObjectWithCustomSerializer> {
+    private const val ValuesSeparator = ";"
+
+    private val listSerializer = ListSerializer(String.serializer())
+    override val descriptor = listSerializer.descriptor
+
+    override fun serialize(encoder: Encoder, value: ObjectWithCustomSerializer) {
+        encoder.encodeSerializableValue(listSerializer, value.combinedValues.split(ValuesSeparator))
+    }
+
+    override fun deserialize(decoder: Decoder): ObjectWithCustomSerializer {
+        check(decoder is YamlInput)
+
+        // Intentionally parse the values from the current yaml node
+        val values = decoder.node.yamlList.items
+            .map { it.yamlScalar.content }
+
+        return ObjectWithCustomSerializer(values.joinToString(ValuesSeparator))
+    }
 }
