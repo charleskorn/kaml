@@ -22,14 +22,13 @@ import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.polymorphicModule
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.nullable
 
-class YamlContentPolymorphicSerializerTest : FunSpec({
+class YamlContentPolymorphicSerializerTest : FlatFunSpec({
     context("a YAML parser") {
         context("parsing polymorphic values with PolymorphismStyle.None") {
             val polymorphicYaml = Yaml(
