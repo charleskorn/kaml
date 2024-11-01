@@ -5,39 +5,81 @@
     ":prHourlyLimitNone",
     ":prConcurrentLimitNone",
     ":switchToGradleLite",
-    ":disableDependencyDashboard"
+    ":disableDependencyDashboard",
+    ":semanticCommits",
+    ":semanticCommitTypeAll(deps)",
+    ":semanticCommitScopeDisabled"
   ],
   "reviewers": [
     "charleskorn"
   ],
   "automerge": true,
-  "labels": ["is:dependency-update"],
+  "labels": [
+    "is:dependency-update"
+  ],
   "rebaseWhen": "behind-base-branch",
-  "digest": { "enabled": false },
+  "digest": {
+    "enabled": false
+  },
   "packageRules": [
     {
       "groupName": "Kotest",
-      "matchPackagePatterns": ["^io\\.kotest:"],
-      "matchDatasources": ["maven"]
+      "matchPackagePatterns": [
+        "^io\\.kotest:"
+      ],
+      "matchDatasources": [
+        "maven"
+      ],
+      "semanticCommitScope": "internal"
     },
     {
       "groupName": "Kotlin",
-      "matchManagers": ["gradle-lite"],
-      "matchPackagePatterns": ["^org\\.jetbrains\\.kotlin\\."],
-      "matchDepTypes": ["plugin"]
+      "matchManagers": [
+        "gradle-lite"
+      ],
+      "matchPackagePatterns": [
+        "^org\\.jetbrains\\.kotlin\\."
+      ],
+      "matchDepTypes": [
+        "plugin"
+      ]
     },
     {
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["openjdk"],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "openjdk"
+      ],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(-\\d+)?-(?<compatibility>.*)$"
     },
     {
       "groupName": "Spotless",
-      "matchManagers": ["gradle-lite"],
+      "matchManagers": [
+        "gradle-lite"
+      ],
       "matchPackagePatterns": [
         "^com\\.diffplug\\.spotless$",
-        "^com\\.diffplug\\.spotless:"
-      ]
+        "^com\\.diffplug\\.spotless:",
+        "^com\\.pinterest:ktlint$"
+      ],
+      "semanticCommitScope": "internal"
+    },
+    {
+      "matchPaths": [
+        ".github/workflows/**/*",
+        ".github/workflows/*.yml",
+        "+(batect)",
+        "+(batect.cmd)",
+        "+(batect.yml)"
+      ],
+      "semanticCommitScope": "internal"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "semanticCommitScope": "internal"
     }
   ],
   "regexManagers": [

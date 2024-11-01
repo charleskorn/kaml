@@ -1,6 +1,10 @@
-name: Pipeline
+name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**' # Run on all branches, ignore tags.
+  pull_request:
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
@@ -12,6 +16,7 @@ concurrency:
 jobs:
   test-matrix:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -19,28 +24,28 @@ jobs:
           - os: windows-latest
             tasks: mingwX64Test
           - os: macos-13
-            tasks: macosX64Test iosX64Test
+            tasks: macosX64Test iosX64Test tvosX64Test watchosX64Test
           - os: macos-latest
-            tasks: macosArm64Test iosSimulatorArm64Test
+            tasks: macosArm64Test iosSimulatorArm64Test tvosSimulatorArm64Test watchosSimulatorArm64Test
     runs-on: ${{ matrix.os }}
     name: Test on ${{ matrix.os }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4.0.1
+        uses: gradle/actions/wrapper-validation@v4.1.0
 
       - name: Set up JDK
-        uses: actions/setup-java@v4.2.2
+        uses: actions/setup-java@v4.5.0
         with:
           java-version: 17
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.0.1
+        uses: gradle/actions/setup-gradle@v4.1.0
 
       - name: Cache konan dependencies
         uses: actions/cache@v4
@@ -64,24 +69,31 @@ jobs:
 
     permissions:
       contents: write # Required to be able to publish releases, see https://docs.github.com/en/rest/reference/permissions-required-for-github-apps#permission-on-contents
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4.0.1
+        uses: gradle/actions/wrapper-validation@v4.1.0
 
       - name: Set up JDK
-        uses: actions/setup-java@v4.2.2
+        uses: actions/setup-java@v4.5.0
         with:
           java-version: 17
           distribution: temurin
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: 20
+
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.0.1
+        uses: gradle/actions/setup-gradle@v4.1.0
 
       - name: Cache konan dependencies
         uses: actions/cache@v4
@@ -91,24 +103,34 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Install release tooling
+        run: npm --prefix=.github/workflows/release clean-install
+
+      - name: Create release
+        run: npx --prefix=.github/workflows/release semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+
       - name: Build
         run: ./gradlew assemble
+
+      - name: Get tag
+        id: get_tag
+        run: |
+          if git describe --tags --abbrev=0 --exact-match >/dev/null; then
+            echo "tag=$(git describe --tags --abbrev=0 --exact-match)" >> $GITHUB_OUTPUT
+          else
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
 
       - name: Assemble release
         run: ./gradlew assembleRelease
         env:
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-
-      - name: Publish snapshot
-        run: ./gradlew publishSnapshot
-        env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
-          GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.get_tag.outputs.skip != 'true'
 
       - name: Publish release
         run: ./gradlew publishRelease
@@ -117,14 +139,15 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_KEY_RING: ${{ secrets.GPG_KEY_RING }} # Run `gpg --export-secret-keys "<key user name goes here>" | base64` to get this
           GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.get_tag.outputs.skip != 'true'
 
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v2.0.8
+      - name: Add artifacts to GitHub release
+        uses: softprops/action-gh-release@v2.0.9
         with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
           files: build/release/*
           fail_on_unmatched_files: true
-          draft: true # Update draft release with matching tag, if there is one.
+          draft: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: github.repository == 'charleskorn/kaml' && startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+        if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.get_tag.outputs.skip != 'true'

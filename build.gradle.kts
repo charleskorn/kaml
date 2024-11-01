@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest.multiplatform") version "5.9.1"
+    id("io.kotest.multiplatform") version "6.0.0.M1"
 }
 
 group = "com.charleskorn.kaml"
@@ -68,6 +68,13 @@ kotlin {
     linuxX64()
     linuxArm64()
     iosArm64()
+    watchosSimulatorArm64()
+    watchosX64()
+    watchosArm32()
+    watchosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    tvosArm64()
 
     // Tier 3
     mingwX64()
@@ -75,24 +82,23 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
-                implementation("it.krzeminski:snakeyaml-engine-kmp:3.0.2")
-                implementation("com.squareup.okio:okio:3.9.0")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
+                implementation("it.krzeminski:snakeyaml-engine-kmp:3.0.3")
+                implementation("com.squareup.okio:okio:3.9.1")
             }
         }
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:5.9.1")
-                implementation("io.kotest:kotest-framework-api:5.9.1")
-                implementation("io.kotest:kotest-framework-engine:5.9.1")
-                implementation("io.kotest:kotest-framework-datatest:5.9.1")
+                implementation("io.kotest:kotest-assertions-core:6.0.0.M1")
+                implementation("io.kotest:kotest-framework-api:6.0.0.M1")
+                implementation("io.kotest:kotest-framework-engine:6.0.0.M1")
             }
         }
 
         jvmTest {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:5.9.1")
+                implementation("io.kotest:kotest-runner-junit5:6.0.0.M1")
             }
         }
     }

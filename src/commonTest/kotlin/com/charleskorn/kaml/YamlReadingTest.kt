@@ -26,7 +26,6 @@ import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
 import com.charleskorn.kaml.testobjects.TestEnum
-import com.charleskorn.kaml.testobjects.TestEnumWithExplicitNames
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.UnsealedClass
 import com.charleskorn.kaml.testobjects.UnsealedString
@@ -62,512 +61,6 @@ import kotlin.jvm.JvmInline
 
 class YamlReadingTest : FlatFunSpec({
     context("a YAML parser") {
-        context("parsing scalars") {
-            context("given the input 'hello'") {
-                val input = "hello"
-
-                context("parsing that input as a string") {
-                    val result = Yaml.default.decodeFromString(String.serializer(), input)
-
-                    test("deserializes it to the expected string value") {
-                        result shouldBe "hello"
-                    }
-                }
-
-                context("parsing that input as a nullable string") {
-                    val result = Yaml.default.decodeFromString(String.serializer().nullable, input)
-
-                    test("deserializes it to the expected string value") {
-                        result shouldBe "hello"
-                    }
-                }
-
-                context("parsing that input with a serializer that uses YAML location information when throwing exceptions") {
-                    test("throws an exception with the correct location information") {
-                        val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(LocationThrowingSerializer, input) }
-
-                        exception.asClue {
-                            it.message shouldBe "Serializer called with location (1, 1) and path: <root>"
-                        }
-                    }
-                }
-
-                context("parsing that input as a value type") {
-                    val result = Yaml.default.decodeFromString(StringValue.serializer(), input)
-
-                    test("deserializes it to the expected object") {
-                        result shouldBe StringValue("hello")
-                    }
-                }
-            }
-
-            context("given the input '123'") {
-                val input = "123"
-
-                context("parsing that input as an integer") {
-                    val result = Yaml.default.decodeFromString(Int.serializer(), input)
-
-                    test("deserializes it to the expected integer") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a long") {
-                    val result = Yaml.default.decodeFromString(Long.serializer(), input)
-
-                    test("deserializes it to the expected long") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a short") {
-                    val result = Yaml.default.decodeFromString(Short.serializer(), input)
-
-                    test("deserializes it to the expected short") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a byte") {
-                    val result = Yaml.default.decodeFromString(Byte.serializer(), input)
-
-                    test("deserializes it to the expected byte") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a double") {
-                    val result = Yaml.default.decodeFromString(Double.serializer(), input)
-
-                    test("deserializes it to the expected double") {
-                        result shouldBe 123.0
-                    }
-                }
-
-                context("parsing that input as a float") {
-                    val result = Yaml.default.decodeFromString(Float.serializer(), input)
-
-                    test("deserializes it to the expected float") {
-                        result shouldBe 123.0f
-                    }
-                }
-
-                context("parsing that input as a nullable integer") {
-                    val result = Yaml.default.decodeFromString(Int.serializer().nullable, input)
-
-                    test("deserializes it to the expected integer") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a nullable long") {
-                    val result = Yaml.default.decodeFromString(Long.serializer().nullable, input)
-
-                    test("deserializes it to the expected long") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a nullable short") {
-                    val result = Yaml.default.decodeFromString(Short.serializer().nullable, input)
-
-                    test("deserializes it to the expected short") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a nullable byte") {
-                    val result = Yaml.default.decodeFromString(Byte.serializer().nullable, input)
-
-                    test("deserializes it to the expected byte") {
-                        result shouldBe 123
-                    }
-                }
-
-                context("parsing that input as a nullable double") {
-                    val result = Yaml.default.decodeFromString(Double.serializer().nullable, input)
-
-                    test("deserializes it to the expected double") {
-                        result shouldBe 123.0
-                    }
-                }
-
-                context("parsing that input as a nullable float") {
-                    val result = Yaml.default.decodeFromString(Float.serializer().nullable, input)
-
-                    test("deserializes it to the expected float") {
-                        result shouldBe 123.0f
-                    }
-                }
-            }
-
-            context("given the input 'true'") {
-                val input = "true"
-
-                context("parsing that input as a boolean") {
-                    val result = Yaml.default.decodeFromString(Boolean.serializer(), input)
-
-                    test("deserializes it to the expected boolean value") {
-                        result shouldBe true
-                    }
-                }
-
-                context("parsing that input as a nullable boolean") {
-                    val result = Yaml.default.decodeFromString(Boolean.serializer().nullable, input)
-
-                    test("deserializes it to the expected boolean value") {
-                        result shouldBe true
-                    }
-                }
-            }
-
-            context("given the input 'c'") {
-                val input = "c"
-
-                context("parsing that input as a character") {
-                    val result = Yaml.default.decodeFromString(Char.serializer(), input)
-
-                    test("deserializes it to the expected character value") {
-                        result shouldBe 'c'
-                    }
-                }
-
-                context("parsing that input as a nullable character") {
-                    val result = Yaml.default.decodeFromString(Char.serializer().nullable, input)
-
-                    test("deserializes it to the expected character value") {
-                        result shouldBe 'c'
-                    }
-                }
-            }
-
-            data class EnumFixture(val input: String, val serializer: KSerializer<*>)
-
-            mapOf(
-                EnumFixture("Value1", TestEnum.serializer()) to TestEnum.Value1,
-                EnumFixture("Value2", TestEnum.serializer()) to TestEnum.Value2,
-                EnumFixture("A", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.Alpha,
-                EnumFixture("B", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.Beta,
-                EnumFixture("With space", TestEnumWithExplicitNames.serializer()) to TestEnumWithExplicitNames.WithSpace,
-            ).forEach { (fixture, expectedValue) ->
-                val (input, serializer) = fixture
-                context("given the input '$input'") {
-                    context("parsing that input as an enumeration value") {
-                        val result = Yaml.default.decodeFromString(serializer, input)
-
-                        test("deserializes it to the expected enumeration value") {
-                            result shouldBe expectedValue
-                        }
-                    }
-                }
-            }
-
-            context("parsing an invalid enumeration value") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<YamlScalarFormatException> { Yaml.default.decodeFromString(TestEnum.serializer(), "nonsense") }
-
-                    exception.asClue {
-                        it.message shouldBe "Value 'nonsense' is not a valid option, permitted choices are: Value1, Value2"
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing case insensitive enumeration value") {
-                val yaml = Yaml(configuration = YamlConfiguration(decodeEnumCaseInsensitive = true))
-
-                test("deserializes it to the expected enumeration value") {
-                    val result = yaml.decodeFromString(TestEnum.serializer(), "value1")
-
-                    result shouldBe TestEnum.Value1
-                }
-
-                test("deserializes explicit names to the expected enumeration value") {
-                    val result = yaml.decodeFromString(TestEnumWithExplicitNames.serializer(), "with SPACE")
-
-                    result shouldBe TestEnumWithExplicitNames.WithSpace
-                }
-
-                test("throws exception with case sensitive configuration") {
-                    val exception = shouldThrow<YamlScalarFormatException> { Yaml.default.decodeFromString(TestEnum.serializer(), "value1") }
-
-                    exception.asClue {
-                        it.message shouldBe "Value 'value1' is not a valid option, permitted choices are: Value1, Value2"
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-        }
-
-        context("parsing null values") {
-            val input = "null"
-
-            context("parsing a null value as a nullable string") {
-                val result = Yaml.default.decodeFromString(String.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable string") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(String.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable integer") {
-                val result = Yaml.default.decodeFromString(Int.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable integer") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Int.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable long") {
-                val result = Yaml.default.decodeFromString(Long.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable long") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Long.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable short") {
-                val result = Yaml.default.decodeFromString(Short.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable short") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Short.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable byte") {
-                val result = Yaml.default.decodeFromString(Byte.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable byte") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Byte.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable double") {
-                val result = Yaml.default.decodeFromString(Double.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable double") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Double.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable float") {
-                val result = Yaml.default.decodeFromString(Float.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable float") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Float.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable boolean") {
-                val result = Yaml.default.decodeFromString(Boolean.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable boolean") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Boolean.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable character") {
-                val result = Yaml.default.decodeFromString(Char.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable character") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(Char.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable enum") {
-                val result = Yaml.default.decodeFromString(TestEnum.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable enum") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(TestEnum.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable list") {
-                val result = Yaml.default.decodeFromString(ListSerializer(String.serializer()).nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable list") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(ListSerializer(String.serializer()), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value as a nullable object") {
-                val result = Yaml.default.decodeFromString(ComplexStructure.serializer().nullable, input)
-
-                test("returns a null value") {
-                    result shouldBe null
-                }
-            }
-
-            context("parsing a null value as a non-nullable object") {
-                test("throws an appropriate exception") {
-                    val exception = shouldThrow<UnexpectedNullValueException> { Yaml.default.decodeFromString(ComplexStructure.serializer(), input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Unexpected null or empty value for non-null field."
-                        it.line shouldBe 1
-                        it.column shouldBe 1
-                        it.path shouldBe YamlPath.root
-                    }
-                }
-            }
-
-            context("parsing a null value with a serializer that uses YAML location information when throwing exceptions") {
-                test("throws an exception with the correct location information") {
-                    val exception = shouldThrow<LocationInformationException> { Yaml.default.decodeFromString(LocationThrowingSerializer, input) }
-
-                    exception.asClue {
-                        it.message shouldBe "Serializer called with location (1, 1) and path: <root>"
-                    }
-                }
-            }
-        }
 
         context("deserializing serial names using YamlNamingStrategies") {
             @Serializable
@@ -2607,6 +2100,23 @@ class YamlReadingTest : FlatFunSpec({
                     result shouldBe ServerConfig(DatabaseListing(listOf(Database("A"), Database("B"))))
                 }
             }
+
+            context("decoding with a custom serializer for a non-root node") {
+                val theInput = """
+                    objectWithCustomSerializer:
+                        - cats
+                        - dogs
+                        - birds
+                """.trimIndent()
+
+                val result = Yaml.default.decodeFromString(ObjectContainingObjectWithCustomSerializer.serializer(), theInput)
+
+                test("decodes the Yaml as an ObjectContainingObjectWithCustomSerializer") {
+                    result shouldBe ObjectContainingObjectWithCustomSerializer(
+                        ObjectWithCustomSerializer("cats;dogs;birds"),
+                    )
+                }
+            }
         }
     }
 })
@@ -2634,35 +2144,6 @@ private data class StructureWithLocationThrowingSerializer(
 )
 
 private data class CustomSerializedValue(val thing: String)
-
-@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-private object LocationThrowingSerializer : KSerializer<Any> {
-    override val descriptor = buildSerialDescriptor(LocationThrowingSerializer::class.simpleName!!, SerialKind.CONTEXTUAL)
-
-    override fun deserialize(decoder: Decoder): Any {
-        val location = (decoder as YamlInput).getCurrentLocation()
-        val path = decoder.getCurrentPath()
-
-        throw LocationInformationException("Serializer called with location (${location.line}, ${location.column}) and path: ${path.toHumanReadableString()}")
-    }
-
-    override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
-}
-
-private object LocationThrowingMapSerializer : KSerializer<Any> {
-    override val descriptor: SerialDescriptor = MapSerializer(String.serializer(), String.serializer()).descriptor
-
-    override fun deserialize(decoder: Decoder): Any {
-        val location = (decoder as YamlInput).getCurrentLocation()
-        val path = decoder.getCurrentPath()
-
-        throw LocationInformationException("Serializer called with location (${location.line}, ${location.column}) and path: ${path.toHumanReadableString()}")
-    }
-
-    override fun serialize(encoder: Encoder, value: Any) = throw UnsupportedOperationException()
-}
-
-private class LocationInformationException(message: String) : RuntimeException(message)
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 object ContextualSerializer : KSerializer<String> {
@@ -2748,4 +2229,35 @@ private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
     }
 
     override fun serialize(encoder: Encoder, value: DatabaseListing) = throw UnsupportedOperationException()
+}
+
+@Serializable
+private data class ObjectContainingObjectWithCustomSerializer(
+    val objectWithCustomSerializer: ObjectWithCustomSerializer,
+)
+
+@Serializable(with = SerializerForObjectWithCustomSerializer::class)
+private data class ObjectWithCustomSerializer(
+    val combinedValues: String,
+)
+
+private object SerializerForObjectWithCustomSerializer : KSerializer<ObjectWithCustomSerializer> {
+    private const val ValuesSeparator = ";"
+
+    private val listSerializer = ListSerializer(String.serializer())
+    override val descriptor = listSerializer.descriptor
+
+    override fun serialize(encoder: Encoder, value: ObjectWithCustomSerializer) {
+        encoder.encodeSerializableValue(listSerializer, value.combinedValues.split(ValuesSeparator))
+    }
+
+    override fun deserialize(decoder: Decoder): ObjectWithCustomSerializer {
+        check(decoder is YamlInput)
+
+        // Intentionally parse the values from the current yaml node
+        val values = decoder.node.yamlList.items
+            .map { it.yamlScalar.content }
+
+        return ObjectWithCustomSerializer(values.joinToString(ValuesSeparator))
+    }
 }
