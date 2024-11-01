@@ -13,161 +13,147 @@ import kotlinx.serialization.builtins.nullable
 
 class YamlContentPolymorphicSerializerTest : FunSpec({
     context("a YAML parser") {
-        context("parsing polymorphic values") {
-            context("given polymorphic inputs when PolymorphismStyle.None is used") {
-                val polymorphicYaml = Yaml(
-                    serializersModule = polymorphicModule,
-                    configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None)
+        context("parsing polymorphic values with PolymorphismStyle.None") {
+            val polymorphicYaml = Yaml(
+                serializersModule = polymorphicModule,
+                configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None)
+            )
+
+            context("given some input where the value should be a sealed class") {
+                val input = """
+                    value: "asdfg"
+                """.trimIndent()
+
+                val result = polymorphicYaml.decodeFromString(TestSealedStructureBasedOnContentSerializer, input)
+
+                test("deserializes it to a Kotlin object") {
+                    result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
+                }
+            }
+
+            context("given some input where the value should be a sealed class (inline)") {
+                val input = """
+                    "abcdef"
+                """.trimIndent()
+
+                val result = polymorphicYaml.decodeFromString(TestSealedStructureBasedOnContentSerializer, input)
+
+                test("deserializes it to a Kotlin object") {
+                    result shouldBe TestSealedStructure.InlineSealedString("abcdef")
+                }
+            }
+
+            context("given some input missing without the serializer") {
+                val input = """
+                    value: "asdfg"
+                """.trimIndent()
+
+                test("throws an exception with the correct location information") {
+                    val exception = shouldThrow<IncorrectTypeException> {
+                        polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
+                    }
+
+                    exception.asClue {
+                        it.message shouldBe "Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'"
+                        it.line shouldBe 1
+                        it.column shouldBe 1
+                        it.path shouldBe YamlPath.root
+                    }
+                }
+            }
+
+            context("given some input representing a list of polymorphic objects") {
+                val input = """
+                    - value: null
+                    - value: -987
+                    - value: 654
+                    - "testing"
+                    - value: "tests"
+                """.trimIndent()
+
+                val result = polymorphicYaml.decodeFromString(
+                    ListSerializer(TestSealedStructureBasedOnContentSerializer),
+                    input
                 )
 
-                context("given some input where the value should be a sealed class") {
-                    val input = """
-                        value: "asdfg"
-                    """.trimIndent()
-
-                    context("parsing that input") {
-                        val result = polymorphicYaml.decodeFromString(TestSealedStructureBasedOnContentSerializer, input)
-
-                        test("deserializes it to a Kotlin object") {
-                            result shouldBe TestSealedStructure.SimpleSealedString("asdfg")
-                        }
-                    }
+                test("deserializes it to a Kotlin object") {
+                    result shouldBe listOf(
+                        TestSealedStructure.SimpleSealedString(null),
+                        TestSealedStructure.SimpleSealedInt(-987),
+                        TestSealedStructure.SimpleSealedInt(654),
+                        TestSealedStructure.InlineSealedString("testing"),
+                        TestSealedStructure.SimpleSealedString("tests"),
+                    )
                 }
+            }
 
-                context("given some input where the value should be a sealed class (inline)") {
-                    val input = """
-                        "abcdef"
-                    """.trimIndent()
+            context("given some input with a tag and a type property") {
+                val input = """
+                    !<sealedInt>
+                    kind: sealedString
+                    value: "asdfg"
+                """.trimIndent()
 
-                    context("parsing that input") {
-                        val result = polymorphicYaml.decodeFromString(TestSealedStructureBasedOnContentSerializer, input)
-
-                        test("deserializes it to a Kotlin object") {
-                            result shouldBe TestSealedStructure.InlineSealedString("abcdef")
-                        }
+                test("throws an exception with the correct location information") {
+                    val exception = shouldThrow<IncorrectTypeException> {
+                        polymorphicYaml.decodeFromString(TestSealedStructureBasedOnContentSerializer, input)
                     }
-                }
 
-                context("given some input missing without the serializer") {
-                    val input = """
-                        value: "asdfg"
-                    """.trimIndent()
-
-                    context("parsing that input") {
-                        test("throws an exception with the correct location information") {
-                            val exception = shouldThrow<IncorrectTypeException> {
-                                polymorphicYaml.decodeFromString(TestSealedStructure.serializer(), input)
-                            }
-
-                            exception.asClue {
-                                it.message shouldBe "Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'"
-                                it.line shouldBe 1
-                                it.column shouldBe 1
-                                it.path shouldBe YamlPath.root
-                            }
-                        }
-                    }
-                }
-
-                context("given some input representing a list of polymorphic objects") {
-                    val input = """
-                        - value: null
-                        - value: -987
-                        - value: 654
-                        - "testing"
-                        - value: "tests"
-                    """.trimIndent()
-
-                    context("parsing that input") {
-                        val result = polymorphicYaml.decodeFromString(
-                            ListSerializer(TestSealedStructureBasedOnContentSerializer),
-                            input
-                        )
-
-                        test("deserializes it to a Kotlin object") {
-                            result shouldBe listOf(
-                                TestSealedStructure.SimpleSealedString(null),
-                                TestSealedStructure.SimpleSealedInt(-987),
-                                TestSealedStructure.SimpleSealedInt(654),
-                                TestSealedStructure.InlineSealedString("testing"),
-                                TestSealedStructure.SimpleSealedString("tests"),
-                            )
-                        }
-                    }
-                }
-
-                context("given some input with a tag and a type property") {
-                    val input = """
-                        !<sealedInt>
-                        kind: sealedString
-                        value: "asdfg"
-                    """.trimIndent()
-
-                    context("parsing that input") {
-                        test("throws an exception with the correct location information") {
-                            val exception = shouldThrow<IncorrectTypeException> {
-                                polymorphicYaml.decodeFromString(TestSealedStructureBasedOnContentSerializer, input)
-                            }
-
-                            exception.asClue {
-                                it.message shouldBe "Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'"
-                                it.line shouldBe 1
-                                it.column shouldBe 1
-                                it.path shouldBe YamlPath.root
-                            }
-                        }
+                    exception.asClue {
+                        it.message shouldBe "Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'"
+                        it.line shouldBe 1
+                        it.column shouldBe 1
+                        it.path shouldBe YamlPath.root
                     }
                 }
             }
         }
     }
     context("a YAML serializer") {
-        context("serializing polymorphic values") {
-            context("with custom serializer") {
-                val polymorphicYaml = Yaml(
-                    serializersModule = polymorphicModule,
-                    configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag)
+        context("serializing polymorphic values with custom serializer") {
+            val polymorphicYaml = Yaml(
+                serializersModule = polymorphicModule,
+                configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag)
+            )
+
+            context("serializing a sealed type") {
+                val input = TestSealedStructure.SimpleSealedInt(5)
+                val output = polymorphicYaml.encodeToString(TestSealedStructureBasedOnContentSerializer, input)
+                val expectedYaml = """
+                    value: 5
+                """.trimIndent()
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedYaml
+                }
+            }
+
+            context("serializing a list of polymorphic values") {
+                val input = listOf(
+                    TestSealedStructure.SimpleSealedInt(5),
+                    TestSealedStructure.SimpleSealedString("some test"),
+                    TestSealedStructure.SimpleSealedInt(-20),
+                    TestSealedStructure.InlineSealedString("testing"),
+                    TestSealedStructure.SimpleSealedString(null),
+                    null,
                 )
 
-                context("serializing a sealed type") {
-                    val input = TestSealedStructure.SimpleSealedInt(5)
-                    val output = polymorphicYaml.encodeToString(TestSealedStructureBasedOnContentSerializer, input)
-                    val expectedYaml = """
-                        value: 5
-                    """.trimIndent()
+                val output = polymorphicYaml.encodeToString(
+                    ListSerializer(TestSealedStructureBasedOnContentSerializer.nullable),
+                    input
+                )
 
-                    test("returns the value serialized in the expected YAML form") {
-                        output shouldBe expectedYaml
-                    }
-                }
+                val expectedYaml = """
+                    - value: 5
+                    - value: "some test"
+                    - value: -20
+                    - "testing"
+                    - value: null
+                    - null
+                """.trimIndent()
 
-                context("serializing a list of polymorphic values") {
-                    val input = listOf(
-                        TestSealedStructure.SimpleSealedInt(5),
-                        TestSealedStructure.SimpleSealedString("some test"),
-                        TestSealedStructure.SimpleSealedInt(-20),
-                        TestSealedStructure.InlineSealedString("testing"),
-                        TestSealedStructure.SimpleSealedString(null),
-                        null,
-                    )
-
-                    val output = polymorphicYaml.encodeToString(
-                        ListSerializer(TestSealedStructureBasedOnContentSerializer.nullable),
-                        input
-                    )
-
-                    val expectedYaml = """
-                        - value: 5
-                        - value: "some test"
-                        - value: -20
-                        - "testing"
-                        - value: null
-                        - null
-                    """.trimIndent()
-
-                    test("returns the value serialized in the expected YAML form") {
-                        output shouldBe expectedYaml
-                    }
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedYaml
                 }
             }
         }
