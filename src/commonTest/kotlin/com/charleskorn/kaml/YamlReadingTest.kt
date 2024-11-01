@@ -2604,7 +2604,7 @@ class YamlReadingTest : FlatFunSpec({
 
                 test("decodes the Yaml as an ObjectContainingObjectWithCustomSerializer") {
                     result shouldBe ObjectContainingObjectWithCustomSerializer(
-                        ObjectWithCustomSerializer("cats;dogs;birds")
+                        ObjectWithCustomSerializer("cats;dogs;birds"),
                     )
                 }
             }
@@ -2753,12 +2753,12 @@ private object DecodingFromYamlNodeSerializer : KSerializer<DatabaseListing> {
 
 @Serializable
 private data class ObjectContainingObjectWithCustomSerializer(
-    val objectWithCustomSerializer: ObjectWithCustomSerializer
+    val objectWithCustomSerializer: ObjectWithCustomSerializer,
 )
 
 @Serializable(with = SerializerForObjectWithCustomSerializer::class)
 private data class ObjectWithCustomSerializer(
-    val combinedValues: String
+    val combinedValues: String,
 )
 
 private object SerializerForObjectWithCustomSerializer : KSerializer<ObjectWithCustomSerializer> {
