@@ -1,3 +1,21 @@
+/*
+
+   Copyright 2018-2023 Charles Korn.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       https://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/
+
 package com.charleskorn.kaml
 
 import com.charleskorn.kaml.testobjects.TestSealedStructure
@@ -16,7 +34,7 @@ class YamlContentPolymorphicSerializerTest : FunSpec({
         context("parsing polymorphic values with PolymorphismStyle.None") {
             val polymorphicYaml = Yaml(
                 serializersModule = polymorphicModule,
-                configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None)
+                configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.None),
             )
 
             context("given some input where the value should be a sealed class") {
@@ -73,7 +91,7 @@ class YamlContentPolymorphicSerializerTest : FunSpec({
 
                 val result = polymorphicYaml.decodeFromString(
                     ListSerializer(TestSealedStructureBasedOnContentSerializer),
-                    input
+                    input,
                 )
 
                 test("deserializes it to a Kotlin object") {
@@ -113,7 +131,7 @@ class YamlContentPolymorphicSerializerTest : FunSpec({
         context("serializing polymorphic values with custom serializer") {
             val polymorphicYaml = Yaml(
                 serializersModule = polymorphicModule,
-                configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag)
+                configuration = YamlConfiguration(polymorphismStyle = PolymorphismStyle.Tag),
             )
 
             context("serializing a sealed type") {
@@ -140,7 +158,7 @@ class YamlContentPolymorphicSerializerTest : FunSpec({
 
                 val output = polymorphicYaml.encodeToString(
                     ListSerializer(TestSealedStructureBasedOnContentSerializer.nullable),
-                    input
+                    input,
                 )
 
                 val expectedYaml = """
@@ -161,7 +179,7 @@ class YamlContentPolymorphicSerializerTest : FunSpec({
 })
 
 object TestSealedStructureBasedOnContentSerializer : YamlContentPolymorphicSerializer<TestSealedStructure>(
-    TestSealedStructure::class
+    TestSealedStructure::class,
 ) {
     override fun selectDeserializer(node: YamlNode): DeserializationStrategy<TestSealedStructure> = when (node) {
         is YamlScalar -> TestSealedStructure.InlineSealedString.serializer()

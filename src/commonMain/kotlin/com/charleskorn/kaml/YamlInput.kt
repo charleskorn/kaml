@@ -50,8 +50,11 @@ public sealed class YamlInput(
                 descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, yaml, context, configuration)
                 descriptor.kind is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
                 descriptor.kind is PolymorphicKind -> {
-                    if (descriptor.isContentBasedPolymorphic) createContextual(node, yaml, context, configuration, descriptor)
-                    else throw MissingTypeTagException(node.path)
+                    if (descriptor.isContentBasedPolymorphic) {
+                        createContextual(node, yaml, context, configuration, descriptor)
+                    } else {
+                        throw MissingTypeTagException(node.path)
+                    }
                 }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.path)
             }
@@ -67,13 +70,16 @@ public sealed class YamlInput(
                 is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
                 is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
                 is PolymorphicKind -> {
-                    if (descriptor.isContentBasedPolymorphic) createContextual(node, yaml, context, configuration, descriptor)
-                    else when (configuration.polymorphismStyle) {
-                        PolymorphismStyle.None ->
-                            throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
+                    if (descriptor.isContentBasedPolymorphic) {
+                        createContextual(node, yaml, context, configuration, descriptor)
+                    } else {
+                        when (configuration.polymorphismStyle) {
+                            PolymorphismStyle.None ->
+                                throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
 
-                        PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
-                        PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
+                            PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
+                            PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
+                        }
                     }
                 }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.path)
