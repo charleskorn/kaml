@@ -22,6 +22,7 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialInfo
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -37,7 +38,12 @@ public abstract class YamlContentPolymorphicSerializer<T : Any>(private val base
     override val descriptor: SerialDescriptor = buildSerialDescriptor(
         "${YamlContentPolymorphicSerializer::class.simpleName}<${baseClass.simpleName}>",
         PolymorphicKind.SEALED,
-    )
+    ) {
+        annotations += Marker()
+    }
+
+    @SerialInfo
+    internal annotation class Marker
 
     @OptIn(InternalSerializationApi::class)
     override fun serialize(encoder: Encoder, value: T) {

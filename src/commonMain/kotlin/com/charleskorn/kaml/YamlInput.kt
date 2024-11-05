@@ -129,7 +129,7 @@ public sealed class YamlInput(
             return this.copy(entries = entries.filterKeys { it.content != key })
         }
 
-        private val SerialDescriptor.isContentBasedPolymorphic get() = serialName.startsWith(YamlContentPolymorphicSerializer::class.simpleName!!)
+        private val SerialDescriptor.isContentBasedPolymorphic get() = annotations.any { it is YamlContentPolymorphicSerializer.Marker }
     }
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
