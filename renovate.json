@@ -77,7 +77,8 @@
     },
     {
       "matchManagers": [
-        "github-actions"
+        "github-actions",
+        "gradle-wrapper"
       ],
       "semanticCommitScope": "internal"
     }
