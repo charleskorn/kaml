@@ -62,6 +62,13 @@ public sealed class YamlInput(
             is YamlList -> when (descriptor.kind) {
                 is StructureKind.LIST -> YamlListInput(node, yaml, context, configuration)
                 is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
+                is PolymorphicKind -> {
+                    if (descriptor.isContentBasedPolymorphic) {
+                        createContextual(node, yaml, context, configuration, descriptor)
+                    } else {
+                        throw MissingTypeTagException(node.path)
+                    }
+                }
                 else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.path)
             }
 
