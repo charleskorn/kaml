@@ -807,9 +807,9 @@ class YamlWritingTest : FlatFunSpec({
             val expectedOutput = """
                     text: "test"
                     node:
-                      "'foo'": "'bar'"
-                      "'baz'": 1
-                      "'test'":
+                      "foo": "bar"
+                      "baz": 1
+                      "test":
                       - 1
                       - 2
                       - 3
@@ -1209,7 +1209,7 @@ class YamlWritingTest : FlatFunSpec({
             val node = Yaml.default.parseToYamlNode("!testtag 2024-01-01") as YamlTaggedNode
             val expectedOutput = """
                     text: "test"
-                    node: !testtag "'2024-01-01'"
+                    node: !testtag "2024-01-01"
             """.trimIndent()
             context("as tagged node") {
                 val value = TestClassWithNestedTaggedNode(text = "test", node = node)

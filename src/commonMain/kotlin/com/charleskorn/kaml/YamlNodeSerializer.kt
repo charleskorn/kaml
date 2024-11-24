@@ -20,7 +20,6 @@
 
 package com.charleskorn.kaml
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -39,8 +38,11 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.encodeStructure
 
-internal object YamlNodeSerializer : YamlContentPolymorphicSerializer<YamlNode>(YamlNode::class) {
-    override val descriptor: SerialDescriptor = super.descriptor.nullable
+internal object YamlNodeSerializer : KSerializer<YamlNode> {
+    override val descriptor: SerialDescriptor =
+        buildSerialDescriptor("com.charleskorn.kaml.YamlNode", PolymorphicKind.SEALED) {
+            annotations += YamlContentPolymorphicSerializer.Marker()
+        }.nullable
 
     override fun serialize(encoder: Encoder, value: YamlNode) {
         encoder.asYamlOutput()
@@ -56,10 +58,6 @@ internal object YamlNodeSerializer : YamlContentPolymorphicSerializer<YamlNode>(
     override fun deserialize(decoder: Decoder): YamlNode {
         val input = decoder.asYamlInput<YamlInput>()
         return if (input is YamlPolymorphicInput) YamlTaggedNode(input.typeName, input.node) else input.node
-    }
-
-    override fun selectDeserializer(node: YamlNode): DeserializationStrategy<YamlNode> {
-        error("implemented custom serialize logic")
     }
 }
 
@@ -81,7 +79,8 @@ internal object YamlScalarSerializer : KSerializer<YamlScalar> {
             return encoder.encodeDouble(value.toDouble())
         } catch (_: SerializationException) {
         }
-        encoder.encodeString(value.contentToString())
+        value.content.singleOrNull()?.also { return encoder.encodeChar(it) }
+        encoder.encodeString(value.content)
     }
 
     override fun deserialize(decoder: Decoder): YamlScalar {
