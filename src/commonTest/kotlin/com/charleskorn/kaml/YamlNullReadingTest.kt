@@ -18,10 +18,13 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.testobjects.TestClassWithNestedNode
+import com.charleskorn.kaml.testobjects.TestClassWithNestedNull
 import com.charleskorn.kaml.testobjects.TestEnum
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.nullable
@@ -292,6 +295,32 @@ class YamlNullReadingTest : FlatFunSpec({
 
                 exception.asClue {
                     it.message shouldBe "Serializer called with location (1, 1) and path: <root>"
+                }
+            }
+        }
+    }
+
+    context("a YAML parser parsing nested null values") {
+
+        context("given a nested null node") {
+            val input = """
+                text: "OK"
+                node: null
+            """.trimIndent()
+
+            context("parsing that input as a null node") {
+                val result = Yaml.default.decodeFromString(TestClassWithNestedNull.serializer(), input)
+
+                test("deserializes scalar to double") {
+                    result.node.shouldBeInstanceOf<YamlNull>()
+                }
+            }
+
+            context("parsing that input as a node") {
+                val result = Yaml.default.decodeFromString(TestClassWithNestedNode.serializer(), input)
+
+                test("deserializes node to null") {
+                    result.node.shouldBeInstanceOf<YamlNull>()
                 }
             }
         }

@@ -18,11 +18,14 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.testobjects.TestClassWithNestedNode
+import com.charleskorn.kaml.testobjects.TestClassWithNestedScalar
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestEnumWithExplicitNames
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
@@ -63,6 +66,33 @@ class YamlScalarReadingTest : FlatFunSpec({
 
                 test("deserializes it to the expected object") {
                     result shouldBe StringValue("hello")
+                }
+            }
+        }
+
+        context("given a nested floating point node") {
+            val input = """
+                text: "OK"
+                node: 5.4
+            """.trimIndent()
+
+            context("parsing that input as a scalar node") {
+                val result = Yaml.default.decodeFromString(TestClassWithNestedScalar.serializer(), input)
+
+                test("deserializes scalar to double") {
+                    result.node.toDouble() shouldBe 5.4
+                }
+            }
+
+            context("parsing that input as a node") {
+                val result = Yaml.default.decodeFromString(TestClassWithNestedNode.serializer(), input)
+
+                test("deserializes node to scalar") {
+                    result.node.shouldBeInstanceOf<YamlScalar>()
+                }
+
+                test("deserializes node to double") {
+                    (result.node as YamlScalar).toDouble() shouldBe 5.4
                 }
             }
         }
