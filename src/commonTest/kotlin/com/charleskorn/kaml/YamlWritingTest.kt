@@ -317,7 +317,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: 1.2
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedScalar(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedScalar.serializer(), value)
 
@@ -331,7 +331,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: 1.2
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedNode(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
 
@@ -345,7 +345,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: true
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedNode(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
 
@@ -359,7 +359,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: -5
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedNode(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
 
@@ -373,7 +373,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: 5.34
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedNode(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
 
@@ -387,7 +387,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: "%"
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedNode(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
 
@@ -401,7 +401,7 @@ class YamlWritingTest : FlatFunSpec({
                 val expectedOutput = """
                     text: "test"
                     node: "foo bar \n 42"
-            """.trimIndent()
+                """.trimIndent()
                 val value = TestClassWithNestedNode(text = "test", node = node)
                 val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
 

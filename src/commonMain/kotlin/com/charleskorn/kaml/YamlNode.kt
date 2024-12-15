@@ -50,7 +50,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
     }
 
     private fun <T : Any> convertToIntegerLikeValueOrNull(converter: (String, Int) -> T?): T? {
-       return try {
+        return try {
             when {
                 content.startsWith("0x") -> converter(content.substring(2), 16)
                 content.startsWith("-0x") -> converter("-" + content.substring(3), 16)
