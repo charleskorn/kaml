@@ -23,7 +23,6 @@ package com.charleskorn.kaml
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
@@ -67,19 +66,10 @@ internal object YamlScalarSerializer : KSerializer<YamlScalar> {
 
     override fun serialize(encoder: Encoder, value: YamlScalar) {
         encoder.asYamlOutput()
-        try {
-            return encoder.encodeBoolean(value.toBoolean())
-        } catch (_: SerializationException) {
-        }
-        try {
-            return encoder.encodeLong(value.toLong())
-        } catch (_: SerializationException) {
-        }
-        try {
-            return encoder.encodeDouble(value.toDouble())
-        } catch (_: SerializationException) {
-        }
-        value.content.singleOrNull()?.also { return encoder.encodeChar(it) }
+        value.toBooleanOrNull()?.also { return encoder.encodeBoolean(it) }
+        value.toLongOrNull()?.also { return encoder.encodeLong(it) }
+        value.toDoubleOrNull()?.also { return encoder.encodeDouble(it) }
+        value.toCharOrNull()?.also { return encoder.encodeChar(it) }
         encoder.encodeString(value.content)
     }
 
