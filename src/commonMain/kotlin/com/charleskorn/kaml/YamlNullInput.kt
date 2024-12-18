@@ -22,7 +22,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
-internal class YamlNullInput(val nullValue: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(nullValue, yaml, context, configuration) {
+internal class YamlNullInput(val nullValue: YamlNull, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(nullValue, yaml, context, configuration) {
     override fun decodeNotNullMark(): Boolean = false
 
     override fun decodeValue(): Any = throw UnexpectedNullValueException(nullValue.path)
