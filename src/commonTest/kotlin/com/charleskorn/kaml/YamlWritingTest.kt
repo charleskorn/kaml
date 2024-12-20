@@ -22,6 +22,11 @@ import com.charleskorn.kaml.testobjects.NestedObjects
 import com.charleskorn.kaml.testobjects.SealedWrapper
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.Team
+import com.charleskorn.kaml.testobjects.TestClassWithNestedList
+import com.charleskorn.kaml.testobjects.TestClassWithNestedMap
+import com.charleskorn.kaml.testobjects.TestClassWithNestedNode
+import com.charleskorn.kaml.testobjects.TestClassWithNestedScalar
+import com.charleskorn.kaml.testobjects.TestClassWithNestedTaggedNode
 import com.charleskorn.kaml.testobjects.TestEnum
 import com.charleskorn.kaml.testobjects.TestSealedStructure
 import com.charleskorn.kaml.testobjects.UnsealedClass
@@ -302,6 +307,106 @@ class YamlWritingTest : FlatFunSpec({
 
                 test("returns the value serialized in the expected YAML form, escaping the float with single-quotes") {
                     output shouldBe """'1.2'"""
+                }
+            }
+        }
+
+        context("serializing nested scalar node") {
+            context("as scalar node") {
+                val node = YamlScalar("1.2", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: 1.2
+                """.trimIndent()
+                val value = TestClassWithNestedScalar(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedScalar.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("as general node") {
+                val node = YamlScalar("1.2", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: 1.2
+                """.trimIndent()
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("of boolean") {
+                val node = YamlScalar("true", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: true
+                """.trimIndent()
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("of integer like number") {
+                val node = YamlScalar("-5", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: -5
+                """.trimIndent()
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("of floating point number") {
+                val node = YamlScalar("5.34", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: 5.34
+                """.trimIndent()
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("of character") {
+                val node = YamlScalar("%", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: "%"
+                """.trimIndent()
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("of string") {
+                val node = YamlScalar("foo bar \n 42", YamlPath.root)
+                val expectedOutput = """
+                    text: "test"
+                    node: "foo bar \n 42"
+                """.trimIndent()
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
                 }
             }
         }
@@ -640,6 +745,40 @@ class YamlWritingTest : FlatFunSpec({
             }
         }
 
+        context("serializing nested list node") {
+            val node = Yaml.default.parseToYamlNode(
+                """
+                    - 1
+                    - 2
+                    - 3
+                """.trimIndent(),
+            ) as YamlList
+            val expectedOutput = """
+                    text: "test"
+                    node:
+                    - 1
+                    - 2
+                    - 3
+            """.trimIndent()
+            context("as list node") {
+                val value = TestClassWithNestedList(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedList.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("as general node") {
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+        }
+
         context("serializing maps") {
             context("serializing a map of strings to strings") {
                 val input = mapOf(
@@ -725,6 +864,46 @@ class YamlWritingTest : FlatFunSpec({
                             "item2":
                               name: "name2"
                         """.trimIndent()
+                }
+            }
+        }
+
+        context("serializing nested map node") {
+            val node = Yaml.default.parseToYamlNode(
+                """
+                    foo: bar
+                    baz: 1
+                    test:
+                      - 1
+                      - 2
+                      - 3
+                """.trimIndent(),
+            ) as YamlMap
+            val expectedOutput = """
+                    text: "test"
+                    node:
+                      "foo": "bar"
+                      "baz": 1
+                      "test":
+                      - 1
+                      - 2
+                      - 3
+            """.trimIndent()
+            context("as map node") {
+                val value = TestClassWithNestedMap(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedMap.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("as general node") {
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
                 }
             }
         }
@@ -1097,6 +1276,31 @@ class YamlWritingTest : FlatFunSpec({
                     test("returns the value serialized in the expected YAML form") {
                         output shouldBe expectedYaml
                     }
+                }
+            }
+        }
+
+        context("serializing nested tagged node") {
+            val node = Yaml.default.parseToYamlNode("!testtag 2024-01-01") as YamlTaggedNode
+            val expectedOutput = """
+                    text: "test"
+                    node: !testtag "2024-01-01"
+            """.trimIndent()
+            context("as tagged node") {
+                val value = TestClassWithNestedTaggedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedTaggedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
+                }
+            }
+
+            context("as general node") {
+                val value = TestClassWithNestedNode(text = "test", node = node)
+                val output = Yaml.default.encodeToString(TestClassWithNestedNode.serializer(), value)
+
+                test("returns the value serialized in the expected YAML form") {
+                    output shouldBe expectedOutput
                 }
             }
         }

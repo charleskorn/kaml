@@ -32,7 +32,7 @@ import kotlinx.serialization.modules.SerializersModuleCollector
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalSerializationApi::class)
-internal class YamlPolymorphicInput(private val typeName: String, private val typeNamePath: YamlPath, private val contentNode: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(contentNode, yaml, context, configuration) {
+internal class YamlPolymorphicInput(val typeName: String, private val typeNamePath: YamlPath, val contentNode: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(contentNode, yaml, context, configuration) {
     private var currentField = CurrentField.NotStarted
     private lateinit var contentDecoder: YamlInput
 

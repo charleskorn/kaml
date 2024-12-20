@@ -18,6 +18,9 @@
 
 package com.charleskorn.kaml
 
+import kotlinx.serialization.Serializable
+
+@Serializable(with = YamlNodeSerializer::class)
 public sealed class YamlNode(public open val path: YamlPath) {
     public val location: Location
         get() = path.endLocation
@@ -30,6 +33,7 @@ public sealed class YamlNode(public open val path: YamlPath) {
         YamlPath(newParentPath.segments + child.path.segments.drop(path.segments.size))
 }
 
+@Serializable(with = YamlScalarSerializer::class)
 public data class YamlScalar(val content: String, override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlScalar && this.content == other.content
     override fun contentToString(): String = "'$content'"
@@ -38,10 +42,16 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
     public fun toShort(): Short = convertToIntegerLikeValue(String::toShort, "short")
     public fun toInt(): Int = convertToIntegerLikeValue(String::toInt, "integer")
     public fun toLong(): Long = convertToIntegerLikeValue(String::toLong, "long")
+    internal fun toLongOrNull(): Long? = convertToIntegerLikeValueOrNull(String::toLongOrNull)
 
     private fun <T> convertToIntegerLikeValue(converter: (String, Int) -> T, description: String): T {
-        try {
-            return when {
+        return convertToIntegerLikeValueOrNull(converter)
+            ?: throw YamlScalarFormatException("Value '$content' is not a valid $description value.", path, content)
+    }
+
+    private fun <T : Any> convertToIntegerLikeValueOrNull(converter: (String, Int) -> T?): T? {
+        return try {
+            when {
                 content.startsWith("0x") -> converter(content.substring(2), 16)
                 content.startsWith("-0x") -> converter("-" + content.substring(3), 16)
                 content.startsWith("0o") -> converter(content.substring(2), 8)
@@ -49,7 +59,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 else -> converter(content, 10)
             }
         } catch (e: NumberFormatException) {
-            throw YamlScalarFormatException("Value '$content' is not a valid $description value.", path, content)
+            null
         }
     }
 
@@ -72,6 +82,11 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
     }
 
     public fun toDouble(): Double {
+        return toDoubleOrNull()
+            ?: throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
+    }
+
+    internal fun toDoubleOrNull(): Double? {
         return when (content) {
             ".inf", ".Inf", ".INF" -> Double.POSITIVE_INFINITY
             "-.inf", "-.Inf", "-.INF" -> Double.NEGATIVE_INFINITY
@@ -80,30 +95,38 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 try {
                     content.toDouble()
                 } catch (e: NumberFormatException) {
-                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
+                    null
                 } catch (e: IndexOutOfBoundsException) {
                     // Workaround for https://youtrack.jetbrains.com/issue/KT-69327
                     // TODO: remove once it is fixed
-                    throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
+                    null
                 }
         }
     }
 
     public fun toBoolean(): Boolean {
+        return toBooleanOrNull()
+            ?: throw YamlScalarFormatException("Value '$content' is not a valid boolean, permitted choices are: true or false", path, content)
+    }
+
+    internal fun toBooleanOrNull(): Boolean? {
         return when (content) {
             "true", "True", "TRUE" -> true
             "false", "False", "FALSE" -> false
-            else -> throw YamlScalarFormatException("Value '$content' is not a valid boolean, permitted choices are: true or false", path, content)
+            else -> null
         }
     }
 
-    public fun toChar(): Char = content.singleOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", path, content)
+    public fun toChar(): Char = toCharOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", path, content)
+
+    internal fun toCharOrNull(): Char? = content.singleOrNull()
 
     override fun withPath(newPath: YamlPath): YamlScalar = this.copy(path = newPath)
 
     override fun toString(): String = "scalar @ $path : $content"
 }
 
+@Serializable(with = YamlNullSerializer::class)
 public data class YamlNull(override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlNull
     override fun contentToString(): String = "null"
@@ -111,6 +134,7 @@ public data class YamlNull(override val path: YamlPath) : YamlNode(path) {
     override fun toString(): String = "null @ $path"
 }
 
+@Serializable(with = YamlListSerializer::class)
 public data class YamlList(val items: List<YamlNode>, override val path: YamlPath) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlList) {
@@ -152,6 +176,7 @@ public data class YamlList(val items: List<YamlNode>, override val path: YamlPat
     }
 }
 
+@Serializable(with = YamlMapSerializer::class)
 public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val path: YamlPath) : YamlNode(path) {
     init {
         val keys = entries.keys.sortedWith { a, b ->
@@ -240,6 +265,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
     }
 }
 
+@Serializable(with = YamlTaggedNodeSerializer::class)
 public data class YamlTaggedNode(val tag: String, val innerNode: YamlNode) : YamlNode(innerNode.path) {
     override fun equivalentContentTo(other: YamlNode): Boolean {
         if (other !is YamlTaggedNode) {

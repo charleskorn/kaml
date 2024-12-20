@@ -18,6 +18,12 @@
 
 package com.charleskorn.kaml.testobjects
 
+import com.charleskorn.kaml.YamlList
+import com.charleskorn.kaml.YamlMap
+import com.charleskorn.kaml.YamlNode
+import com.charleskorn.kaml.YamlNull
+import com.charleskorn.kaml.YamlScalar
+import com.charleskorn.kaml.YamlTaggedNode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -54,3 +60,39 @@ enum class TestEnumWithExplicitNames {
     @SerialName("With space")
     WithSpace,
 }
+
+@Serializable
+data class TestClassWithNestedNode(
+    val text: String,
+    val node: YamlNode,
+)
+
+@Serializable
+data class TestClassWithNestedScalar(
+    val text: String,
+    val node: YamlScalar,
+)
+
+@Serializable
+data class TestClassWithNestedNull(
+    val text: String,
+    val node: YamlNull,
+)
+
+@Serializable
+data class TestClassWithNestedMap(
+    val text: String,
+    val node: YamlMap,
+)
+
+@Serializable
+data class TestClassWithNestedList(
+    val text: String,
+    val node: YamlList,
+)
+
+@Serializable
+data class TestClassWithNestedTaggedNode(
+    val text: String,
+    val node: YamlTaggedNode,
+)
