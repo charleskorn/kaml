@@ -37,6 +37,7 @@ class YamlScalarTest : FlatFunSpec({
             "-0x11" to -17,
             "0o11" to 9,
             "-0o11" to -9,
+            "1_00" to 100
         ).forEach { (content, expectedValue) ->
             context("given a scalar with the content '$content'") {
                 val scalar = YamlScalar(content, YamlPath.root)
