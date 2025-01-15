@@ -56,7 +56,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
                 content.startsWith("-0x") -> converter("-" + content.substring(3), 16)
                 content.startsWith("0o") -> converter(content.substring(2), 8)
                 content.startsWith("-0o") -> converter("-" + content.substring(3), 8)
-                else -> converter(content, 10)
+                else -> converter(content.replace("_", ""), 10)
             }
         } catch (e: NumberFormatException) {
             null
