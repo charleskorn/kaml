@@ -93,6 +93,9 @@ kotlin {
                 implementation("io.kotest:kotest-assertions-core:6.0.0.M1")
                 implementation("io.kotest:kotest-framework-api:6.0.0.M1")
                 implementation("io.kotest:kotest-framework-engine:6.0.0.M1")
+                // Overridig coroutines' version to solve a problem with WASM JS tests.
+                // See https://kotlinlang.slack.com/archives/CDFP59223/p1736191408326039?thread_ts=1734964013.996149&cid=CDFP59223
+                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
             }
         }
 
