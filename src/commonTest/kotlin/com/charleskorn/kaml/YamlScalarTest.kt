@@ -16,16 +16,10 @@
 
 */
 
-// It's not clear what is the external API to make some tests conditional.
-// Since we're using a snapshot version of kotest, let's opt in for now,
-// hoping that we'll find the answer before onboarding a proper 6.0.0 version.
-@file:OptIn(KotestInternal::class)
-
 package com.charleskorn.kaml
 
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.common.KotestInternal
 import io.kotest.core.test.Enabled.Companion.disabled
 import io.kotest.core.test.Enabled.Companion.enabled
 import io.kotest.core.test.EnabledOrReasonIf
