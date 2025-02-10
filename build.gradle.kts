@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest.multiplatform") version "6.0.0.M1"
+    id("io.kotest.multiplatform") version "6.0.0.M2"
 }
 
 group = "com.charleskorn.kaml"
