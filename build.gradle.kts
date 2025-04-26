@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest.multiplatform") version "6.0.0.M2"
+    id("io.kotest.multiplatform") version "6.0.0.M3"
 }
 
 group = "com.charleskorn.kaml"
@@ -84,7 +84,7 @@ kotlin {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
                 implementation("it.krzeminski:snakeyaml-engine-kmp:3.1.1")
-                implementation("com.squareup.okio:okio:3.10.2")
+                implementation("com.squareup.okio:okio:3.11.0")
             }
         }
 
@@ -95,7 +95,7 @@ kotlin {
                 implementation("io.kotest:kotest-framework-engine:6.0.0.M1")
                 // Overriding coroutines' version to solve a problem with WASM JS tests.
                 // See https://kotlinlang.slack.com/archives/CDFP59223/p1736191408326039?thread_ts=1734964013.996149&cid=CDFP59223
-                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+                runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
             }
         }
 
