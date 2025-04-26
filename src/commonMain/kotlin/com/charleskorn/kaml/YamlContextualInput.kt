@@ -22,12 +22,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.SerializersModule
 
-internal class YamlContextualInput(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration) : YamlInput(node, yaml, context, configuration) {
-    private val delegateIfScalar: YamlScalarInput? = when (node) {
-        is YamlScalar -> YamlScalarInput(node, yaml, context, configuration)
-        else -> null
-    }
-
+internal class YamlContextualInput(node: YamlNode, yaml: Yaml, val context: SerializersModule, configuration: YamlConfiguration) : YamlInput(node, yaml, context, configuration) {
     override fun decodeString(): String = delegateToYamlScalarInput { decodeString() }
     override fun decodeInt(): Int = delegateToYamlScalarInput { decodeInt() }
     override fun decodeLong(): Long = delegateToYamlScalarInput { decodeLong() }
@@ -48,8 +43,8 @@ internal class YamlContextualInput(node: YamlNode, yaml: Yaml, context: Serializ
     override fun getCurrentPath(): YamlPath = node.path
 
     private inline fun <T> delegateToYamlScalarInput(block: YamlScalarInput.() -> T): T {
-        delegateIfScalar?.let { return it.block() }
         return when (node) {
+            is YamlScalar -> YamlScalarInput(node, yaml, context, configuration).block()
             is YamlNull -> throw UnexpectedNullValueException(node.path)
             else -> throw IllegalStateException("Must call beginStructure() and use returned Decoder")
         }
