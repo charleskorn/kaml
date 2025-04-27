@@ -40,66 +40,108 @@ public sealed class YamlInput(
     internal companion object {
         private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required for type with serial name '.*', but it was missing$""".toRegex()
 
-        internal fun createFor(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput = when (node) {
-            is YamlNull -> when {
-                descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.path)
-                else -> YamlNullInput(node, yaml, context, configuration)
-            }
-
-            is YamlScalar -> when {
-                descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM || descriptor.isInline -> YamlScalarInput(node, yaml, context, configuration)
-                descriptor.kind is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
-                descriptor.kind is PolymorphicKind -> {
-                    if (descriptor.isContentBasedPolymorphic) {
-                        createContextual(node, yaml, context, configuration, descriptor)
-                    } else {
-                        throw MissingTypeTagException(node.path)
-                    }
+        internal fun createFor(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput {
+            if (descriptor.isInline)
+                return createFor(node, yaml, context, configuration, descriptor.getElementDescriptor(0))
+            return when (node) {
+                is YamlNull -> when {
+                    descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.path)
+                    else -> YamlNullInput(node, yaml, context, configuration)
                 }
-                else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a scalar value", node.path)
-            }
 
-            is YamlList -> when (descriptor.kind) {
-                is StructureKind.LIST -> YamlListInput(node, yaml, context, configuration)
-                is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
-                is PolymorphicKind -> {
-                    if (descriptor.isContentBasedPolymorphic) {
-                        createContextual(node, yaml, context, configuration, descriptor)
-                    } else {
-                        throw MissingTypeTagException(node.path)
-                    }
-                }
-                else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a list", node.path)
-            }
+                is YamlScalar -> when {
+                    descriptor.kind is PrimitiveKind || descriptor.kind is SerialKind.ENUM -> YamlScalarInput(
+                        node,
+                        yaml,
+                        context,
+                        configuration
+                    )
 
-            is YamlMap -> when (descriptor.kind) {
-                is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, yaml, context, configuration)
-                is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
-                is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
-                is PolymorphicKind -> {
-                    if (descriptor.isContentBasedPolymorphic) {
-                        createContextual(node, yaml, context, configuration, descriptor)
-                    } else {
-                        when (configuration.polymorphismStyle) {
-                            PolymorphismStyle.None ->
-                                throw IncorrectTypeException("Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'", node.path)
+                    descriptor.kind is SerialKind.CONTEXTUAL -> createContextual(
+                        node,
+                        yaml,
+                        context,
+                        configuration,
+                        descriptor
+                    )
 
-                            PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
-                            PolymorphismStyle.Property -> createPolymorphicMapDeserializer(node, yaml, context, configuration)
+                    descriptor.kind is PolymorphicKind -> {
+                        if (descriptor.isContentBasedPolymorphic) {
+                            createContextual(node, yaml, context, configuration, descriptor)
+                        } else {
+                            throw MissingTypeTagException(node.path)
                         }
                     }
-                }
-                else -> throw IncorrectTypeException("Expected ${descriptor.kind.friendlyDescription}, but got a map", node.path)
-            }
 
-            is YamlTaggedNode -> when {
-                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.None -> {
-                    throw IncorrectTypeException("Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'", node.path)
+                    else -> throw IncorrectTypeException(
+                        "Expected ${descriptor.kind.friendlyDescription}, but got a scalar value",
+                        node.path
+                    )
                 }
-                descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> {
-                    YamlPolymorphicInput(node.tag, node.path, node.innerNode, yaml, context, configuration)
+
+                is YamlList -> when (descriptor.kind) {
+                    is StructureKind.LIST -> YamlListInput(node, yaml, context, configuration)
+                    is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
+                    is PolymorphicKind -> {
+                        if (descriptor.isContentBasedPolymorphic) {
+                            createContextual(node, yaml, context, configuration, descriptor)
+                        } else {
+                            throw MissingTypeTagException(node.path)
+                        }
+                    }
+
+                    else -> throw IncorrectTypeException(
+                        "Expected ${descriptor.kind.friendlyDescription}, but got a list",
+                        node.path
+                    )
                 }
-                else -> createFor(node.innerNode, yaml, context, configuration, descriptor)
+
+                is YamlMap -> when (descriptor.kind) {
+                    is StructureKind.CLASS, StructureKind.OBJECT -> YamlObjectInput(node, yaml, context, configuration)
+                    is StructureKind.MAP -> YamlMapInput(node, yaml, context, configuration)
+                    is SerialKind.CONTEXTUAL -> createContextual(node, yaml, context, configuration, descriptor)
+                    is PolymorphicKind -> {
+                        if (descriptor.isContentBasedPolymorphic) {
+                            createContextual(node, yaml, context, configuration, descriptor)
+                        } else {
+                            when (configuration.polymorphismStyle) {
+                                PolymorphismStyle.None ->
+                                    throw IncorrectTypeException(
+                                        "Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'",
+                                        node.path
+                                    )
+
+                                PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
+                                PolymorphismStyle.Property -> createPolymorphicMapDeserializer(
+                                    node,
+                                    yaml,
+                                    context,
+                                    configuration
+                                )
+                            }
+                        }
+                    }
+
+                    else -> throw IncorrectTypeException(
+                        "Expected ${descriptor.kind.friendlyDescription}, but got a map",
+                        node.path
+                    )
+                }
+
+                is YamlTaggedNode -> when {
+                    descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.None -> {
+                        throw IncorrectTypeException(
+                            "Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'",
+                            node.path
+                        )
+                    }
+
+                    descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.Tag -> {
+                        YamlPolymorphicInput(node.tag, node.path, node.innerNode, yaml, context, configuration)
+                    }
+
+                    else -> createFor(node.innerNode, yaml, context, configuration, descriptor)
+                }
             }
         }
 
