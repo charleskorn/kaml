@@ -26,6 +26,7 @@ import com.charleskorn.kaml.YamlScalar
 import com.charleskorn.kaml.YamlTaggedNode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 @Serializable
 data class SimpleStructure(
@@ -96,3 +97,13 @@ data class TestClassWithNestedTaggedNode(
     val text: String,
     val node: YamlTaggedNode,
 )
+
+@Serializable
+@JvmInline
+value class TestInline<out T>(val value: T)
+
+@Serializable
+sealed interface TestSealedInterface
+
+@Serializable
+data class TestSealedImpl(val value: String) : TestSealedInterface
