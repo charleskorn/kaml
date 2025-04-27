@@ -63,7 +63,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.serializersModuleOf
 import kotlin.jvm.JvmInline
-import kotlin.reflect.typeOf
 
 class YamlReadingTest : FlatFunSpec({
     context("a YAML parser") {
@@ -2406,20 +2405,17 @@ object ContextualSerializer : KSerializer<String> {
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
 }
 
-class DelegatedContextualSerializer(private val serializer: KSerializer<Any>): KSerializer<Any> {
+class DelegatedContextualSerializer(private val serializer: KSerializer<Any>) : KSerializer<Any> {
     override val descriptor: SerialDescriptor = buildSerialDescriptor(
         serialName = "DelegatedContextual<${serializer.descriptor.serialName}>",
-        kind = SerialKind.CONTEXTUAL
+        kind = SerialKind.CONTEXTUAL,
     )
 
     override fun deserialize(decoder: Decoder): Any =
         serializer.deserialize(decoder)
-
-
     override fun serialize(encoder: Encoder, value: Any) {
         serializer.serialize(encoder, value)
     }
-
 }
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
