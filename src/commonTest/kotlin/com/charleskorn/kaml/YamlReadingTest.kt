@@ -2205,6 +2205,25 @@ class YamlReadingTest : FlatFunSpec({
                 }
             }
 
+            mapOf(
+                "hello" to String.serializer(),
+                Int.MAX_VALUE to Int.serializer(),
+                Long.MAX_VALUE to Long.serializer(),
+                Short.MAX_VALUE to Short.serializer(),
+                Byte.MAX_VALUE to Byte.serializer(),
+                Double.MAX_VALUE to Double.serializer(),
+                Float.MAX_VALUE to Float.serializer(),
+                true to Boolean.serializer(),
+                'c' to Char.serializer(),
+                TestEnum.Value1 to TestEnum.serializer(),
+            ).forEach { (value, serializer) ->
+                context("serializer of ${serializer.descriptor.serialName} delegated with contextual kind") {
+                    val delegatedSerializer = DelegatedContextualSerializer(serializer as KSerializer<Any>)
+                    val result = Yaml.default.decodeFromString(delegatedSerializer, value.toString())
+                    result shouldBe value
+                }
+            }
+
             context("given the contextual serializer attempts to begin a structure that does not match the input") {
                 context("given the input is a map") {
                     val input = "a: b"
@@ -2384,6 +2403,19 @@ object ContextualSerializer : KSerializer<String> {
     }
 
     override fun serialize(encoder: Encoder, value: String): Unit = throw UnsupportedOperationException()
+}
+
+class DelegatedContextualSerializer(private val serializer: KSerializer<Any>) : KSerializer<Any> {
+    override val descriptor: SerialDescriptor = buildSerialDescriptor(
+        serialName = "DelegatedContextual<${serializer.descriptor.serialName}>",
+        kind = SerialKind.CONTEXTUAL,
+    )
+
+    override fun deserialize(decoder: Decoder): Any =
+        serializer.deserialize(decoder)
+    override fun serialize(encoder: Encoder, value: Any) {
+        serializer.serialize(encoder, value)
+    }
 }
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
