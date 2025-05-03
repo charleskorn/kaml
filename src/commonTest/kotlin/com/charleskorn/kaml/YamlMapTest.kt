@@ -250,6 +250,18 @@ class YamlMapTest : FlatFunSpec({
                 test("returns the value for that key") {
                     map.get<YamlScalar>("hello") shouldBe YamlScalar("world", helloValuePath)
                 }
+                test("throws IncorrectTypeException with clear message when the type mismatches") {
+                    val exception = shouldThrow<IncorrectTypeException> {
+                        map.get<YamlList>("hello")
+                    }
+
+                    exception.asClue {
+                        it.message shouldBe "Expected element to be YamlList but is YamlScalar"
+                        it.line shouldBe 2
+                        it.column shouldBe 1
+                        it.path shouldBe helloValuePath
+                    }
+                }
             }
         }
 
