@@ -218,11 +218,14 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
     override fun contentToString(): String =
         "{" + entries.map { (key, value) -> "${key.contentToString()}: ${value.contentToString()}" }.joinToString(", ") + "}"
 
-    @Suppress("UNCHECKED_CAST")
-    public operator fun <T : YamlNode> get(key: String): T? =
+    /**
+     * Returns the value corresponding to the given key and the given type,
+     * or null if such a key is not present in the map or the value is not the given type.
+     */
+    public inline operator fun <reified T : YamlNode> get(key: String): T? =
         entries.entries
             .firstOrNull { it.key.content == key }
-            ?.value as T?
+            ?.value as? T?
 
     public fun getScalar(key: String): YamlScalar? = when (val node = get<YamlNode>(key)) {
         null -> null

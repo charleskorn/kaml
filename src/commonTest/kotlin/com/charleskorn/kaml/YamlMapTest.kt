@@ -250,6 +250,13 @@ class YamlMapTest : FlatFunSpec({
                 test("returns the value for that key") {
                     map.get<YamlScalar>("hello") shouldBe YamlScalar("world", helloValuePath)
                 }
+                test("returns null when the given type is not wanted 0") {
+                    map.get<YamlList>("hello") shouldBe null
+                }
+                test("returns null when the given type is not wanted 1") {
+                    val scalar = map.get<YamlList>("hello")
+                    scalar shouldBe null
+                }
             }
         }
 
