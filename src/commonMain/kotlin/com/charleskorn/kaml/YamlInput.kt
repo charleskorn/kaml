@@ -41,9 +41,8 @@ public sealed class YamlInput(
         private val missingFieldExceptionMessage: Regex = """^Field '(.*)' is required for type with serial name '.*', but it was missing$""".toRegex()
 
         internal fun createFor(node: YamlNode, yaml: Yaml, context: SerializersModule, configuration: YamlConfiguration, descriptor: SerialDescriptor): YamlInput {
-            if (descriptor.isInline) {
+            if (descriptor.isInline)
                 return createFor(node, yaml, context, configuration, descriptor.getElementDescriptor(0))
-            }
             return when (node) {
                 is YamlNull -> when {
                     descriptor.kind is PolymorphicKind && !descriptor.isNullable -> throw MissingTypeTagException(node.path)
@@ -55,7 +54,7 @@ public sealed class YamlInput(
                         node,
                         yaml,
                         context,
-                        configuration,
+                        configuration
                     )
 
                     descriptor.kind is SerialKind.CONTEXTUAL -> createContextual(
@@ -63,7 +62,7 @@ public sealed class YamlInput(
                         yaml,
                         context,
                         configuration,
-                        descriptor,
+                        descriptor
                     )
 
                     descriptor.kind is PolymorphicKind -> {
@@ -76,7 +75,7 @@ public sealed class YamlInput(
 
                     else -> throw IncorrectTypeException(
                         "Expected ${descriptor.kind.friendlyDescription}, but got a scalar value",
-                        node.path,
+                        node.path
                     )
                 }
 
@@ -93,7 +92,7 @@ public sealed class YamlInput(
 
                     else -> throw IncorrectTypeException(
                         "Expected ${descriptor.kind.friendlyDescription}, but got a list",
-                        node.path,
+                        node.path
                     )
                 }
 
@@ -109,7 +108,7 @@ public sealed class YamlInput(
                                 PolymorphismStyle.None ->
                                     throw IncorrectTypeException(
                                         "Encountered a polymorphic map descriptor but PolymorphismStyle is 'None'",
-                                        node.path,
+                                        node.path
                                     )
 
                                 PolymorphismStyle.Tag -> throw MissingTypeTagException(node.path)
@@ -117,7 +116,7 @@ public sealed class YamlInput(
                                     node,
                                     yaml,
                                     context,
-                                    configuration,
+                                    configuration
                                 )
                             }
                         }
@@ -125,7 +124,7 @@ public sealed class YamlInput(
 
                     else -> throw IncorrectTypeException(
                         "Expected ${descriptor.kind.friendlyDescription}, but got a map",
-                        node.path,
+                        node.path
                     )
                 }
 
@@ -133,7 +132,7 @@ public sealed class YamlInput(
                     descriptor.kind is PolymorphicKind && configuration.polymorphismStyle == PolymorphismStyle.None -> {
                         throw IncorrectTypeException(
                             "Encountered a tagged polymorphic descriptor but PolymorphismStyle is 'None'",
-                            node.path,
+                            node.path
                         )
                     }
 
