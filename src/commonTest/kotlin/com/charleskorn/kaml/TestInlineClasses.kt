@@ -21,7 +21,7 @@ package com.charleskorn.kaml
 import com.charleskorn.kaml.testobjects.*
 import io.kotest.matchers.shouldBe
 
-class TestInlineTest : FlatFunSpec({
+class TestInlineClasses : FlatFunSpec({
     context("given a TestInline value class") {
         context("with a string value") {
             val value = TestInlineString("hello")
