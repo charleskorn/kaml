@@ -84,10 +84,8 @@ class TestInlineClasses : FlatFunSpec({
         }
 
         context("with a list value") {
-            val testList = TestList(listOf(1, 2))
-            val value = TestInlineList(testList)
+            val value = TestInlineList(listOf(1, 2))
             val yaml = """
-                items:
                 - 1
                 - 2
             """.trimIndent()
@@ -104,12 +102,10 @@ class TestInlineClasses : FlatFunSpec({
         }
 
         context("with a map value") {
-            val testMap = TestMap(mapOf("key1" to 1, "key2" to 2))
-            val value = TestInlineMap(testMap)
+            val value = TestInlineMap(mapOf("key1" to 1, "key2" to 2))
             val yaml = """
-                map:
-                  "key1": 1
-                  "key2": 2
+                "key1": 1
+                "key2": 2
             """.trimIndent()
 
             test("serializing it to YAML produces the expected output") {
@@ -119,6 +115,31 @@ class TestInlineClasses : FlatFunSpec({
 
             test("deserializing it from YAML produces the expected object") {
                 val result = Yaml.default.decodeFromString(TestInlineMap.serializer(), yaml)
+                result shouldBe value
+            }
+        }
+
+        context("with a class value") {
+            val value = TestInlineClass(
+                NestedObjects(
+                    SimpleStructure("hello"),
+                    SimpleStructure("world")
+                )
+            )
+            val yaml = """
+                firstPerson:
+                  name: "hello"
+                secondPerson:
+                  name: "world"
+            """.trimIndent()
+
+            test("serializing it to YAML produces the expected output") {
+                val result = Yaml.default.encodeToString(TestInlineClass.serializer(), value)
+                result shouldBe yaml
+            }
+
+            test("deserializing it from YAML produces the expected object") {
+                val result = Yaml.default.decodeFromString(TestInlineClass.serializer(), yaml)
                 result shouldBe value
             }
         }

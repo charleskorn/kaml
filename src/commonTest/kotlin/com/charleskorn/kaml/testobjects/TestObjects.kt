@@ -116,21 +116,19 @@ value class TestInlineDouble(val value: Double)
 
 @Serializable
 @JvmInline
-value class TestInlineList(val value: TestList)
+value class TestInlineList(val value: List<Int>)
 
 @Serializable
 @JvmInline
-value class TestInlineMap(val value: TestMap)
+value class TestInlineMap(val value: Map<String, Int>)
 
 @Serializable
 @JvmInline
 value class TestInlineSealedInterface(val value: TestSealedInterface)
 
 @Serializable
-data class TestList(val items: List<Int>)
-
-@Serializable
-data class TestMap(val map: Map<String, Int>)
+@JvmInline
+value class TestInlineClass(val value: NestedObjects)
 
 @Serializable
 sealed interface TestSealedInterface
