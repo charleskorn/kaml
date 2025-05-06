@@ -18,81 +18,74 @@
 
 package com.charleskorn.kaml
 
-import com.charleskorn.kaml.testobjects.TestInline
-import com.charleskorn.kaml.testobjects.TestSealedImpl
-import com.charleskorn.kaml.testobjects.TestSealedInterface
+import com.charleskorn.kaml.testobjects.*
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
 
 class TestInlineTest : FlatFunSpec({
     context("given a TestInline value class") {
         context("with a string value") {
-            val value = TestInline("hello")
+            val value = TestInlineString("hello")
             val yaml = "\"hello\""
 
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(String.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineString.serializer(), value)
                 result shouldBe yaml
             }
 
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(String.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineString.serializer(), yaml)
                 result shouldBe value
             }
         }
 
         context("with an integer value") {
-            val value = TestInline(123)
+            val value = TestInlineInt(123)
             val yaml = "123"
 
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(Int.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineInt.serializer(), value)
                 result shouldBe yaml
             }
 
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(Int.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineInt.serializer(), yaml)
                 result shouldBe value
             }
         }
 
         context("with a boolean value") {
-            val value = TestInline(true)
+            val value = TestInlineBoolean(true)
             val yaml = "true"
 
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(Boolean.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineBoolean.serializer(), value)
                 result shouldBe yaml
             }
 
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(Boolean.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineBoolean.serializer(), yaml)
                 result shouldBe value
             }
         }
 
         context("with a double value") {
-            val value = TestInline(3.14)
+            val value = TestInlineDouble(3.14)
             val yaml = "3.14"
 
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(Double.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineDouble.serializer(), value)
                 result shouldBe yaml
             }
 
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(Double.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineDouble.serializer(), yaml)
                 result shouldBe value
             }
         }
 
         context("with a list value") {
-            @Serializable
-            data class TestList(val items: List<Int>)
-
             val testList = TestList(listOf(1, 2))
-            val value = TestInline(testList)
+            val value = TestInlineList(testList)
             val yaml = """
                 items:
                 - 1
@@ -100,22 +93,19 @@ class TestInlineTest : FlatFunSpec({
             """.trimIndent()
 
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(TestList.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineList.serializer(), value)
                 result shouldBe yaml
             }
 
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(TestList.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineList.serializer(), yaml)
                 result shouldBe value
             }
         }
 
         context("with a map value") {
-            @Serializable
-            data class TestMap(val map: Map<String, Int>)
-
             val testMap = TestMap(mapOf("key1" to 1, "key2" to 2))
-            val value = TestInline(testMap)
+            val value = TestInlineMap(testMap)
             val yaml = """
                 map:
                   "key1": 1
@@ -123,28 +113,28 @@ class TestInlineTest : FlatFunSpec({
             """.trimIndent()
 
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(TestMap.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineMap.serializer(), value)
                 result shouldBe yaml
             }
 
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(TestMap.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineMap.serializer(), yaml)
                 result shouldBe value
             }
         }
 
         context("with a tagged node") {
-            val value = TestInline(TestSealedImpl("hello"))
+            val value = TestInlineSealedInterface(TestSealedImpl("hello"))
             val yaml = """
                 !<com.charleskorn.kaml.testobjects.TestSealedImpl>
                 value: "hello"
             """.trimIndent()
             test("serializing it to YAML produces the expected output") {
-                val result = Yaml.default.encodeToString(TestInline.serializer(TestSealedInterface.serializer()), value)
+                val result = Yaml.default.encodeToString(TestInlineSealedInterface.serializer(), value)
                 result shouldBe yaml
             }
             test("deserializing it from YAML produces the expected object") {
-                val result = Yaml.default.decodeFromString(TestInline.serializer(TestSealedInterface.serializer()), yaml)
+                val result = Yaml.default.decodeFromString(TestInlineSealedInterface.serializer(), yaml)
                 result shouldBe value
             }
         }
