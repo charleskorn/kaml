@@ -153,10 +153,10 @@ internal object YamlListSerializer : KSerializer<YamlList> {
     }
 }
 
-private inline fun <reified I : YamlInput> Decoder.asYamlInput(): I = checkNotNull(this as? I) {
+internal inline fun <reified I : YamlInput> Decoder.asYamlInput(): I = checkNotNull(this as? I) {
     "This serializer can be used only with Yaml format. Expected Decoder to be ${I::class.simpleName}, got ${this::class}"
 }
 
-private fun Encoder.asYamlOutput() = checkNotNull(this as? YamlOutput) {
+internal fun Encoder.asYamlOutput() = checkNotNull(this as? YamlOutput) {
     "This serializer can be used only with Yaml format. Expected Encoder to be YamlOutput, got ${this::class}"
 }
