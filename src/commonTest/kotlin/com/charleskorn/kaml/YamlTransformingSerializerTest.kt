@@ -4,12 +4,11 @@ import com.charleskorn.kaml.testobjects.Shape
 import com.charleskorn.kaml.testobjects.Shapes
 import com.charleskorn.kaml.testobjects.SimpleStructure
 import com.charleskorn.kaml.testobjects.UppercasedValueSimpleStructure
-import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
-class YamlTransformingSerializerTest : FunSpec({
+class YamlTransformingSerializerTest : FlatFunSpec({
     val yaml = Yaml(
         configuration = YamlConfiguration(
             polymorphismStyle = PolymorphismStyle.None
@@ -52,24 +51,24 @@ class YamlTransformingSerializerTest : FunSpec({
 
     context("structure transformer") {
         val shapes = Shapes(
-            first = Shape.Rectangle(0.5, 1.0),
+            first = Shape.Rectangle(0, 1),
             rest =
                 listOf(
-                    Shape.Circle(1.0),
-                    Shape.Circle(2.0),
-                    Shape.Rectangle(1.5, 1.0),
+                    Shape.Circle(1),
+                    Shape.Circle(2),
+                    Shape.Rectangle(1, 1),
                 )
         )
 
         test("serialize should wrap all shapes into list") {
             val output = yaml.encodeToString(shapes)
             val expectedYaml =
-                """- "a": 0.5
-  "b": 1.0
-- "diameter": 1.0
-- "diameter": 2.0
-- "a": 1.5
-  "b": 1.0""".trimIndent()
+                """- "a": 0
+  "b": 1
+- "diameter": 1
+- "diameter": 2
+- "a": 1
+  "b": 1""".trimIndent()
             output shouldBe expectedYaml
         }
     }

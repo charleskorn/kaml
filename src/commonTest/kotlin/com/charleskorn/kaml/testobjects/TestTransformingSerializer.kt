@@ -51,8 +51,8 @@ data class Shapes(
 @Serializable
 sealed interface Shape {
     @Serializable
-    data class Circle(val diameter: Double) : Shape
+    data class Circle(val diameter: Int) : Shape
 
     @Serializable
-    data class Rectangle(val a: Double, val b: Double) : Shape
+    data class Rectangle(val a: Int, val b: Int) : Shape
 }
