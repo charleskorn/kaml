@@ -231,7 +231,7 @@ public data class YamlMap(val entries: Map<YamlScalar, YamlNode>, override val p
         // throws IncorrectTypeException with a clear message instead of ClassCastException.
         return node as? T ?: throw IncorrectTypeException(
             "Expected element to be ${T::class.simpleName} but is ${node::class.simpleName}",
-            node.path
+            node.path,
         )
     }
 
