@@ -25,7 +25,8 @@
     {
       "groupName": "Kotest",
       "matchPackagePatterns": [
-        "^io\\.kotest:"
+        "^io\\.kotest:",
+        "^io\\.kotest\\."
       ],
       "matchDatasources": [
         "maven"
