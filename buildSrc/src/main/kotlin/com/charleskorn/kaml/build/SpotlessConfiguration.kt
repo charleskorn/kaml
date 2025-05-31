@@ -62,7 +62,7 @@ fun Project.configureSpotless() {
             )
 
             trimTrailingWhitespace()
-            indentWithSpaces()
+            leadingTabsToSpaces()
             endWithNewline()
         }
 
@@ -74,7 +74,7 @@ fun Project.configureSpotless() {
             licenseHeader(kotlinLicenseHeader, "import|tasks|apply|plugins|rootProject")
 
             trimTrailingWhitespace()
-            indentWithSpaces()
+            leadingTabsToSpaces()
             endWithNewline()
         }
 
@@ -86,7 +86,7 @@ fun Project.configureSpotless() {
             licenseHeader(kotlinLicenseHeader)
 
             trimTrailingWhitespace()
-            indentWithSpaces()
+            leadingTabsToSpaces()
             endWithNewline()
         }
     }
