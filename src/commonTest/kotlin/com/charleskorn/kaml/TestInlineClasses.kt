@@ -18,7 +18,17 @@
 
 package com.charleskorn.kaml
 
-import com.charleskorn.kaml.testobjects.*
+import com.charleskorn.kaml.testobjects.NestedObjects
+import com.charleskorn.kaml.testobjects.SimpleStructure
+import com.charleskorn.kaml.testobjects.TestInlineBoolean
+import com.charleskorn.kaml.testobjects.TestInlineClass
+import com.charleskorn.kaml.testobjects.TestInlineDouble
+import com.charleskorn.kaml.testobjects.TestInlineInt
+import com.charleskorn.kaml.testobjects.TestInlineList
+import com.charleskorn.kaml.testobjects.TestInlineMap
+import com.charleskorn.kaml.testobjects.TestInlineSealedInterface
+import com.charleskorn.kaml.testobjects.TestInlineString
+import com.charleskorn.kaml.testobjects.TestSealedImpl
 import io.kotest.matchers.shouldBe
 
 class TestInlineClasses : FlatFunSpec({
