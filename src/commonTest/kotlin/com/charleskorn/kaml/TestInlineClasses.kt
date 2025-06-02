@@ -133,8 +133,8 @@ class TestInlineClasses : FlatFunSpec({
             val value = TestInlineClass(
                 NestedObjects(
                     SimpleStructure("hello"),
-                    SimpleStructure("world")
-                )
+                    SimpleStructure("world"),
+                ),
             )
             val yaml = """
                 firstPerson:
