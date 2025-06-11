@@ -52,6 +52,12 @@ public class Yaml(
         return input.decodeSerializableValue(deserializer)
     }
 
+    public fun <T> encodeToYamlNode(serializer: SerializationStrategy<T>, value: T): YamlNode {
+        // FIXME suboptimal; convert object directly to YamlNode
+        val string = encodeToString(serializer, value)
+        return parseToYamlNode(string)
+    }
+
     override fun <T> decodeFromString(
         deserializer: DeserializationStrategy<T>,
         string: String,
@@ -117,7 +123,7 @@ public class Yaml(
         sink: BufferedSink,
     ) {
         BufferedSinkDataWriter(sink).use { writer ->
-            YamlOutput(writer, serializersModule, configuration).use { output ->
+            YamlOutput(writer, serializersModule, configuration, this).use { output ->
                 output.encodeSerializableValue(serializer, value)
             }
         }
