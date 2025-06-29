@@ -74,10 +74,16 @@ public sealed class YamlInput(
                         }
                     }
 
-                    else -> throw IncorrectTypeException(
-                        "Expected ${descriptor.kind.friendlyDescription}, but got a scalar value",
-                        node.path,
-                    )
+                    else -> {
+                        if (configuration.singleValueAsList && descriptor.kind is StructureKind.LIST) {
+                            YamlListInput(YamlList(listOf(node), node.path), yaml, context, configuration)
+                        } else {
+                            throw IncorrectTypeException(
+                                "Expected ${descriptor.kind.friendlyDescription}, but got a scalar value",
+                                node.path,
+                            )
+                        }
+                    }
                 }
 
                 is YamlList -> when (descriptor.kind) {
