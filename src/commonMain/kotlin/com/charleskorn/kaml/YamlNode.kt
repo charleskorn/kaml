@@ -86,7 +86,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
             ?: throw YamlScalarFormatException("Value '$content' is not a valid floating point value.", path, content)
     }
 
-    internal fun toDoubleOrNull(): Double? {
+    public fun toDoubleOrNull(): Double? {
         return when (content) {
             ".inf", ".Inf", ".INF" -> Double.POSITIVE_INFINITY
             "-.inf", "-.Inf", "-.INF" -> Double.NEGATIVE_INFINITY
@@ -109,7 +109,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
             ?: throw YamlScalarFormatException("Value '$content' is not a valid boolean, permitted choices are: true or false", path, content)
     }
 
-    internal fun toBooleanOrNull(): Boolean? {
+    public fun toBooleanOrNull(): Boolean? {
         return when (content) {
             "true", "True", "TRUE" -> true
             "false", "False", "FALSE" -> false
@@ -119,7 +119,7 @@ public data class YamlScalar(val content: String, override val path: YamlPath) :
 
     public fun toChar(): Char = toCharOrNull() ?: throw YamlScalarFormatException("Value '$content' is not a valid character value.", path, content)
 
-    internal fun toCharOrNull(): Char? = content.singleOrNull()
+    public fun toCharOrNull(): Char? = content.singleOrNull()
 
     override fun withPath(newPath: YamlPath): YamlScalar = this.copy(path = newPath)
 
