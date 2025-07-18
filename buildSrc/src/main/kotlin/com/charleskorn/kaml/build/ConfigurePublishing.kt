@@ -115,6 +115,9 @@ private fun Project.createPublishingTasks(repoUsername: String?, repoPassword: S
             sonatype {
                 username.set(repoUsername)
                 password.set(repoPassword)
+
+                nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+                snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
             }
         }
 
