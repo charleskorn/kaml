@@ -127,7 +127,7 @@ jobs:
             echo "tag=$tag" >> $GITHUB_OUTPUT
           else
             echo "git describe failed, skipping release:"
-            git describe --tags --abbrev=0 --exact-match
+            git describe --tags --abbrev=0 --exact-match || true
             echo "skip=true" >> $GITHUB_OUTPUT
           fi
         if: github.repository == 'charleskorn/kaml' && github.ref == 'refs/heads/main' && github.event_name == 'push'
