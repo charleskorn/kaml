@@ -22,6 +22,7 @@ import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
 import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -29,7 +30,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest.multiplatform") version "6.0.0.M3"
+    id("io.kotest") version "6.0.0.M8"
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
 }
 
 group = "com.charleskorn.kaml"
@@ -88,9 +90,8 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:6.0.0.M1")
-                implementation("io.kotest:kotest-framework-api:6.0.0.M1")
-                implementation("io.kotest:kotest-framework-engine:6.0.0.M1")
+                implementation("io.kotest:kotest-assertions-core:6.0.0.M8")
+                implementation("io.kotest:kotest-framework-engine:6.0.0.M8")
                 // Overriding coroutines' version to solve a problem with WASM JS tests.
                 // See https://kotlinlang.slack.com/archives/CDFP59223/p1736191408326039?thread_ts=1734964013.996149&cid=CDFP59223
                 runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
@@ -99,7 +100,7 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:6.0.0.M1")
+                implementation("io.kotest:kotest-runner-junit5:6.0.0.M8")
             }
         }
     }
@@ -119,6 +120,11 @@ tasks.withType<KotlinJsIrLink>().configureEach {
         // See https://youtrack.jetbrains.com/issue/KT-59081/
         freeCompilerArgs.add("-Xwasm-enable-array-range-checks")
     }
+}
+
+// This is a workaround for the issue where the Windows tests are run on Linux and macOS hosts when the 'check' task is run.
+tasks.named("mingwX64Kotest").configure {
+    onlyIf { OperatingSystem.current().isWindows() }
 }
 
 java {
