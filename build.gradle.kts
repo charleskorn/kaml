@@ -22,6 +22,7 @@ import com.charleskorn.kaml.build.configureSpotless
 import com.charleskorn.kaml.build.configureTesting
 import com.charleskorn.kaml.build.configureVersioning
 import com.charleskorn.kaml.build.configureWrapper
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -119,6 +120,11 @@ tasks.withType<KotlinJsIrLink>().configureEach {
         // See https://youtrack.jetbrains.com/issue/KT-59081/
         freeCompilerArgs.add("-Xwasm-enable-array-range-checks")
     }
+}
+
+// This is a workaround for the issue where the Windows tests are run on Linux and macOS hosts when the 'check' task is run.
+tasks.named("mingwX64Kotest").configure {
+    onlyIf { OperatingSystem.current().isWindows() }
 }
 
 java {
