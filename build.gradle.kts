@@ -29,7 +29,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest.multiplatform") version "6.0.0.M4"
+    id("io.kotest") version "6.0.0.M8"
+    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
 }
 
 group = "com.charleskorn.kaml"
@@ -89,7 +90,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("io.kotest:kotest-assertions-core:6.0.0.M8")
-                implementation("io.kotest:kotest-framework-api:6.0.0.M1")
                 implementation("io.kotest:kotest-framework-engine:6.0.0.M8")
                 // Overriding coroutines' version to solve a problem with WASM JS tests.
                 // See https://kotlinlang.slack.com/archives/CDFP59223/p1736191408326039?thread_ts=1734964013.996149&cid=CDFP59223
