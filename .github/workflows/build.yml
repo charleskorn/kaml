@@ -90,7 +90,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4.4.2
