@@ -83,7 +83,7 @@ kotlin {
         commonMain {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
-                implementation("it.krzeminski:snakeyaml-engine-kmp:3.1.1")
+                implementation("it.krzeminski:snakeyaml-engine-kmp:3.2.0")
                 implementation("com.squareup.okio:okio:3.16.0")
             }
         }
