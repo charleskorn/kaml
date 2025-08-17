@@ -115,13 +115,7 @@ internal object YamlTaggedNodeSerializer : KSerializer<YamlTaggedNode> {
 }
 
 internal object YamlMapSerializer : KSerializer<YamlMap> {
-
-    private object YamlMapDescriptor :
-        SerialDescriptor by MapSerializer(YamlScalarSerializer, YamlNodeSerializer).descriptor {
-        override val serialName: String = "com.charleskorn.kaml.YamlMap"
-    }
-
-    override val descriptor: SerialDescriptor = YamlMapDescriptor
+    override val descriptor: SerialDescriptor = MapSerializer(YamlScalarSerializer, YamlNodeSerializer).descriptor
 
     override fun serialize(encoder: Encoder, value: YamlMap) {
         encoder.asYamlOutput()
@@ -135,12 +129,7 @@ internal object YamlMapSerializer : KSerializer<YamlMap> {
 }
 
 internal object YamlListSerializer : KSerializer<YamlList> {
-
-    private object YamlListDescriptor : SerialDescriptor by ListSerializer(YamlNodeSerializer).descriptor {
-        override val serialName: String = "com.charleskorn.kaml.YamlList"
-    }
-
-    override val descriptor: SerialDescriptor = YamlListDescriptor
+    override val descriptor: SerialDescriptor = ListSerializer(YamlNodeSerializer).descriptor
 
     override fun serialize(encoder: Encoder, value: YamlList) {
         encoder.asYamlOutput()
