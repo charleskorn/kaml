@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml.testobjects
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -141,15 +140,8 @@ enum class UnwrappedEnum : UnwrappedInterface {
     TEST, TEST2
 }
 
-@OptIn(ExperimentalSerializationApi::class)
-fun SerialDescriptor.withName(newName: String): SerialDescriptor {
-    return object : SerialDescriptor by this {
-        override val serialName: String = newName
-    }
-}
-
 class UnwrappedValueSerializer<S, T>(private val valueSerializer: KSerializer<S>, descriptorName: String, private val fromSource: (S) -> T, private val toSource: (T) -> S) : KSerializer<T> {
-    override val descriptor: SerialDescriptor = valueSerializer.descriptor.withName(descriptorName)
+    override val descriptor: SerialDescriptor = SerialDescriptor(descriptorName, valueSerializer.descriptor)
 
     override fun deserialize(decoder: Decoder): T {
         return fromSource(valueSerializer.deserialize(decoder))
