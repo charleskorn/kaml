@@ -122,11 +122,6 @@ tasks.withType<KotlinJsIrLink>().configureEach {
     }
 }
 
-// This is a workaround for the issue where the Windows tests are run on Linux and macOS hosts when the 'check' task is run.
-tasks.named("mingwX64Kotest").configure {
-    onlyIf { OperatingSystem.current().isWindows() }
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
