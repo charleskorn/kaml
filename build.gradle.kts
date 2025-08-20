@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
-    id("io.kotest") version "6.0.0.M17"
+    id("io.kotest") version "6.0.0"
     id("com.google.devtools.ksp") version "2.2.10-2.0.2"
 }
 
@@ -89,8 +89,8 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation("io.kotest:kotest-assertions-core:6.0.0.M17")
-                implementation("io.kotest:kotest-framework-engine:6.0.0.M17")
+                implementation("io.kotest:kotest-assertions-core:6.0.0")
+                implementation("io.kotest:kotest-framework-engine:6.0.0")
                 // Overriding coroutines' version to solve a problem with WASM JS tests.
                 // See https://kotlinlang.slack.com/archives/CDFP59223/p1736191408326039?thread_ts=1734964013.996149&cid=CDFP59223
                 runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
@@ -99,7 +99,7 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation("io.kotest:kotest-runner-junit5:6.0.0.M17")
+                implementation("io.kotest:kotest-runner-junit5:6.0.0")
             }
         }
     }
