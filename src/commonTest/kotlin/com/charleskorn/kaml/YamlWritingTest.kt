@@ -123,12 +123,7 @@ class YamlWritingTest : FlatFunSpec({
             val output = Yaml.default.encodeToString(Float.serializer(), 45.6f)
 
             test("returns the value serialized in the expected YAML form") {
-                output shouldBe when (kotlinTarget) {
-                    // See a bug in Kotlin/Wasm:
-                    // https://youtrack.jetbrains.com/issue/KT-68948/
-                    KotlinTarget.WASM -> "45.599998474121094"
-                    else -> "45.6"
-                }
+                output shouldBe "45.6"
             }
         }
 
@@ -254,12 +249,7 @@ class YamlWritingTest : FlatFunSpec({
                 val output = Yaml(configuration = YamlConfiguration(singleLineStringStyle = SingleLineStringStyle.PlainExceptAmbiguous)).encodeToString(Float.serializer(), 1.2f)
 
                 test("returns the value serialized in the expected YAML form, without being escaped") {
-                    output shouldBe when (kotlinTarget) {
-                        // See a bug in Kotlin/Wasm:
-                        // https://youtrack.jetbrains.com/issue/KT-68948/
-                        KotlinTarget.WASM -> "1.2000000476837158"
-                        else -> "1.2"
-                    }
+                    output shouldBe "1.2"
                 }
             }
 
