@@ -30,7 +30,7 @@ repositories {
 dependencies {
     implementation(group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version = "7.2.1")
     implementation(group = "io.github.gradle-nexus", name = "publish-plugin", version = "2.0.0")
-    implementation(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "0.19.2")
+    implementation(group = "org.ajoberstar.reckon", name = "reckon-gradle", version = "1.0.0")
 }
 
 java {
