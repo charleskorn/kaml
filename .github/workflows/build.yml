@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4.4.2
+        uses: gradle/actions/wrapper-validation@v4.4.3
 
       - name: Set up JDK
         uses: actions/setup-java@v5.0.0
@@ -45,7 +45,7 @@ jobs:
           distribution: temurin
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.4.2
+        uses: gradle/actions/setup-gradle@v4.4.3
 
       - name: Cache konan dependencies
         uses: actions/cache@v4
@@ -79,7 +79,7 @@ jobs:
           fetch-depth: 0
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4.4.2
+        uses: gradle/actions/wrapper-validation@v4.4.3
 
       - name: Set up JDK
         uses: actions/setup-java@v5.0.0
@@ -93,7 +93,7 @@ jobs:
           node-version: 22
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.4.2
+        uses: gradle/actions/setup-gradle@v4.4.3
 
       - name: Cache konan dependencies
         uses: actions/cache@v4
