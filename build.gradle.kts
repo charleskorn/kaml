@@ -30,7 +30,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("io.kotest") version "6.0.3"
-    id("com.google.devtools.ksp") version "2.2.20-2.0.3"
+    id("com.google.devtools.ksp") version "2.2.20-2.0.4"
 }
 
 group = "com.charleskorn.kaml"
