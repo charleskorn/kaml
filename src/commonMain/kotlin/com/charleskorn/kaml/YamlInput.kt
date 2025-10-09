@@ -73,6 +73,10 @@ public sealed class YamlInput(
                             throw MissingTypeTagException(node.path)
                         }
                     }
+                    
+                    configuration.singleValueAsList -> {
+                        return createFor(YamlList(listOf(node), node.path), yaml, context, configuration, descriptor)
+                    }
 
                     else -> throw IncorrectTypeException(
                         "Expected ${descriptor.kind.friendlyDescription}, but got a scalar value",
