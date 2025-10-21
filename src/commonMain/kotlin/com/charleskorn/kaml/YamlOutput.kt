@@ -89,16 +89,21 @@ internal class YamlOutput(
             currentTypeName = value
             shouldReadTypeName = false
         } else {
-            val singleLineScalarStyle = forcedSingleLineScalarStyle ?.scalarStyle ?: configuration.singleLineStringStyle.scalarStyle
-            val multiLineScalarStyle = forcedMultiLineScalarStyle ?.scalarStyle ?: configuration.multiLineStringStyle.scalarStyle
-            when {
-                value.contains('\n')
-                -> emitScalar(value, multiLineScalarStyle)
-                configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous()
-                -> emitQuotedScalar(value, configuration.ambiguousQuoteStyle.scalarStyle)
-                else
-                -> emitScalar(value, singleLineScalarStyle)
-            }
+            val scalarStyle = determineScalarStyle(value)
+            emitScalar(value, scalarStyle)
+        }
+    }
+
+    private fun determineScalarStyle(value: String): ScalarStyle {
+        val singleLineScalarStyle = forcedSingleLineScalarStyle ?.scalarStyle ?: configuration.singleLineStringStyle.scalarStyle
+        val multiLineScalarStyle = forcedMultiLineScalarStyle ?.scalarStyle ?: configuration.multiLineStringStyle.scalarStyle
+        return when {
+            value.contains('\n')
+                -> multiLineScalarStyle
+            configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous()
+                -> configuration.ambiguousQuoteStyle.scalarStyle
+            else
+                -> singleLineScalarStyle
         }
     }
 
@@ -244,6 +249,55 @@ internal class YamlOutput(
             AmbiguousQuoteStyle.DoubleQuoted -> ScalarStyle.DOUBLE_QUOTED
             AmbiguousQuoteStyle.SingleQuoted -> ScalarStyle.SINGLE_QUOTED
         }
+
+    fun encodeYamlNode(node: YamlNode, tag: String? = null) {
+        when (node) {
+            is YamlMap -> encodeYamlMap(node, tag)
+            is YamlList -> encodeYamlList(node, tag)
+            is YamlScalar -> encodeYamlScalar(node, tag)
+            is YamlTaggedNode -> encodeYamlTaggedNode(node)
+            is YamlNull -> encodeYamlNull(tag)
+        }
+    }
+
+    fun encodeYamlMap(yamlMap: YamlMap, tag: String? = null) {
+        emitter.emit(MappingStartEvent(null, tag, tag == null, FlowStyle.BLOCK))
+        yamlMap.entries.forEach { (key, value) ->
+            encodeYamlScalar(key, null)
+            encodeYamlNode(value)
+        }
+        emitter.emit(MappingEndEvent())
+    }
+
+    fun encodeYamlList(yamlList: YamlList, tag: String? = null) {
+        emitter.emit(SequenceStartEvent(null, tag, tag == null, configuration.sequenceStyle.flowStyle))
+        yamlList.items.forEach { item ->
+            encodeYamlNode(item)
+        }
+        emitter.emit(SequenceEndEvent())
+    }
+
+    fun encodeYamlScalar(value: YamlScalar, tag: String? = null) {
+        val implicit = if (tag != null) ALL_EXPLICIT else ALL_IMPLICIT
+        val style = when {
+            value.scalarStyle != null -> value.scalarStyle.toScalarStyle()
+            value.toBooleanOrNull() != null
+                || value.toLongOrNull() != null
+                || value.toDoubleOrNull() != null -> ScalarStyle.PLAIN
+            value.toCharOrNull() != null -> configuration.singleLineStringStyle.scalarStyle
+            else -> determineScalarStyle(value.content)
+        }
+        emitter.emit(ScalarEvent(null, tag, implicit, value.content, style))
+    }
+
+    fun encodeYamlTaggedNode(value: YamlTaggedNode) {
+        encodeYamlNode(value.innerNode, value.tag)
+    }
+
+    fun encodeYamlNull(tag: String? = null) {
+        val implicit = if (tag != null) ALL_EXPLICIT else ALL_IMPLICIT
+        emitter.emit(ScalarEvent(null, tag, implicit, "null", ScalarStyle.PLAIN))
+    }
 
     companion object {
         private val ALL_IMPLICIT = ImplicitTuple(true, true)
