@@ -19,6 +19,7 @@
 package com.charleskorn.kaml
 
 import com.charleskorn.kaml.internal.bufferedSource
+import it.krzeminski.snakeyaml.engine.kmp.api.copy
 import it.krzeminski.snakeyaml.engine.kmp.api.LoadSettings
 import it.krzeminski.snakeyaml.engine.kmp.events.Event
 import it.krzeminski.snakeyaml.engine.kmp.exceptions.MarkedYamlEngineException
@@ -30,10 +31,11 @@ internal class YamlParser(reader: Source, codePointLimit: Int? = null) {
     internal constructor(source: String) : this(source.bufferedSource())
 
     private val dummyFileName = "DUMMY_FILE_NAME"
-    private val loadSettings = LoadSettings.builder().apply {
-        if (codePointLimit != null) setCodePointLimit(codePointLimit)
-        setLabel(dummyFileName)
-    }.build()
+    private val loadSettings = LoadSettings(
+        label = dummyFileName,
+    ).copy {
+        if (codePointLimit != null) codePointLimit = codePointLimit
+    }
     private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
 
