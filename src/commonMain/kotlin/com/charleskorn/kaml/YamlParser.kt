@@ -34,7 +34,7 @@ internal class YamlParser(reader: Source, codePointLimit: Int? = null) {
     private val loadSettings = LoadSettings(
         label = dummyFileName,
     ).copy {
-        if (codePointLimit != null) codePointLimit = codePointLimit
+        if (codePointLimit != null) this.codePointLimit = codePointLimit
     }
     private val streamReader = StreamReader(loadSettings, reader)
     private val events = ParserImpl(loadSettings, streamReader)
