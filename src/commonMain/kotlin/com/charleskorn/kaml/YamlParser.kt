@@ -19,8 +19,8 @@
 package com.charleskorn.kaml
 
 import com.charleskorn.kaml.internal.bufferedSource
-import it.krzeminski.snakeyaml.engine.kmp.api.copy
 import it.krzeminski.snakeyaml.engine.kmp.api.LoadSettings
+import it.krzeminski.snakeyaml.engine.kmp.api.copy
 import it.krzeminski.snakeyaml.engine.kmp.events.Event
 import it.krzeminski.snakeyaml.engine.kmp.exceptions.MarkedYamlEngineException
 import it.krzeminski.snakeyaml.engine.kmp.parser.ParserImpl
