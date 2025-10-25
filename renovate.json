@@ -62,7 +62,8 @@
       "matchPackagePatterns": [
         "^com\\.diffplug\\.spotless$",
         "^com\\.diffplug\\.spotless:",
-        "^com\\.pinterest:ktlint$"
+        "^com\\.pinterest:ktlint$",
+        "^com\\.google\\.devtools\\.ksp"
       ],
       "semanticCommitScope": "internal"
     },
