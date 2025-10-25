@@ -18,7 +18,6 @@
 
 package com.charleskorn.kaml
 
-import it.krzeminski.snakeyaml.engine.kmp.common.ScalarStyle
 import kotlinx.serialization.Serializable
 
 @Serializable(with = YamlNodeSerializer::class)

@@ -26,7 +26,8 @@ public enum class YamlNodeScalarStyle {
     LITERAL,
     FOLDED,
     JSON_SCALAR_STYLE,
-    PLAIN;
+    PLAIN,
+    ;
 
     public fun toScalarStyle(): ScalarStyle = when (this) {
         DOUBLE_QUOTED -> ScalarStyle.DOUBLE_QUOTED

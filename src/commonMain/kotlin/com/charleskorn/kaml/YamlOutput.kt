@@ -99,11 +99,11 @@ internal class YamlOutput(
         val multiLineScalarStyle = forcedMultiLineScalarStyle ?.scalarStyle ?: configuration.multiLineStringStyle.scalarStyle
         return when {
             value.contains('\n')
-                -> multiLineScalarStyle
+            -> multiLineScalarStyle
             configuration.singleLineStringStyle == SingleLineStringStyle.PlainExceptAmbiguous && value.isAmbiguous()
-                -> configuration.ambiguousQuoteStyle.scalarStyle
+            -> configuration.ambiguousQuoteStyle.scalarStyle
             else
-                -> singleLineScalarStyle
+            -> singleLineScalarStyle
         }
     }
 
@@ -281,9 +281,9 @@ internal class YamlOutput(
         val implicit = if (tag != null) ALL_EXPLICIT else ALL_IMPLICIT
         val style = when {
             value.scalarStyle != null -> value.scalarStyle.toScalarStyle()
-            value.toBooleanOrNull() != null
-                || value.toLongOrNull() != null
-                || value.toDoubleOrNull() != null -> ScalarStyle.PLAIN
+            value.toBooleanOrNull() != null ||
+                value.toLongOrNull() != null ||
+                value.toDoubleOrNull() != null -> ScalarStyle.PLAIN
             value.toCharOrNull() != null -> configuration.singleLineStringStyle.scalarStyle
             else -> determineScalarStyle(value.content)
         }
