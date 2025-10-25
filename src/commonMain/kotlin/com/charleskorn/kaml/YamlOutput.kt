@@ -49,17 +49,17 @@ internal class YamlOutput(
     override val serializersModule: SerializersModule,
     private val configuration: YamlConfiguration,
 ) : AbstractEncoder(), AutoCloseable {
-    private val settings = DumpSettings.builder()
-        .setDumpComments(true)
+    private val settings = DumpSettings(
+        dumpComments = true,
         // SnakeYAML validates that this value must be at least 1
-        .setIndent(configuration.encodingIndentationSize)
+        indent = configuration.encodingIndentationSize,
         // SnakeYAML helps to validate that this value must be non-negative
-        .setIndicatorIndent(configuration.sequenceBlockIndent)
+        indicatorIndent = configuration.sequenceBlockIndent,
         // No special reason why true is conditional. Designed to be consistent with 0.46.0 of kaml
-        .setIndentWithIndicator(configuration.sequenceBlockIndent > 0)
+        indentWithIndicator = configuration.sequenceBlockIndent > 0,
         // Unclear if this value is validated
-        .setWidth(configuration.breakScalarsAt)
-        .build()
+        width = configuration.breakScalarsAt,
+    )
 
     private val emitter = Emitter(settings, writer)
     private var shouldReadTypeName = false
