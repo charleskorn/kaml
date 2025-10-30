@@ -25,7 +25,6 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -35,7 +34,6 @@ import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.descriptors.nullable
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.encodeStructure
 
 internal object YamlNodeSerializer : KSerializer<YamlNode> {
     override val descriptor: SerialDescriptor =
@@ -44,14 +42,7 @@ internal object YamlNodeSerializer : KSerializer<YamlNode> {
         }.nullable
 
     override fun serialize(encoder: Encoder, value: YamlNode) {
-        encoder.asYamlOutput()
-        when (value) {
-            is YamlList -> encoder.encodeSerializableValue(YamlListSerializer, value)
-            is YamlMap -> encoder.encodeSerializableValue(YamlMapSerializer, value)
-            is YamlNull -> encoder.encodeSerializableValue(YamlNullSerializer, value)
-            is YamlScalar -> encoder.encodeSerializableValue(YamlScalarSerializer, value)
-            is YamlTaggedNode -> encoder.encodeSerializableValue(YamlTaggedNodeSerializer, value)
-        }
+        encoder.asYamlOutput().encodeYamlNode(value)
     }
 
     override fun deserialize(decoder: Decoder): YamlNode {
@@ -65,12 +56,7 @@ internal object YamlScalarSerializer : KSerializer<YamlScalar> {
         PrimitiveSerialDescriptor("com.charleskorn.kaml.YamlScalar", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: YamlScalar) {
-        encoder.asYamlOutput()
-        value.toBooleanOrNull()?.also { return encoder.encodeBoolean(it) }
-        value.toLongOrNull()?.also { return encoder.encodeLong(it) }
-        value.toDoubleOrNull()?.also { return encoder.encodeDouble(it) }
-        value.toCharOrNull()?.also { return encoder.encodeChar(it) }
-        encoder.encodeString(value.content)
+        encoder.asYamlOutput().encodeYamlScalar(value)
     }
 
     override fun deserialize(decoder: Decoder): YamlScalar {
@@ -96,16 +82,10 @@ internal object YamlNullSerializer : KSerializer<YamlNull> {
 internal object YamlTaggedNodeSerializer : KSerializer<YamlTaggedNode> {
 
     override val descriptor: SerialDescriptor =
-        buildSerialDescriptor("com.charleskorn.kaml.YamlTaggedNode", PolymorphicKind.OPEN) {
-            element("tag", String.serializer().descriptor)
-            element("node", YamlNodeSerializer.descriptor)
-        }
+        buildSerialDescriptor("com.charleskorn.kaml.YamlTaggedNode", PolymorphicKind.SEALED) {}
 
     override fun serialize(encoder: Encoder, value: YamlTaggedNode) {
-        encoder.asYamlOutput().encodeStructure(descriptor) {
-            encodeStringElement(descriptor, 0, value.tag)
-            encodeSerializableElement(descriptor, 1, YamlNodeSerializer, value.innerNode)
-        }
+        encoder.asYamlOutput().encodeYamlTaggedNode(value)
     }
 
     override fun deserialize(decoder: Decoder): YamlTaggedNode {
@@ -118,8 +98,7 @@ internal object YamlMapSerializer : KSerializer<YamlMap> {
     override val descriptor: SerialDescriptor = MapSerializer(YamlScalarSerializer, YamlNodeSerializer).descriptor
 
     override fun serialize(encoder: Encoder, value: YamlMap) {
-        encoder.asYamlOutput()
-        MapSerializer(YamlScalarSerializer, YamlNodeSerializer).serialize(encoder, value.entries)
+        encoder.asYamlOutput().encodeYamlMap(value)
     }
 
     override fun deserialize(decoder: Decoder): YamlMap {
@@ -132,8 +111,7 @@ internal object YamlListSerializer : KSerializer<YamlList> {
     override val descriptor: SerialDescriptor = ListSerializer(YamlNodeSerializer).descriptor
 
     override fun serialize(encoder: Encoder, value: YamlList) {
-        encoder.asYamlOutput()
-        ListSerializer(YamlNodeSerializer).serialize(encoder, value.items)
+        encoder.asYamlOutput().encodeYamlList(value)
     }
 
     override fun deserialize(decoder: Decoder): YamlList {
