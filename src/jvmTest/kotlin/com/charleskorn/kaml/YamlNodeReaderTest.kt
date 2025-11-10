@@ -20,6 +20,12 @@
 
 package com.charleskorn.kaml
 
+import com.charleskorn.kaml.helpers.doubleQuoted
+import com.charleskorn.kaml.helpers.folded
+import com.charleskorn.kaml.helpers.literal
+import com.charleskorn.kaml.helpers.plain
+import com.charleskorn.kaml.helpers.plainScalar
+import com.charleskorn.kaml.helpers.singleQuoted
 import io.kotest.assertions.asClue
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
@@ -29,24 +35,24 @@ import io.kotest.matchers.shouldBe
 class YamlNodeReaderTest : DescribeSpec({
     describe("a YAML node reader") {
         mapOf(
-            "hello" to "hello",
-            "12" to "12",
-            """"hello"""" to "hello",
-            "'hello'" to "hello",
-            "'he''llo'" to "he'llo",
-            """"hello\""""" to """hello"""",
-            """"\"hello"""" to """"hello""",
-            """"he\"llo"""" to """he"llo""",
-            """"he\"\"llo"""" to """he""llo""",
-            """"hello\n"""" to "hello\n",
+            "hello" to "hello".plain(),
+            "12" to "12".plain(),
+            """"hello"""" to "hello".doubleQuoted(),
+            "'hello'" to "hello".singleQuoted(),
+            "'he''llo'" to "he'llo".singleQuoted(),
+            """"hello\""""" to """hello"""".doubleQuoted(),
+            """"\"hello"""" to """"hello""".doubleQuoted(),
+            """"he\"llo"""" to """he"llo""".doubleQuoted(),
+            """"he\"\"llo"""" to """he""llo""".doubleQuoted(),
+            """"hello\n"""" to "hello\n".doubleQuoted(),
             // Sample from http://yaml.org/spec/1.2/spec.html#escaping/in%20double-quoted%20scalars/
-            """"Fun with \\ \" \a \b \e \f \n \r \t \v \0 \  \_ \N \x41 \u0041 \U00000041"""" to "Fun with \u005C \u0022 \u0007 \u0008 \u001B \u000C \u000A \u000D \u0009 \u000B \u0000 \u0020 \u00A0 \u0085 A A A",
-            "''" to "",
-            """""""" to "",
-            "'null'" to "null",
-            """"null"""" to "null",
-            "'~'" to "~",
-            """"~"""" to "~",
+            """"Fun with \\ \" \a \b \e \f \n \r \t \v \0 \  \_ \N \x41 \u0041 \U00000041"""" to "Fun with \u005C \u0022 \u0007 \u0008 \u001B \u000C \u000A \u000D \u0009 \u000B \u0000 \u0020 \u00A0 \u0085 A A A".doubleQuoted(),
+            "''" to "".singleQuoted(),
+            """""""" to "".doubleQuoted(),
+            "'null'" to "null".singleQuoted(),
+            """"null"""" to "null".doubleQuoted(),
+            "'~'" to "~".singleQuoted(),
+            """"~"""" to "~".doubleQuoted(),
         ).forEach { (input, expectedResult) ->
             context("given the string '$input'") {
                 describe("parsing that input") {
@@ -54,7 +60,7 @@ class YamlNodeReaderTest : DescribeSpec({
                     val result = YamlNodeReader(parser).read()
 
                     it("returns the expected scalar value") {
-                        result shouldBe YamlScalar(expectedResult, YamlPath.root)
+                        result shouldBe expectedResult.toYamlScalar(YamlPath.root)
                     }
                 }
             }
@@ -68,13 +74,13 @@ class YamlNodeReaderTest : DescribeSpec({
                 |  line 1
                 |  line 2
                 |
-            """.trimMargin() to "line 1\nline 2\n",
+            """.trimMargin() to "line 1\nline 2\n".literal(),
             """
                 |thing: >
                 |  some
                 |  text
                 |
-            """.trimMargin() to "some text\n",
+            """.trimMargin() to "some text\n".folded(),
 
             // Preserve consecutive blank lines when literal
             """
@@ -83,7 +89,7 @@ class YamlNodeReaderTest : DescribeSpec({
                 |
                 |  text
                 |
-            """.trimMargin() to "some\n\ntext\n",
+            """.trimMargin() to "some\n\ntext\n".literal(),
 
             // Don't preserve consecutive blank lines when folded
             """
@@ -92,7 +98,7 @@ class YamlNodeReaderTest : DescribeSpec({
                 |
                 |  text
                 |
-            """.trimMargin() to "some\ntext\n",
+            """.trimMargin() to "some\ntext\n".folded(),
 
             // No chomping indicator - default behaviour is to clip, so retain trailing new line but not blank lines
             """
@@ -101,14 +107,14 @@ class YamlNodeReaderTest : DescribeSpec({
                 |  line 2
                 |
                 |
-            """.trimMargin() to "line 1\nline 2\n",
+            """.trimMargin() to "line 1\nline 2\n".literal(),
             """
                 |thing: >
                 |  some
                 |  text
                 |
                 |
-            """.trimMargin() to "some text\n",
+            """.trimMargin() to "some text\n".folded(),
 
             // Indentation indicator
             """
@@ -116,7 +122,7 @@ class YamlNodeReaderTest : DescribeSpec({
                 |  line 1
                 |  line 2
                 |
-            """.trimMargin() to " line 1\n line 2\n",
+            """.trimMargin() to " line 1\n line 2\n".literal(),
             """
                 |thing: >1
                 |  some
@@ -124,7 +130,7 @@ class YamlNodeReaderTest : DescribeSpec({
                 | here
                 | there
                 |
-            """.trimMargin() to " some\n text\nhere there\n",
+            """.trimMargin() to " some\n text\nhere there\n".folded(),
 
             // 'Strip' chomping indicator - remove all trailing new lines
             """
@@ -132,13 +138,13 @@ class YamlNodeReaderTest : DescribeSpec({
                 |  line 1
                 |  line 2
                 |
-            """.trimMargin() to "line 1\nline 2",
+            """.trimMargin() to "line 1\nline 2".literal(),
             """
                 |thing: >-
                 |  some
                 |  text
                 |
-            """.trimMargin() to "some text",
+            """.trimMargin() to "some text".folded(),
 
             // 'Keep' chomping indicator - keep all trailing new lines
             """
@@ -147,14 +153,14 @@ class YamlNodeReaderTest : DescribeSpec({
                 |  line 2
                 |
                 |
-            """.trimMargin() to "line 1\nline 2\n\n",
+            """.trimMargin() to "line 1\nline 2\n\n".literal(),
             """
                 |thing: >+
                 |  some
                 |  text
                 |
                 |
-            """.trimMargin() to "some text\n\n",
+            """.trimMargin() to "some text\n\n".folded(),
 
             // Chomping indicator with indentation indicator
             """
@@ -162,7 +168,7 @@ class YamlNodeReaderTest : DescribeSpec({
                 |  line 1
                 |  line 2
                 |
-            """.trimMargin() to " line 1\n line 2",
+            """.trimMargin() to " line 1\n line 2".literal(),
             """
                 |thing: >-1
                 |  some
@@ -170,14 +176,14 @@ class YamlNodeReaderTest : DescribeSpec({
                 | here
                 | there
                 |
-            """.trimMargin() to " some\n text\nhere there",
+            """.trimMargin() to " some\n text\nhere there".folded(),
             """
                 |thing: |+1
                 |  line 1
                 |  line 2
                 |
                 |
-            """.trimMargin() to " line 1\n line 2\n\n",
+            """.trimMargin() to " line 1\n line 2\n\n".literal(),
             """
                 |thing: >+1
                 |  some
@@ -186,8 +192,8 @@ class YamlNodeReaderTest : DescribeSpec({
                 | there
                 |
                 |
-            """.trimMargin() to " some\n text\nhere there\n\n",
-        ).forEach { (input, text) ->
+            """.trimMargin() to " some\n text\nhere there\n\n".folded(),
+        ).forEach { (input, expectedResult) ->
             context("given the block scalar '${input.replace("\n", "\\n")}'") {
                 describe("parsing that input") {
                     val parser = YamlParser(input)
@@ -200,7 +206,7 @@ class YamlNodeReaderTest : DescribeSpec({
                         result shouldBe
                             YamlMap(
                                 mapOf(
-                                    YamlScalar("thing", keyPath) to YamlScalar(text, valuePath),
+                                    plainScalar("thing", keyPath) to expectedResult.toYamlScalar(valuePath),
                                 ),
                                 YamlPath.root,
                             )
@@ -291,11 +297,11 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
-                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
-                                YamlScalar("thing3", YamlPath.root.withListEntry(2, Location(3, 3))),
-                                YamlScalar("thing4", YamlPath.root.withListEntry(3, Location(4, 3))),
-                                YamlScalar("thing\"5", YamlPath.root.withListEntry(4, Location(5, 3))),
+                                plainScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
+                                plainScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
+                                YamlScalar("thing3", YamlPath.root.withListEntry(2, Location(3, 3)), YamlNodeScalarStyle.DOUBLE_QUOTED),
+                                YamlScalar("thing4", YamlPath.root.withListEntry(3, Location(4, 3)), YamlNodeScalarStyle.SINGLE_QUOTED),
+                                YamlScalar("thing\"5", YamlPath.root.withListEntry(4, Location(5, 3)), YamlNodeScalarStyle.DOUBLE_QUOTED),
                             ),
                             YamlPath.root,
                         )
@@ -318,9 +324,9 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
-                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
-                                YamlScalar("thing1", YamlPath.root.withListEntry(2, Location(3, 3)).withAliasReference("thing", Location(3, 3)).withAliasDefinition("thing", Location(1, 3))),
+                                plainScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
+                                plainScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
+                                plainScalar("thing1", YamlPath.root.withListEntry(2, Location(3, 3)).withAliasReference("thing", Location(3, 3)).withAliasDefinition("thing", Location(1, 3))),
                             ),
                             YamlPath.root,
                         )
@@ -345,11 +351,11 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
-                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
-                                YamlScalar("thing1", YamlPath.root.withListEntry(2, Location(3, 3)).withAliasReference("thing", Location(3, 3)).withAliasDefinition("thing", Location(1, 3))),
-                                YamlScalar("thing3", YamlPath.root.withListEntry(3, Location(4, 3))),
-                                YamlScalar("thing3", YamlPath.root.withListEntry(4, Location(5, 3)).withAliasReference("thing", Location(5, 3)).withAliasDefinition("thing", Location(4, 3))),
+                                plainScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 3))),
+                                plainScalar("thing2", YamlPath.root.withListEntry(1, Location(2, 3))),
+                                plainScalar("thing1", YamlPath.root.withListEntry(2, Location(3, 3)).withAliasReference("thing", Location(3, 3)).withAliasDefinition("thing", Location(1, 3))),
+                                plainScalar("thing3", YamlPath.root.withListEntry(3, Location(4, 3))),
+                                plainScalar("thing3", YamlPath.root.withListEntry(4, Location(5, 3)).withAliasReference("thing", Location(5, 3)).withAliasDefinition("thing", Location(4, 3))),
                             ),
                             YamlPath.root,
                         )
@@ -406,11 +412,11 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlList(
                             listOf(
-                                YamlScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 2))),
-                                YamlScalar("thing2", YamlPath.root.withListEntry(1, Location(1, 10))),
-                                YamlScalar("thing3", YamlPath.root.withListEntry(2, Location(1, 18))),
-                                YamlScalar("thing4", YamlPath.root.withListEntry(3, Location(1, 28))),
-                                YamlScalar("thing\"5", YamlPath.root.withListEntry(4, Location(1, 38))),
+                                plainScalar("thing1", YamlPath.root.withListEntry(0, Location(1, 2))),
+                                plainScalar("thing2", YamlPath.root.withListEntry(1, Location(1, 10))),
+                                YamlScalar("thing3", YamlPath.root.withListEntry(2, Location(1, 18)), YamlNodeScalarStyle.DOUBLE_QUOTED),
+                                YamlScalar("thing4", YamlPath.root.withListEntry(3, Location(1, 28)), YamlNodeScalarStyle.SINGLE_QUOTED),
+                                YamlScalar("thing\"5", YamlPath.root.withListEntry(4, Location(1, 38)), YamlNodeScalarStyle.DOUBLE_QUOTED),
                             ),
                             YamlPath.root,
                         )
@@ -495,15 +501,15 @@ class YamlNodeReaderTest : DescribeSpec({
                             listOf(
                                 YamlList(
                                     listOf(
-                                        YamlScalar("thing1", firstListPath.withListEntry(0, Location(1, 4))),
-                                        YamlScalar("thing2", firstListPath.withListEntry(1, Location(1, 12))),
+                                        plainScalar("thing1", firstListPath.withListEntry(0, Location(1, 4))),
+                                        plainScalar("thing2", firstListPath.withListEntry(1, Location(1, 12))),
                                     ),
                                     firstListPath,
                                 ),
                                 YamlList(
                                     listOf(
-                                        YamlScalar("thing3", secondListPath.withListEntry(0, Location(3, 7))),
-                                        YamlScalar("thing4", secondListPath.withListEntry(1, Location(4, 7))),
+                                        plainScalar("thing3", secondListPath.withListEntry(0, Location(3, 7))),
+                                        plainScalar("thing4", secondListPath.withListEntry(1, Location(4, 7))),
                                     ),
                                     secondListPath,
                                 ),
@@ -576,7 +582,7 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key", keyPath) to YamlScalar("value", valuePath),
+                                plainScalar("key", keyPath) to plainScalar("value", valuePath),
                             ),
                             YamlPath.root,
                         )
@@ -597,7 +603,7 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key", keyPath) to YamlNull(valuePath),
+                                plainScalar("key", keyPath) to YamlNull(valuePath),
                             ),
                             YamlPath.root,
                         )
@@ -623,8 +629,8 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
-                                YamlScalar("key2", key2Path) to YamlScalar("value2", value2Path),
+                                plainScalar("key1", key1Path) to plainScalar("value1", value1Path),
+                                plainScalar("key2", key2Path) to plainScalar("value2", value2Path),
                             ),
                             YamlPath.root,
                         )
@@ -650,8 +656,8 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
-                                YamlScalar("key2", key2Path) to YamlNull(value2Path),
+                                plainScalar("key1", key1Path) to plainScalar("value1", value1Path),
+                                plainScalar("key2", key2Path) to YamlNull(value2Path),
                             ),
                             YamlPath.root,
                         )
@@ -677,8 +683,8 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
-                                YamlScalar("key2", key2Path) to YamlScalar("value1", value2Path),
+                                plainScalar("key1", key1Path) to plainScalar("value1", value1Path),
+                                plainScalar("key2", key2Path) to plainScalar("value1", value2Path),
                             ),
                             YamlPath.root,
                         )
@@ -718,30 +724,30 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", key1Path) to YamlScalar("value1", key1Path.withMapElementValue(Location(1, 7))),
-                                YamlScalar("key2", key2Path) to YamlScalar("value2", key2Path.withMapElementValue(Location(2, 7))),
-                                YamlScalar("key3", key3Path) to YamlList(
+                                plainScalar("key1", key1Path) to plainScalar("value1", key1Path.withMapElementValue(Location(1, 7))),
+                                plainScalar("key2", key2Path) to plainScalar("value2", key2Path.withMapElementValue(Location(2, 7))),
+                                plainScalar("key3", key3Path) to YamlList(
                                     listOf(
-                                        YamlScalar("listitem1", value3Path.withListEntry(0, Location(4, 5))),
-                                        YamlScalar("listitem2", value3Path.withListEntry(1, Location(5, 5))),
+                                        plainScalar("listitem1", value3Path.withListEntry(0, Location(4, 5))),
+                                        plainScalar("listitem2", value3Path.withListEntry(1, Location(5, 5))),
                                         YamlMap(
                                             mapOf(
-                                                YamlScalar("thing", thingPath) to YamlScalar("value", thingPath.withMapElementValue(Location(6, 12))),
+                                                plainScalar("thing", thingPath) to plainScalar("value", thingPath.withMapElementValue(Location(6, 12))),
                                             ),
                                             value3Path.withListEntry(2, Location(6, 5)),
                                         ),
                                     ),
                                     value3Path,
                                 ),
-                                YamlScalar("key4", key4Path) to YamlList(
+                                plainScalar("key4", key4Path) to YamlList(
                                     listOf(
-                                        YamlScalar("something", value4Path.withListEntry(0, Location(7, 8))),
+                                        plainScalar("something", value4Path.withListEntry(0, Location(7, 8))),
                                     ),
                                     value4Path,
                                 ),
-                                YamlScalar("key5", key5Path) to YamlMap(
+                                plainScalar("key5", key5Path) to YamlMap(
                                     mapOf(
-                                        YamlScalar("inner", innerPath) to YamlScalar("othervalue", innerPath.withMapElementValue(Location(9, 10))),
+                                        plainScalar("inner", innerPath) to plainScalar("othervalue", innerPath.withMapElementValue(Location(9, 10))),
                                     ),
                                     value5Path,
                                 ),
@@ -974,7 +980,7 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key", keyPath) to YamlScalar("value", valuePath),
+                                plainScalar("key", keyPath) to plainScalar("value", valuePath),
                             ),
                             YamlPath.root,
                         )
@@ -1028,8 +1034,8 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("key1", key1Path) to YamlScalar("value1", value1Path),
-                                YamlScalar("key2", key2Path) to YamlScalar("value2", value2Path),
+                                plainScalar("key1", key1Path) to plainScalar("value1", value1Path),
+                                plainScalar("key2", key2Path) to plainScalar("value2", value2Path),
                             ),
                             YamlPath.root,
                         )
@@ -1049,7 +1055,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
                 it("returns that scalar, ignoring the comment") {
                     // FIXME: ideally we'd return a path with the location (2, 1)
-                    result shouldBe YamlScalar("somevalue", YamlPath.root)
+                    result shouldBe plainScalar("somevalue", YamlPath.root)
                 }
             }
         }
@@ -1066,7 +1072,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
                 it("returns that scalar, ignoring the comment") {
                     result shouldBe
-                        YamlScalar("somevalue", YamlPath.root)
+                        plainScalar("somevalue", YamlPath.root)
                 }
             }
         }
@@ -1085,7 +1091,7 @@ class YamlNodeReaderTest : DescribeSpec({
 
                 it("returns that scalar, ignoring the comments") {
                     // FIXME: ideally we'd return a path with the location (3, 1)
-                    result shouldBe YamlScalar("somevalue", YamlPath.root)
+                    result shouldBe plainScalar("somevalue", YamlPath.root)
                 }
             }
         }
@@ -1101,14 +1107,14 @@ class YamlNodeReaderTest : DescribeSpec({
 
                 it("returns that scalar, ignoring the comment") {
                     result shouldBe
-                        YamlScalar("somevalue", YamlPath.root)
+                        plainScalar("somevalue", YamlPath.root)
                 }
             }
         }
 
         mapOf(
             "!thing" to YamlTaggedNode("!thing", YamlNull(YamlPath.root)),
-            "!!str 'some string'" to YamlTaggedNode("tag:yaml.org,2002:str", YamlScalar("some string", YamlPath.root)),
+            "!!str 'some string'" to YamlTaggedNode("tag:yaml.org,2002:str", YamlScalar("some string", YamlPath.root, YamlNodeScalarStyle.SINGLE_QUOTED)),
         ).forEach { (input, featureName) ->
             context("given the input '$input' which contains a tagged node") {
                 describe("parsing that input") {
@@ -1189,17 +1195,17 @@ class YamlNodeReaderTest : DescribeSpec({
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
-                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22))),
+                                        plainScalar("x", firstXPath) to plainScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
+                                        plainScalar("y", firstYPath) to plainScalar("2", firstYPath.withMapElementValue(Location(1, 22))),
                                     ),
                                     firstItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", secondXPath) to YamlScalar("1", secondXPath.withMapElementValue(Location(1, 16))),
-                                        YamlScalar("y", secondYPath) to YamlScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
-                                        YamlScalar("r", rPath) to YamlScalar("10", rPath.withMapElementValue(Location(4, 6))),
-                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10))),
+                                        plainScalar("x", secondXPath) to plainScalar("1", secondXPath.withMapElementValue(Location(1, 16))),
+                                        plainScalar("y", secondYPath) to plainScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
+                                        plainScalar("r", rPath) to plainScalar("10", rPath.withMapElementValue(Location(4, 6))),
+                                        plainScalar("label", labelPath) to plainScalar("center/big", labelPath.withMapElementValue(Location(5, 10))),
                                     ),
                                     secondItemPath,
                                 ),
@@ -1238,16 +1244,16 @@ class YamlNodeReaderTest : DescribeSpec({
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
-                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22))),
+                                        plainScalar("x", firstXPath) to plainScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
+                                        plainScalar("y", firstYPath) to plainScalar("2", firstYPath.withMapElementValue(Location(1, 22))),
                                     ),
                                     firstItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", secondXPath) to YamlScalar("10", secondXPath.withMapElementValue(Location(4, 6))),
-                                        YamlScalar("y", secondYPath) to YamlScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
-                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10))),
+                                        plainScalar("x", secondXPath) to plainScalar("10", secondXPath.withMapElementValue(Location(4, 6))),
+                                        plainScalar("y", secondYPath) to plainScalar("2", secondYPath.withMapElementValue(Location(1, 22))),
+                                        plainScalar("label", labelPath) to plainScalar("center/big", labelPath.withMapElementValue(Location(5, 10))),
                                     ),
                                     secondItemPath,
                                 ),
@@ -1340,23 +1346,23 @@ class YamlNodeReaderTest : DescribeSpec({
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", firstXPath) to YamlScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
-                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 22))),
+                                        plainScalar("x", firstXPath) to plainScalar("1", firstXPath.withMapElementValue(Location(1, 16))),
+                                        plainScalar("y", firstYPath) to plainScalar("2", firstYPath.withMapElementValue(Location(1, 22))),
                                     ),
                                     firstItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("r", secondRPath) to YamlScalar("10", secondRPath.withMapElementValue(Location(2, 16))),
+                                        plainScalar("r", secondRPath) to plainScalar("10", secondRPath.withMapElementValue(Location(2, 16))),
                                     ),
                                     secondItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", thirdXPath) to YamlScalar("1", thirdXPath.withMapElementValue(Location(1, 16))),
-                                        YamlScalar("y", thirdYPath) to YamlScalar("2", thirdYPath.withMapElementValue(Location(1, 22))),
-                                        YamlScalar("r", thirdRPath) to YamlScalar("10", thirdRPath.withMapElementValue(Location(2, 16))),
-                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(5, 10))),
+                                        plainScalar("x", thirdXPath) to plainScalar("1", thirdXPath.withMapElementValue(Location(1, 16))),
+                                        plainScalar("y", thirdYPath) to plainScalar("2", thirdYPath.withMapElementValue(Location(1, 22))),
+                                        plainScalar("r", thirdRPath) to plainScalar("10", thirdRPath.withMapElementValue(Location(2, 16))),
+                                        plainScalar("label", labelPath) to plainScalar("center/big", labelPath.withMapElementValue(Location(5, 10))),
                                     ),
                                     thirdItemPath,
                                 ),
@@ -1406,29 +1412,29 @@ class YamlNodeReaderTest : DescribeSpec({
                             listOf(
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", firstXPath) to YamlScalar("0", firstXPath.withMapElementValue(Location(1, 14))),
-                                        YamlScalar("y", firstYPath) to YamlScalar("2", firstYPath.withMapElementValue(Location(1, 20))),
+                                        plainScalar("x", firstXPath) to plainScalar("0", firstXPath.withMapElementValue(Location(1, 14))),
+                                        plainScalar("y", firstYPath) to plainScalar("2", firstYPath.withMapElementValue(Location(1, 20))),
                                     ),
                                     firstItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("r", secondRPath) to YamlScalar("10", secondRPath.withMapElementValue(Location(2, 13))),
+                                        plainScalar("r", secondRPath) to plainScalar("10", secondRPath.withMapElementValue(Location(2, 13))),
                                     ),
                                     secondItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("r", thirdRPath) to YamlScalar("1", thirdRPath.withMapElementValue(Location(3, 15))),
+                                        plainScalar("r", thirdRPath) to plainScalar("1", thirdRPath.withMapElementValue(Location(3, 15))),
                                     ),
                                     thirdItemPath,
                                 ),
                                 YamlMap(
                                     mapOf(
-                                        YamlScalar("x", fourthXPath) to YamlScalar("1", fourthXPath.withMapElementValue(Location(6, 6))),
-                                        YamlScalar("y", fourthYPath) to YamlScalar("2", fourthYPath.withMapElementValue(Location(1, 20))),
-                                        YamlScalar("r", fourthRPath) to YamlScalar("10", fourthRPath.withMapElementValue(Location(2, 13))),
-                                        YamlScalar("label", labelPath) to YamlScalar("center/big", labelPath.withMapElementValue(Location(7, 10))),
+                                        plainScalar("x", fourthXPath) to plainScalar("1", fourthXPath.withMapElementValue(Location(6, 6))),
+                                        plainScalar("y", fourthYPath) to plainScalar("2", fourthYPath.withMapElementValue(Location(1, 20))),
+                                        plainScalar("r", fourthRPath) to plainScalar("10", fourthRPath.withMapElementValue(Location(2, 13))),
+                                        plainScalar("label", labelPath) to plainScalar("center/big", labelPath.withMapElementValue(Location(7, 10))),
                                     ),
                                     fourthItemPath,
                                 ),
@@ -1558,10 +1564,10 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("foo", fooKeyPath) to YamlMap(
+                                plainScalar("foo", fooKeyPath) to YamlMap(
                                     mapOf(
-                                        YamlScalar("bar", barKeyPath) to YamlScalar("value", barKeyPath.withMapElementValue(Location(4, 10))),
-                                        YamlScalar("baz", bazKeyPath) to YamlScalar("extension-value", bazValuePath),
+                                        plainScalar("bar", barKeyPath) to plainScalar("value", barKeyPath.withMapElementValue(Location(4, 10))),
+                                        plainScalar("baz", bazKeyPath) to plainScalar("extension-value", bazValuePath),
                                     ),
                                     fooValuePath,
                                 ),
@@ -1590,9 +1596,9 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar("foo", fooKeyPath) to YamlMap(
+                                plainScalar("foo", fooKeyPath) to YamlMap(
                                     mapOf(
-                                        YamlScalar(".bar", barKeyPath) to YamlScalar("value", barKeyPath.withMapElementValue(Location(2, 11))),
+                                        plainScalar(".bar", barKeyPath) to plainScalar("value", barKeyPath.withMapElementValue(Location(2, 11))),
                                     ),
                                     fooValuePath,
                                 ),
@@ -1628,7 +1634,7 @@ class YamlNodeReaderTest : DescribeSpec({
                     result shouldBe
                         YamlMap(
                             mapOf(
-                                YamlScalar(".some-key", keyPath) to YamlScalar("some-value", valuePath),
+                                plainScalar(".some-key", keyPath) to plainScalar("some-value", valuePath),
                             ),
                             YamlPath.root,
                         )

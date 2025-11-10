@@ -47,7 +47,7 @@ class JvmYamlReadingTest : DescribeSpec({
             val result = Yaml.default.parseToYamlNode(input)
 
             it("successfully deserializes values from a string") {
-                result shouldBe YamlScalar("123", YamlPath.root)
+                result shouldBe YamlScalar("123", YamlPath.root, YamlNodeScalarStyle.PLAIN)
             }
         }
 
@@ -56,7 +56,7 @@ class JvmYamlReadingTest : DescribeSpec({
             val result = Yaml.default.parseToYamlNode(input.byteInputStream())
 
             it("successfully deserializes values from a stream") {
-                result shouldBe YamlScalar("123", YamlPath.root)
+                result shouldBe YamlScalar("123", YamlPath.root, YamlNodeScalarStyle.PLAIN)
             }
         }
     }
