@@ -872,9 +872,9 @@ class YamlWritingTest : FlatFunSpec({
             val expectedOutput = """
                     text: "test"
                     node:
-                      "foo": "bar"
-                      "baz": 1
-                      "test":
+                      foo: bar
+                      baz: 1
+                      test:
                       - 1
                       - 2
                       - 3
@@ -1274,7 +1274,7 @@ class YamlWritingTest : FlatFunSpec({
             val node = Yaml.default.parseToYamlNode("!testtag 2024-01-01") as YamlTaggedNode
             val expectedOutput = """
                     text: "test"
-                    node: !testtag "2024-01-01"
+                    node: !testtag '2024-01-01'
             """.trimIndent()
             context("as tagged node") {
                 val value = TestClassWithNestedTaggedNode(text = "test", node = node)
@@ -1366,6 +1366,500 @@ class YamlWritingTest : FlatFunSpec({
                         # multiline
                         test: "justTest"
                     """.trimIndent()
+                }
+            }
+        }
+
+        context("serializing YamlNode preserving string types and tags") {
+            context("preserving boolean-like strings") {
+                context("double-quoted string 'false'") {
+                    val inputYaml = """"false""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to boolean") {
+                        output shouldBe """"false""""
+                    }
+                }
+
+                context("double-quoted string 'true'") {
+                    val inputYaml = """"true""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to boolean") {
+                        output shouldBe """"true""""
+                    }
+                }
+
+                context("double-quoted string 'TRUE'") {
+                    val inputYaml = """"TRUE""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string with original casing") {
+                        output shouldBe """"TRUE""""
+                    }
+                }
+
+                context("double-quoted string 'False'") {
+                    val inputYaml = """"False""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string with original casing") {
+                        output shouldBe """"False""""
+                    }
+                }
+
+                context("single-quoted string 'false'") {
+                    val inputYaml = """'false'"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to boolean") {
+                        output shouldBe """'false'"""
+                    }
+                }
+
+                context("single-quoted string 'true'") {
+                    val inputYaml = """'true'"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to boolean") {
+                        output shouldBe """'true'"""
+                    }
+                }
+            }
+
+            context("preserving number-like strings") {
+                context("double-quoted phone number string") {
+                    val inputYaml = """"+44123456""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string with leading plus sign") {
+                        output shouldBe """"+44123456""""
+                    }
+                }
+
+                context("double-quoted integer string '123'") {
+                    val inputYaml = """"123""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to integer") {
+                        output shouldBe """"123""""
+                    }
+                }
+
+                context("double-quoted hex string '0x123'") {
+                    val inputYaml = """"0x123""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to hex number") {
+                        output shouldBe """"0x123""""
+                    }
+                }
+
+                context("double-quoted octal string '0o777'") {
+                    val inputYaml = """"0o777""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to octal number") {
+                        output shouldBe """"0o777""""
+                    }
+                }
+
+                context("single-quoted integer string '456'") {
+                    val inputYaml = """'456'"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to integer") {
+                        output shouldBe """'456'"""
+                    }
+                }
+
+                context("double-quoted negative number string '-42'") {
+                    val inputYaml = """"-42""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to negative integer") {
+                        output shouldBe """"-42""""
+                    }
+                }
+            }
+
+            context("preserving float-like strings") {
+                context("double-quoted float string '1.2'") {
+                    val inputYaml = """"1.2""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to float") {
+                        output shouldBe """"1.2""""
+                    }
+                }
+
+                context("double-quoted float string '3.14'") {
+                    val inputYaml = """"3.14""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to float") {
+                        output shouldBe """"3.14""""
+                    }
+                }
+
+                context("double-quoted infinity string '.inf'") {
+                    val inputYaml = """".inf""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to infinity") {
+                        output shouldBe """".inf""""
+                    }
+                }
+
+                context("double-quoted NaN string '.nan'") {
+                    val inputYaml = """".nan""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to NaN") {
+                        output shouldBe """".nan""""
+                    }
+                }
+
+                context("single-quoted float string '2.71'") {
+                    val inputYaml = """'2.71'"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to float") {
+                        output shouldBe """'2.71'"""
+                    }
+                }
+            }
+
+            context("preserving tags on scalar values") {
+                context("tag !!str on integer content") {
+                    val inputYaml = """!!str 123"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the tag and string content") {
+                        // The conversion is done by the [emitter.chooseScalarStyle] function that
+                        output shouldBe """!!str '123'"""
+                    }
+                }
+
+                context("tag !!str on boolean content") {
+                    val inputYaml = """!!str false"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the tag and string content") {
+                        output shouldBe """!!str 'false'"""
+                    }
+                }
+
+                context("tag !!str on phone number with plus") {
+                    val inputYaml = """!!str +44123456"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the tag and string content with plus sign") {
+                        output shouldBe """!!str '+44123456'"""
+                    }
+                }
+
+                context("custom tag on scalar value") {
+                    val inputYaml = """!customtag "value""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the custom tag") {
+                        output shouldBe """!customtag "value""""
+                    }
+                }
+
+                context("tag !!str on float-like content") {
+                    val inputYaml = """!!str 3.14"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the tag and string content") {
+                        output shouldBe """!!str '3.14'"""
+                    }
+                }
+            }
+
+            context("preserving tags on collections") {
+                context("tagged list") {
+                    val inputYaml = """
+                        !customlist
+                        - 1
+                        - 2
+                        - 3
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the tag on the list") {
+                        output shouldBe """
+                            !customlist
+                            - 1
+                            - 2
+                            - 3
+                        """.trimIndent()
+                    }
+                }
+
+                context("tagged map") {
+                    val inputYaml = """
+                        !custommap
+                        key1: value1
+                        key2: value2
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the tag on the map") {
+                        output shouldBe inputYaml
+                    }
+                }
+
+                context("list with tagged scalar items") {
+                    val inputYaml = """
+                        - !!str 123
+                        - !!str false
+                        - normal
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves tags on individual items") {
+                        output shouldBe """
+                            - !!str '123'
+                            - !!str 'false'
+                            - normal
+                        """.trimIndent()
+                    }
+                }
+
+                context("map with tagged scalar values") {
+                    val inputYaml = """
+                        key1: !!str 123
+                        key2: !!str false
+                        key3: normal
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves tags on individual values") {
+                        output shouldBe """
+                            key1: !!str '123'
+                            key2: !!str 'false'
+                            key3: normal
+                        """.trimIndent()
+                    }
+                }
+            }
+
+            context("preserving special YAML values as strings") {
+                context("double-quoted 'null' string") {
+                    val inputYaml = """"null""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to null") {
+                        output shouldBe """"null""""
+                    }
+                }
+
+                context("double-quoted tilde string") {
+                    val inputYaml = """"~""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to null") {
+                        output shouldBe """"~""""
+                    }
+                }
+
+                context("double-quoted dash string") {
+                    val inputYaml = """"-""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string") {
+                        output shouldBe """"-""""
+                    }
+                }
+
+                context("single-quoted 'null' string") {
+                    val inputYaml = """'null'"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string and does not convert to null") {
+                        output shouldBe """'null'"""
+                    }
+                }
+
+                context("double-quoted 'Null' string") {
+                    val inputYaml = """"Null""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves the string with casing") {
+                        output shouldBe """"Null""""
+                    }
+                }
+            }
+
+            context("preserving strings in complex structures") {
+                context("map with quoted boolean-like values") {
+                    val inputYaml = """
+                        enabled: "false"
+                        active: "true"
+                        count: "123"
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves all values as strings") {
+                        output shouldBe """
+                            enabled: "false"
+                            active: "true"
+                            count: "123"
+                        """.trimIndent()
+                    }
+                }
+
+                context("list with mixed quoted and unquoted values") {
+                    val inputYaml = """
+                        - "123"
+                        - 456
+                        - "false"
+                        - true
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves strings as strings and primitives as primitives") {
+                        output shouldBe """
+                            - "123"
+                            - 456
+                            - "false"
+                            - true
+                        """.trimIndent()
+                    }
+                }
+
+                context("nested structure with tagged and quoted values") {
+                    val inputYaml = """
+                        user:
+                          id: !!str 42
+                          active: "false"
+                          score: 3.14
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves tags and string types in nested structure") {
+                        output shouldBe """
+                            user:
+                              id: !!str '42'
+                              active: "false"
+                              score: 3.14
+                        """.trimIndent()
+                    }
+                }
+
+                context("list of maps with quoted string values") {
+                    val inputYaml = """
+                        - name: "item1"
+                          count: "100"
+                        - name: "item2"
+                          count: "200"
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves string types in list of maps") {
+                        output shouldBe """
+                            - name: "item1"
+                              count: "100"
+                            - name: "item2"
+                              count: "200"
+                        """.trimIndent()
+                    }
+                }
+            }
+
+            context("preserving different scalar styles") {
+                context("single-quoted scalar style") {
+                    val inputYaml = """'Hello World'"""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves single-quoted style") {
+                        output shouldBe """'Hello World'"""
+                    }
+                }
+
+                context("double-quoted scalar style") {
+                    val inputYaml = """"Hello World""""
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves double-quoted style") {
+                        output shouldBe """"Hello World""""
+                    }
+                }
+
+                context("literal scalar style") {
+                    val inputYaml = """
+                        |
+                          Line 1
+                          Line 2
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves literal style for multiline content") {
+                        // Literal style should be preserved for multiline strings
+                        output shouldBe """
+                            |-
+                              Line 1
+                              Line 2
+                        """.trimIndent()
+                    }
+                }
+
+                context("folded scalar style") {
+                    val inputYaml = """
+                        >
+                          Folded line 1
+                          Folded line 2
+                    """.trimIndent()
+                    val node = Yaml.default.parseToYamlNode(inputYaml)
+                    val output = Yaml.default.encodeToString(YamlNodeSerializer, node)
+
+                    test("preserves folded style for multiline content") {
+                        // Folded style should be preserved for multiline strings
+                        output shouldBe """
+                            >-
+                              Folded line 1 Folded line 2
+                        """.trimIndent()
+                    }
                 }
             }
         }
