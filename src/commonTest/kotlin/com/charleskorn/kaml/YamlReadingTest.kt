@@ -764,6 +764,39 @@ class YamlReadingTest : FlatFunSpec({
                 }
             }
 
+            context("given some input represent an object with some single values") {
+                val input = """
+                    one: ["a", "b", "c"]
+                    two: "d"
+                    three: "e"
+                    four: ["f", "g"]
+                """.trimIndent()
+
+                context("parsing that input") {
+                    test("throws exception when disable accepting single value as list") {
+                        val exception = shouldThrow<InvalidPropertyValueException> {
+                            Yaml.default.decodeFromString(MapSerializer(String.serializer(), ListSerializer(String.serializer())), input)
+                        }
+
+                        exception.asClue {
+                            it.message shouldBe "Value for 'two' is invalid: Expected a list, but got a scalar value"
+                        }
+                    }
+
+                    test("deserializes it as a Map with a string list") {
+                        val yaml = Yaml(configuration = YamlConfiguration(singleValueAsList = true))
+                        val result = yaml.decodeFromString(MapSerializer(String.serializer(), ListSerializer(String.serializer())), input)
+
+                        result shouldBe mapOf(
+                            "one" to listOf("a", "b", "c"),
+                            "two" to listOf("d"),
+                            "three" to listOf("e"),
+                            "four" to listOf("f", "g")
+                        )
+                    }
+                }
+            }
+
             context("given some input representing a generic map") {
                 val input = """
                     SOME_ENV_VAR: somevalue

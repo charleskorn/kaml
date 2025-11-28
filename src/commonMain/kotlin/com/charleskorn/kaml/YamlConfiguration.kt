@@ -60,6 +60,7 @@ public data class YamlConfiguration(
     internal val codePointLimit: Int? = null,
     @ExperimentalSerializationApi
     internal val decodeEnumCaseInsensitive: Boolean = false,
+    internal val singleValueAsList: Boolean = false
 )
 
 public enum class PolymorphismStyle {
