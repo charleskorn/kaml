@@ -72,7 +72,7 @@ internal class YamlNodeReader(
         if ((event.value == "null" || event.value == "" || event.value == "~") && event.plain) {
             return YamlNull(path)
         } else {
-            return YamlScalar(event.value, path)
+            return YamlScalar(event.value, path, YamlNodeScalarStyle.fromScalarStyle(event.scalarStyle))
         }
     }
 
@@ -114,7 +114,7 @@ internal class YamlNodeReader(
                 else -> {
                     val keyLocation = parser.peekEvent(path).location
                     val key = readMapKey(path)
-                    val keyNode = YamlScalar(key, path.withMapElementKey(key, keyLocation))
+                    val keyNode = YamlScalar(key, path.withMapElementKey(key, keyLocation), YamlNodeScalarStyle.PLAIN)
 
                     val valueLocation = parser.peekEvent(keyNode.path).location
                     val valuePath = if (isMerge(keyNode)) path.withMerge(valueLocation) else keyNode.path.withMapElementValue(valueLocation)

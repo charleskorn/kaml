@@ -34,7 +34,7 @@ public sealed class YamlNode(public open val path: YamlPath) {
 }
 
 @Serializable(with = YamlScalarSerializer::class)
-public data class YamlScalar(val content: String, override val path: YamlPath) : YamlNode(path) {
+public data class YamlScalar(val content: String, override val path: YamlPath, val scalarStyle: YamlNodeScalarStyle? = null) : YamlNode(path) {
     override fun equivalentContentTo(other: YamlNode): Boolean = other is YamlScalar && this.content == other.content
     override fun contentToString(): String = "'$content'"
 
